@@ -2,12 +2,14 @@ import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { FileText, Printer, Download } from "lucide-react";
+import { FileText, Printer, Download, FileDown } from "lucide-react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AssessmentSidebar } from "@/components/AssessmentSidebar";
 import { AssessmentProgressProvider } from "@/contexts/AssessmentProgressContext";
+import { LanguageProvider, useLanguage } from "@/contexts/LanguageContext";
 import { SectionWithProgress } from "@/components/SectionWithProgress";
 import { AssessmentDashboard } from "@/components/AssessmentDashboard";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 import PatientInfoSection from "@/components/questionnaire/PatientInfoSection";
 import CircumstancesSection from "@/components/questionnaire/CircumstancesSection";
 import OnsetSection from "@/components/questionnaire/OnsetSection";
@@ -27,8 +29,16 @@ import OrthostaticIntoleranceSection from "@/components/questionnaire/Orthostati
 import SummaryReportSection from "@/components/questionnaire/SummaryReportSection";
 import AIDiagnosisSection from "@/components/questionnaire/AIDiagnosisSection";
 import LabTestsSection from "@/components/questionnaire/LabTestsSection";
+import { exportToPDF, exportToWord } from "@/utils/exportUtils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
-const Index = () => {
+const IndexContent = () => {
+  const { language, t } = useLanguage();
   const [formData, setFormData] = useState({
     patientInfo: {},
     circumstances: {},
@@ -70,6 +80,14 @@ const Index = () => {
     link.click();
   };
 
+  const handleExportPDF = () => {
+    exportToPDF(formData, language);
+  };
+
+  const handleExportWord = () => {
+    exportToWord(formData, language);
+  };
+
   return (
     <AssessmentProgressProvider>
       <SidebarProvider>
@@ -84,13 +102,14 @@ const Index = () => {
                 <FileText className="w-8 h-8 text-primary mr-3" />
                 <div>
                   <h1 className="text-2xl font-bold text-foreground">
-                    Loss of Consciousness Assessment
+                    {t('app.title')}
                   </h1>
                   <p className="text-sm text-muted-foreground hidden sm:block">
-                    Clinical Questionnaire for Seizure, Syncope, LOC and Orthostatic intolerance Evaluation
+                    {t('app.subtitle')}
                   </p>
                 </div>
               </div>
+              <LanguageSwitcher />
             </div>
           </header>
 
@@ -323,12 +342,28 @@ const Index = () => {
               <div className="flex flex-wrap gap-4 justify-center print:hidden">
                 <Button onClick={handlePrint} variant="outline" size="lg">
                   <Printer className="w-4 h-4 mr-2" />
-                  Print Assessment
+                  {t('button.print')}
                 </Button>
-                <Button onClick={handleExport} variant="default" size="lg">
-                  <Download className="w-4 h-4 mr-2" />
-                  Export Data
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="default" size="lg">
+                      <FileDown className="w-4 h-4 mr-2" />
+                      {t('button.export')}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem onClick={handleExport}>
+                      <Download className="w-4 h-4 mr-2" />
+                      JSON
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleExportPDF}>
+                      {t('button.exportPdf')}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleExportWord}>
+                      {t('button.exportWord')}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
           </div>
@@ -336,6 +371,14 @@ const Index = () => {
       </div>
       </SidebarProvider>
     </AssessmentProgressProvider>
+  );
+};
+
+const Index = () => {
+  return (
+    <LanguageProvider>
+      <IndexContent />
+    </LanguageProvider>
   );
 };
 
