@@ -27,24 +27,30 @@ interface FormData {
 }
 
 const formatSectionData = (data: Record<string, any> | undefined): string[] => {
-  if (!data || Object.keys(data).length === 0) return ['No data entered'];
+  if (!data || Object.keys(data).length === 0) return [];
   
-  const lines: string[] = [];
+  const positiveItems: string[] = [];
   Object.entries(data).forEach(([key, value]) => {
-    if (value !== undefined && value !== null && value !== '') {
-      const formattedKey = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
-      if (typeof value === 'boolean') {
-        lines.push(`${formattedKey}: ${value ? 'Yes' : 'No'}`);
-      } else if (Array.isArray(value)) {
-        lines.push(`${formattedKey}: ${value.join(', ')}`);
-      } else if (typeof value === 'object') {
-        lines.push(`${formattedKey}: ${JSON.stringify(value)}`);
-      } else {
-        lines.push(`${formattedKey}: ${value}`);
-      }
+    if (value === undefined || value === null || value === '' || value === false) return;
+    const formattedKey = key.replace(/([A-Z])/g, ' $1').replace(/[-_]/g, ' ').replace(/^./, str => str.toUpperCase());
+    if (typeof value === 'boolean') {
+      positiveItems.push(formattedKey);
+    } else if (Array.isArray(value) && value.length > 0) {
+      positiveItems.push(`${formattedKey}: ${value.join(', ')}`);
+    } else if (typeof value === 'object') {
+      const nested = formatSectionData(value);
+      if (nested.length > 0) positiveItems.push(...nested);
+    } else {
+      positiveItems.push(`${formattedKey}: ${value}`);
     }
   });
-  return lines.length > 0 ? lines : ['No data entered'];
+  return positiveItems;
+};
+
+const formatSectionAsSummary = (data: Record<string, any> | undefined): string => {
+  const items = formatSectionData(data);
+  if (items.length === 0) return '';
+  return items.join('; ');
 };
 
 export const exportToPDF = (formData: FormData, language: 'en' | 'ml' = 'en') => {
@@ -91,7 +97,9 @@ export const exportToPDF = (formData: FormData, language: 'en' | 'ml' = 'en') =>
 
   // Helper function to add section
   const addSection = (title: string, data: Record<string, any> | undefined) => {
-    // Check if we need a new page
+    const summary = formatSectionAsSummary(data);
+    if (!summary) return; // Skip sections with no positive findings
+
     if (yPosition > 250) {
       doc.addPage();
       yPosition = 20;
@@ -105,18 +113,14 @@ export const exportToPDF = (formData: FormData, language: 'en' | 'ml' = 'en') =>
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
     
-    const lines = formatSectionData(data);
-    lines.forEach(line => {
+    const splitLines = doc.splitTextToSize(summary, pageWidth - 2 * margin);
+    splitLines.forEach((splitLine: string) => {
       if (yPosition > 270) {
         doc.addPage();
         yPosition = 20;
       }
-      // Word wrap long lines
-      const splitLines = doc.splitTextToSize(line, pageWidth - 2 * margin);
-      splitLines.forEach((splitLine: string) => {
-        doc.text(splitLine, margin, yPosition);
-        yPosition += lineHeight;
-      });
+      doc.text(splitLine, margin, yPosition);
+      yPosition += lineHeight;
     });
     yPosition += 5;
   };
@@ -160,25 +164,20 @@ export const exportToWord = async (formData: FormData, language: 'en' | 'ml' = '
   const title = language === 'ml' ? 'ബോധക്ഷയ വിലയിരുത്തൽ റിപ്പോർട്ട്' : 'Loss of Consciousness Assessment Report';
   
   const createSectionParagraphs = (sectionTitle: string, data: Record<string, any> | undefined): Paragraph[] => {
-    const paragraphs: Paragraph[] = [
+    const summary = formatSectionAsSummary(data);
+    if (!summary) return []; // Skip sections with no positive findings
+
+    return [
       new Paragraph({
         text: sectionTitle,
         heading: HeadingLevel.HEADING_2,
         spacing: { before: 400, after: 200 },
       }),
+      new Paragraph({
+        children: [new TextRun({ text: summary })],
+        spacing: { after: 100 },
+      }),
     ];
-
-    const lines = formatSectionData(data);
-    lines.forEach(line => {
-      paragraphs.push(
-        new Paragraph({
-          children: [new TextRun({ text: line })],
-          spacing: { after: 100 },
-        })
-      );
-    });
-
-    return paragraphs;
   };
 
   const sections = [
