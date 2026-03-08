@@ -29,6 +29,8 @@ import OrthostaticIntoleranceSection from "@/components/questionnaire/Orthostati
 import SummaryReportSection from "@/components/questionnaire/SummaryReportSection";
 import AIDiagnosisSection from "@/components/questionnaire/AIDiagnosisSection";
 import LabTestsSection from "@/components/questionnaire/LabTestsSection";
+import AutonomicTestingSection from "@/components/questionnaire/AutonomicTestingSection";
+import InterventionsSection from "@/components/questionnaire/InterventionsSection";
 import { exportToPDF, exportToWord } from "@/utils/exportUtils";
 import {
   DropdownMenu,
@@ -56,7 +58,9 @@ const IndexContent = () => {
     subclavianSteal: {},
     carotidSinusMassage: {},
     orthostaticIntolerance: {},
+    autonomicTesting: {},
     diagnosticCriteria: {},
+    interventions: {},
   });
 
   const updateSection = (section: string, data: any) => {
