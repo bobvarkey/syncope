@@ -14,7 +14,9 @@ import {
   TestTube,
   Lightbulb,
   CheckSquare,
-  Sparkles
+  Sparkles,
+  Shield,
+  Gauge,
 } from "lucide-react";
 
 import {
@@ -60,6 +62,7 @@ const sections = [
       { id: "subclavian-steal", title: "Subclavian Steal", icon: Wind },
       { id: "carotid-massage", title: "Carotid Sinus Massage", icon: Heart },
       { id: "orthostatic-intolerance", title: "Orthostatic Intolerance", icon: Users },
+      { id: "autonomic-testing", title: "Autonomic Testing", icon: Gauge },
     ],
   },
   {
@@ -70,6 +73,14 @@ const sections = [
       { id: "differential-diagnosis-section", title: "Differential Diagnosis", icon: Lightbulb },
       { id: "diagnostic-criteria", title: "Diagnostic Criteria", icon: CheckSquare },
       { id: "ai-diagnosis", title: "AI Diagnosis Assistant", icon: Sparkles },
+    ],
+  },
+  {
+    id: "management",
+    title: "Interventions",
+    icon: Shield,
+    subsections: [
+      { id: "interventions", title: "Interventions & Management", icon: Shield },
     ],
   },
 ];

@@ -108,6 +108,90 @@ const DiagnosticCriteriaSection = ({ data, onUpdate }: DiagnosticCriteriaSection
 
             <div className="border rounded-lg p-4">
               <div className="flex items-center space-x-2 mb-2">
+                <RadioGroupItem value="css" id="css-dx" />
+                <Label htmlFor="css-dx" className="font-semibold cursor-pointer">
+                  Carotid Sinus Syndrome (CSS)
+                </Label>
+              </div>
+              <p className="text-sm text-muted-foreground ml-6">
+                Carotid sinus massage reproduces symptoms with asystole &gt;3 s and/or SBP drop &gt;50 mmHg
+              </p>
+            </div>
+
+            <div className="border rounded-lg p-4">
+              <div className="flex items-center space-x-2 mb-2">
+                <RadioGroupItem value="structural-cardiac" id="structural-cardiac-dx" />
+                <Label htmlFor="structural-cardiac-dx" className="font-semibold cursor-pointer">
+                  Structural Cardiac Disease
+                </Label>
+              </div>
+              <p className="text-sm text-muted-foreground ml-6">
+                Aortic stenosis, HOCM, pulmonary embolism, aortic dissection, or cardiac tamponade causing low output syncope
+              </p>
+            </div>
+
+            <div className="border rounded-lg p-4">
+              <div className="flex items-center space-x-2 mb-2">
+                <RadioGroupItem value="autonomic-failure" id="autonomic-failure-dx" />
+                <Label htmlFor="autonomic-failure-dx" className="font-semibold cursor-pointer">
+                  Autonomic Failure Syndromes
+                </Label>
+              </div>
+              <p className="text-sm text-muted-foreground ml-6">
+                Pure autonomic failure (PAF), multiple system atrophy (MSA), Parkinson's disease with autonomic failure, diabetic autonomic neuropathy
+              </p>
+            </div>
+
+            <div className="border rounded-lg p-4">
+              <div className="flex items-center space-x-2 mb-2">
+                <RadioGroupItem value="pots" id="pots-dx" />
+                <Label htmlFor="pots-dx" className="font-semibold cursor-pointer">
+                  Postural Orthostatic Tachycardia Syndrome (POTS)
+                </Label>
+              </div>
+              <p className="text-sm text-muted-foreground ml-6">
+                HR increase ≥30 bpm (or &gt;120 bpm) within 10 min of standing without significant BP drop
+              </p>
+            </div>
+
+            <div className="border rounded-lg p-4">
+              <div className="flex items-center space-x-2 mb-2">
+                <RadioGroupItem value="psychogenic" id="psychogenic-dx" />
+                <Label htmlFor="psychogenic-dx" className="font-semibold cursor-pointer">
+                  Psychogenic Pseudosyncope (PNES)
+                </Label>
+              </div>
+              <p className="text-sm text-muted-foreground ml-6">
+                Apparent LOC without haemodynamic or EEG correlate; eyes closed; prolonged duration; high frequency
+              </p>
+            </div>
+
+            <div className="border rounded-lg p-4">
+              <div className="flex items-center space-x-2 mb-2">
+                <RadioGroupItem value="epileptic-seizure" id="epileptic-seizure-dx" />
+                <Label htmlFor="epileptic-seizure-dx" className="font-semibold cursor-pointer">
+                  Epileptic Seizure
+                </Label>
+              </div>
+              <p className="text-sm text-muted-foreground ml-6">
+                Witnessed tonic-clonic activity, tongue-biting, prolonged post-ictal confusion, EEG abnormalities
+              </p>
+            </div>
+
+            <div className="border rounded-lg p-4">
+              <div className="flex items-center space-x-2 mb-2">
+                <RadioGroupItem value="subclavian-steal" id="subclavian-steal-dx" />
+                <Label htmlFor="subclavian-steal-dx" className="font-semibold cursor-pointer">
+                  Subclavian Steal Syndrome
+                </Label>
+              </div>
+              <p className="text-sm text-muted-foreground ml-6">
+                Symptoms with ipsilateral arm exercise; BP differential &gt;20 mmHg between arms
+              </p>
+            </div>
+
+            <div className="border rounded-lg p-4">
+              <div className="flex items-center space-x-2 mb-2">
                 <RadioGroupItem value="undetermined" id="undetermined-dx" />
                 <Label htmlFor="undetermined-dx" className="font-semibold cursor-pointer">
                   Undetermined / Requires Further Investigation

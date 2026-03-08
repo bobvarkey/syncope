@@ -143,6 +143,8 @@ export const exportToPDF = (formData: FormData, language: 'en' | 'ml' = 'en') =>
     { title: language === 'ml' ? 'കരോട്ടിഡ് സൈനസ് മസാജ്' : 'Carotid Sinus Massage', data: formData.carotidSinusMassage },
     { title: language === 'ml' ? 'ഓർത്തോസ്റ്റാറ്റിക് അസഹിഷ്ണുത' : 'Orthostatic Intolerance', data: formData.orthostaticIntolerance },
     { title: language === 'ml' ? 'ഡയഗ്നോസ്റ്റിക് മാനദണ്ഡങ്ങൾ' : 'Diagnostic Criteria', data: formData.diagnosticCriteria },
+    { title: language === 'ml' ? 'ഓട്ടോണോമിക് ടെസ്റ്റിംഗ്' : 'Autonomic Testing (Finometer)', data: (formData as any).autonomicTesting },
+    { title: language === 'ml' ? 'ഇടപെടലുകൾ' : 'Interventions & Management', data: (formData as any).interventions },
   ];
 
   sections.forEach(section => addSection(section.title, section.data));
@@ -197,6 +199,8 @@ export const exportToWord = async (formData: FormData, language: 'en' | 'ml' = '
     { title: language === 'ml' ? 'കരോട്ടിഡ് സൈനസ് മസാജ്' : 'Carotid Sinus Massage', data: formData.carotidSinusMassage },
     { title: language === 'ml' ? 'ഓർത്തോസ്റ്റാറ്റിക് അസഹിഷ്ണുത' : 'Orthostatic Intolerance', data: formData.orthostaticIntolerance },
     { title: language === 'ml' ? 'ഡയഗ്നോസ്റ്റിക് മാനദണ്ഡങ്ങൾ' : 'Diagnostic Criteria', data: formData.diagnosticCriteria },
+    { title: language === 'ml' ? 'ഓട്ടോണോമിക് ടെസ്റ്റിംഗ്' : 'Autonomic Testing (Finometer)', data: (formData as any).autonomicTesting },
+    { title: language === 'ml' ? 'ഇടപെടലുകൾ' : 'Interventions & Management', data: (formData as any).interventions },
   ];
 
   const nameLabel = language === 'ml' ? 'പേര്:' : 'Name:';
