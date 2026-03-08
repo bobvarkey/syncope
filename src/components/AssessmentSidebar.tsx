@@ -17,6 +17,7 @@ import {
   Sparkles,
   Shield,
   Gauge,
+  AlertTriangle,
 } from "lucide-react";
 
 import {
@@ -81,6 +82,14 @@ const sections = [
     icon: Shield,
     subsections: [
       { id: "interventions", title: "Interventions & Management", icon: Shield },
+    ],
+  },
+  {
+    id: "drop-attacks-group",
+    title: "Drop Attacks",
+    icon: AlertTriangle,
+    subsections: [
+      { id: "drop-attacks", title: "Drop Attacks Workup", icon: AlertTriangle },
     ],
   },
 ];
