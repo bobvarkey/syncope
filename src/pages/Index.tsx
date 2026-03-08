@@ -31,6 +31,7 @@ import AIDiagnosisSection from "@/components/questionnaire/AIDiagnosisSection";
 import LabTestsSection from "@/components/questionnaire/LabTestsSection";
 import AutonomicTestingSection from "@/components/questionnaire/AutonomicTestingSection";
 import InterventionsSection from "@/components/questionnaire/InterventionsSection";
+import DropAttacksSection from "@/components/questionnaire/DropAttacksSection";
 import { exportToPDF, exportToWord } from "@/utils/exportUtils";
 import {
   DropdownMenu,
@@ -61,6 +62,7 @@ const IndexContent = () => {
     autonomicTesting: {},
     diagnosticCriteria: {},
     interventions: {},
+    dropAttacks: {},
   });
 
   const updateSection = (section: string, data: any) => {
@@ -352,6 +354,22 @@ const IndexContent = () => {
                       <InterventionsSection 
                         data={formData.interventions} 
                         onUpdate={(data) => updateSection('interventions', data)} 
+                      />
+                    </SectionWithProgress>
+                  </div>
+                  
+                  <Separator className="my-8" />
+                  
+                  <div className="bg-accent/30 -mx-6 px-6 py-6 my-8 border-t-2 border-destructive/50">
+                    <h2 className="text-2xl font-semibold text-foreground mb-2">Drop Attacks Workup</h2>
+                    <p className="text-sm text-muted-foreground">Evaluation of sudden falls with or without loss of consciousness</p>
+                  </div>
+                  
+                  <div id="drop-attacks">
+                    <SectionWithProgress sectionId="drop-attacks" data={formData.dropAttacks}>
+                      <DropAttacksSection 
+                        data={formData.dropAttacks} 
+                        onUpdate={(data) => updateSection('dropAttacks', data)} 
                       />
                     </SectionWithProgress>
                   </div>
