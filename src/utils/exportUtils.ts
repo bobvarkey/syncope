@@ -145,6 +145,7 @@ export const exportToPDF = (formData: FormData, language: 'en' | 'ml' = 'en') =>
     { title: language === 'ml' ? 'ഡയഗ്നോസ്റ്റിക് മാനദണ്ഡങ്ങൾ' : 'Diagnostic Criteria', data: formData.diagnosticCriteria },
     { title: language === 'ml' ? 'ഓട്ടോണോമിക് ടെസ്റ്റിംഗ്' : 'Autonomic Testing (Finometer)', data: (formData as any).autonomicTesting },
     { title: language === 'ml' ? 'ഇടപെടലുകൾ' : 'Interventions & Management', data: (formData as any).interventions },
+    { title: language === 'ml' ? 'ഡ്രോപ്പ് അറ്റാക്കുകൾ' : 'Drop Attacks Workup', data: (formData as any).dropAttacks },
   ];
 
   sections.forEach(section => addSection(section.title, section.data));
@@ -201,6 +202,7 @@ export const exportToWord = async (formData: FormData, language: 'en' | 'ml' = '
     { title: language === 'ml' ? 'ഡയഗ്നോസ്റ്റിക് മാനദണ്ഡങ്ങൾ' : 'Diagnostic Criteria', data: formData.diagnosticCriteria },
     { title: language === 'ml' ? 'ഓട്ടോണോമിക് ടെസ്റ്റിംഗ്' : 'Autonomic Testing (Finometer)', data: (formData as any).autonomicTesting },
     { title: language === 'ml' ? 'ഇടപെടലുകൾ' : 'Interventions & Management', data: (formData as any).interventions },
+    { title: language === 'ml' ? 'ഡ്രോപ്പ് അറ്റാക്കുകൾ' : 'Drop Attacks Workup', data: (formData as any).dropAttacks },
   ];
 
   const nameLabel = language === 'ml' ? 'പേര്:' : 'Name:';
