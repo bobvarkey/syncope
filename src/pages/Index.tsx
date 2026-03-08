@@ -298,7 +298,18 @@ const IndexContent = () => {
                   
                   <Separator className="my-8" />
                   
-                  <div className="bg-green-50 dark:bg-green-950/20 -mx-6 px-6 py-6 my-8 border-t-2 border-green-500">
+                  <div id="autonomic-testing">
+                    <SectionWithProgress sectionId="autonomic-testing" data={formData.autonomicTesting}>
+                      <AutonomicTestingSection 
+                        data={formData.autonomicTesting} 
+                        onUpdate={(data) => updateSection('autonomicTesting', data)} 
+                      />
+                    </SectionWithProgress>
+                  </div>
+                  
+                  <Separator className="my-8" />
+                  
+                  <div className="bg-accent/30 -mx-6 px-6 py-6 my-8 border-t-2 border-primary">
                     <h2 className="text-2xl font-semibold text-foreground mb-2">Differential Diagnosis</h2>
                     <p className="text-sm text-muted-foreground">Clinical reasoning, diagnostic criteria, and AI-assisted analysis</p>
                   </div>
@@ -327,6 +338,22 @@ const IndexContent = () => {
                   
                   <div id="ai-diagnosis">
                     <AIDiagnosisSection />
+                  </div>
+                  
+                  <Separator className="my-8" />
+                  
+                  <div className="bg-accent/30 -mx-6 px-6 py-6 my-8 border-t-2 border-primary">
+                    <h2 className="text-2xl font-semibold text-foreground mb-2">Interventions & Management</h2>
+                    <p className="text-sm text-muted-foreground">Treatment plan including non-pharmacological, pharmacological, and device therapies</p>
+                  </div>
+                  
+                  <div id="interventions">
+                    <SectionWithProgress sectionId="interventions" data={formData.interventions}>
+                      <InterventionsSection 
+                        data={formData.interventions} 
+                        onUpdate={(data) => updateSection('interventions', data)} 
+                      />
+                    </SectionWithProgress>
                   </div>
                 </CardContent>
               </Card>
