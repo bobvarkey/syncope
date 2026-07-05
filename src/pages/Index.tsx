@@ -32,6 +32,8 @@ import LabTestsSection from "@/components/questionnaire/LabTestsSection";
 import AutonomicTestingSection from "@/components/questionnaire/AutonomicTestingSection";
 import InterventionsSection from "@/components/questionnaire/InterventionsSection";
 import DropAttacksSection from "@/components/questionnaire/DropAttacksSection";
+import SyncopeMedicationsSection from "@/components/questionnaire/SyncopeMedicationsSection";
+import EcgSyncopeAbcde from "@/components/questionnaire/EcgSyncopeAbcde";
 import { exportToPDF, exportToWord } from "@/utils/exportUtils";
 import {
   DropdownMenu,
@@ -63,6 +65,8 @@ const IndexContent = () => {
     diagnosticCriteria: {},
     interventions: {},
     dropAttacks: {},
+    syncopeMedications: {},
+    ecgAbcde: {},
   });
 
   const updateSection = (section: string, data: any) => {
@@ -217,6 +221,26 @@ const IndexContent = () => {
                       <ECGFindingsSection 
                         data={formData.ecgFindings} 
                         onUpdate={(data) => updateSection('ecgFindings', data)} 
+                      />
+                    </SectionWithProgress>
+                  </div>
+
+                  <Separator className="my-8" />
+
+                  <div id="ecg-abcde">
+                    <EcgSyncopeAbcde
+                      data={formData.ecgAbcde}
+                      onUpdate={(data) => updateSection('ecgAbcde', data)}
+                    />
+                  </div>
+
+                  <Separator className="my-8" />
+
+                  <div id="syncope-medications">
+                    <SectionWithProgress sectionId="syncope-medications" data={formData.syncopeMedications}>
+                      <SyncopeMedicationsSection
+                        data={formData.syncopeMedications}
+                        onUpdate={(data) => updateSection('syncopeMedications', data)}
                       />
                     </SectionWithProgress>
                   </div>

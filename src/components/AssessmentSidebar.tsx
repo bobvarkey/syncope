@@ -18,6 +18,7 @@ import {
   Shield,
   Gauge,
   AlertTriangle,
+  Pill,
 } from "lucide-react";
 
 import {
@@ -56,6 +57,8 @@ const sections = [
     icon: TestTube,
     subsections: [
       { id: "ecg-findings", title: "ECG Findings", icon: Activity },
+      { id: "ecg-abcde", title: "ECG ABCDE Screen", icon: Activity },
+      { id: "syncope-medications", title: "Medications & Syncope", icon: Pill },
       { id: "lab-tests", title: "Laboratory Tests", icon: TestTube },
       { id: "initial-evaluation", title: "Initial Evaluation", icon: Stethoscope },
       { id: "tilt-test", title: "Tilt Test Protocol", icon: TrendingUp },
