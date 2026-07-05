@@ -169,7 +169,12 @@ const EcgSyncopeAbcde = ({ data, onUpdate }: EcgSyncopeAbcdeProps) => {
     }
   };
 
-  const reset = () => onUpdate({ selectedPatterns: {} });
+  const reset = () => {
+    onUpdate({ selectedPatterns: {}, uploadedImage: null, aiRationale: "", aiConfidence: "" });
+    setUploadedImage(null);
+    setAiRationale("");
+    setAiConfidence("");
+  };
 
   const riskLabel = {
     high: { text: "High-risk ECG pattern", className: "bg-destructive/15 text-destructive border-destructive/50" },
