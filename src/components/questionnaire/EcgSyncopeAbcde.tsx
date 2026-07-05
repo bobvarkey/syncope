@@ -202,6 +202,71 @@ const EcgSyncopeAbcde = ({ data, onUpdate }: EcgSyncopeAbcdeProps) => {
       </CardHeader>
 
       <CardContent className="space-y-4">
+        {/* Upload / AI auto-detect */}
+        <div className="rounded-lg border border-dashed p-3 bg-muted/20 space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <Label className="text-sm font-medium flex items-center gap-2">
+                <ImageIcon className="h-4 w-4 text-primary" />
+                Auto-detect from ECG image
+              </Label>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Upload a 12-lead ECG photo or scan. AI will pre-select matching patterns for your review.
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                className="hidden"
+                onChange={onFileChange}
+              />
+              <Button
+                size="sm"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={analyzing}
+              >
+                {analyzing ? (
+                  <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Analyzing…</>
+                ) : (
+                  <><Upload className="h-3.5 w-3.5" /> Upload ECG</>
+                )}
+              </Button>
+            </div>
+          </div>
+
+          {uploadedImage && (
+            <div className="grid gap-3 md:grid-cols-[1fr_1fr] items-start">
+              <div className="rounded-md border overflow-hidden bg-background">
+                <img
+                  src={uploadedImage}
+                  alt="Uploaded ECG"
+                  className="w-full h-auto max-h-48 object-contain"
+                />
+              </div>
+              {(aiRationale || aiConfidence) && (
+                <div className="text-xs space-y-1.5">
+                  {aiConfidence && (
+                    <Badge variant="outline" className="text-[10px] uppercase tracking-wider">
+                      AI confidence: {aiConfidence}
+                    </Badge>
+                  )}
+                  {aiRationale && (
+                    <p className="text-muted-foreground leading-snug">
+                      <span className="font-medium text-foreground">AI note: </span>{aiRationale}
+                    </p>
+                  )}
+                  <p className="text-[11px] text-muted-foreground italic pt-1">
+                    Always verify AI-detected patterns before acting on them.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
         <div className="grid gap-3 lg:grid-cols-[2fr_1.5fr]">
           {/* Pattern grid */}
           <div>
