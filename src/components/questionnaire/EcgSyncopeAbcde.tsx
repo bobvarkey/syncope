@@ -1,12 +1,13 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { Activity, Copy, RotateCcw, CheckCircle2, AlertTriangle } from "lucide-react";
+import { Activity, Copy, RotateCcw, CheckCircle2, AlertTriangle, Upload, Loader2, ImageIcon } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 
 /**
  * ABCDE-Left-Right mnemonic for high-risk ECG patterns in syncope.
@@ -46,11 +47,77 @@ interface EcgSyncopeAbcdeProps {
 
 const EcgSyncopeAbcde = ({ data, onUpdate }: EcgSyncopeAbcdeProps) => {
   const selected = data.selectedPatterns || {};
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadedImage, setUploadedImage] = useState<string | null>(data.uploadedImage || null);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [aiRationale, setAiRationale] = useState<string>(data.aiRationale || "");
+  const [aiConfidence, setAiConfidence] = useState<string>(data.aiConfidence || "");
 
   const togglePattern = (id: string) => {
     onUpdate({
       selectedPatterns: { ...selected, [id]: !selected[id] },
     });
+  };
+
+  const fileToDataUrl = (file: File): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+  const analyzeEcg = async (file: File) => {
+    if (file.size > 8 * 1024 * 1024) {
+      toast({ title: "Image too large", description: "Please use an image under 8 MB.", variant: "destructive" });
+      return;
+    }
+    setAnalyzing(true);
+    try {
+      const dataUrl = await fileToDataUrl(file);
+      setUploadedImage(dataUrl);
+
+      const { data: result, error } = await supabase.functions.invoke("ecg-analyze", {
+        body: { imageDataUrl: dataUrl },
+      });
+
+      if (error) throw error;
+      if (result?.error) throw new Error(result.error);
+
+      if (result?.isEcg === false) {
+        toast({ title: "Not recognised as ECG", description: "The image doesn't look like an ECG trace.", variant: "destructive" });
+        setAnalyzing(false);
+        return;
+      }
+
+      const detected: string[] = Array.isArray(result?.detectedPatterns) ? result.detectedPatterns : [];
+      const nextSelected: Record<string, boolean> = { ...selected };
+      detected.forEach((id) => { nextSelected[id] = true; });
+
+      onUpdate({
+        selectedPatterns: nextSelected,
+        uploadedImage: dataUrl,
+        aiRationale: result?.rationale || "",
+        aiConfidence: result?.confidence || "moderate",
+      });
+      setAiRationale(result?.rationale || "");
+      setAiConfidence(result?.confidence || "moderate");
+
+      toast({
+        title: detected.length > 0 ? `Detected ${detected.length} pattern${detected.length === 1 ? "" : "s"}` : "No high-risk patterns detected",
+        description: result?.rationale || undefined,
+      });
+    } catch (err: any) {
+      toast({ title: "ECG analysis failed", description: err?.message || "Please try again.", variant: "destructive" });
+    } finally {
+      setAnalyzing(false);
+    }
+  };
+
+  const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) analyzeEcg(file);
+    e.target.value = ""; // allow re-selecting the same file
   };
 
   const activePatterns = useMemo(
@@ -102,7 +169,12 @@ const EcgSyncopeAbcde = ({ data, onUpdate }: EcgSyncopeAbcdeProps) => {
     }
   };
 
-  const reset = () => onUpdate({ selectedPatterns: {} });
+  const reset = () => {
+    onUpdate({ selectedPatterns: {}, uploadedImage: null, aiRationale: "", aiConfidence: "" });
+    setUploadedImage(null);
+    setAiRationale("");
+    setAiConfidence("");
+  };
 
   const riskLabel = {
     high: { text: "High-risk ECG pattern", className: "bg-destructive/15 text-destructive border-destructive/50" },
@@ -130,6 +202,71 @@ const EcgSyncopeAbcde = ({ data, onUpdate }: EcgSyncopeAbcdeProps) => {
       </CardHeader>
 
       <CardContent className="space-y-4">
+        {/* Upload / AI auto-detect */}
+        <div className="rounded-lg border border-dashed p-3 bg-muted/20 space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <Label className="text-sm font-medium flex items-center gap-2">
+                <ImageIcon className="h-4 w-4 text-primary" />
+                Auto-detect from ECG image
+              </Label>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Upload a 12-lead ECG photo or scan. AI will pre-select matching patterns for your review.
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                className="hidden"
+                onChange={onFileChange}
+              />
+              <Button
+                size="sm"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={analyzing}
+              >
+                {analyzing ? (
+                  <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Analyzing…</>
+                ) : (
+                  <><Upload className="h-3.5 w-3.5" /> Upload ECG</>
+                )}
+              </Button>
+            </div>
+          </div>
+
+          {uploadedImage && (
+            <div className="grid gap-3 md:grid-cols-[1fr_1fr] items-start">
+              <div className="rounded-md border overflow-hidden bg-background">
+                <img
+                  src={uploadedImage}
+                  alt="Uploaded ECG"
+                  className="w-full h-auto max-h-48 object-contain"
+                />
+              </div>
+              {(aiRationale || aiConfidence) && (
+                <div className="text-xs space-y-1.5">
+                  {aiConfidence && (
+                    <Badge variant="outline" className="text-[10px] uppercase tracking-wider">
+                      AI confidence: {aiConfidence}
+                    </Badge>
+                  )}
+                  {aiRationale && (
+                    <p className="text-muted-foreground leading-snug">
+                      <span className="font-medium text-foreground">AI note: </span>{aiRationale}
+                    </p>
+                  )}
+                  <p className="text-[11px] text-muted-foreground italic pt-1">
+                    Always verify AI-detected patterns before acting on them.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
         <div className="grid gap-3 lg:grid-cols-[2fr_1.5fr]">
           {/* Pattern grid */}
           <div>
