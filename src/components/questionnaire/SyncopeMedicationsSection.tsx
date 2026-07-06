@@ -202,7 +202,130 @@ const drugGroups: DrugGroup[] = [
   },
 ];
 
+interface InteractionRule {
+  id: string;
+  title: string;
+  severity: "high" | "moderate";
+  drugs: string[]; // drug ids that must ALL be active
+  message: string;
+}
+
+const interactionRules: InteractionRule[] = [
+  {
+    id: "bb-nondhp",
+    title: "Beta-blocker + Non-DHP CCB",
+    severity: "high",
+    drugs: ["__ANY_BB__", "__ANY_NONDHP__"],
+    message:
+      "Combined negative chronotropic and dromotropic effect — high risk of severe bradycardia and AV block.",
+  },
+  {
+    id: "bb-nondhp-dig",
+    title: "Beta-blocker + Non-DHP CCB + Digoxin",
+    severity: "high",
+    drugs: ["__ANY_BB__", "__ANY_NONDHP__", "digoxin"],
+    message:
+      "Triple AV-nodal blockade — very high risk of high-grade AV block, bradyarrhythmia, and syncope. Review urgently.",
+  },
+  {
+    id: "bb-ivabradine",
+    title: "Beta-blocker + Ivabradine",
+    severity: "moderate",
+    drugs: ["__ANY_BB__", "ivabradine"],
+    message: "Additive sinus node suppression — monitor for symptomatic bradycardia.",
+  },
+  {
+    id: "amio-sotalol",
+    title: "Amiodarone + Sotalol / other QT drugs",
+    severity: "high",
+    drugs: ["__QT_TWO__"],
+    message:
+      "Two or more QT-prolonging agents combined — increased torsades de pointes risk. Check QTc and electrolytes.",
+  },
+  {
+    id: "qt-macrolide-antipsych",
+    title: "QT drug + Macrolide/Fluoroquinolone",
+    severity: "high",
+    drugs: ["__QT_ONE__", "__ABX_QT__"],
+    message: "Antibiotic-driven QT prolongation on top of baseline QT drug — consider alternative antimicrobial.",
+  },
+  {
+    id: "nitrate-pde5",
+    title: "Nitrate + PDE-5 inhibitor",
+    severity: "high",
+    drugs: ["__ANY_NITRATE__", "amp-pde5"],
+    message: "Profound vasodilation and syncope risk — contraindicated combination.",
+  },
+  {
+    id: "diuretic-vasodilator",
+    title: "Diuretic + ACEi/ARB or α-blocker",
+    severity: "moderate",
+    drugs: ["__ANY_DIURETIC__", "__ANY_VASO__"],
+    message: "Volume depletion plus vasodilation — orthostatic hypotension likely, especially in the elderly.",
+  },
+  {
+    id: "clonidine-bb",
+    title: "Clonidine/Methyldopa + Beta-blocker",
+    severity: "moderate",
+    drugs: ["__ANY_CENTRAL__", "__ANY_BB__"],
+    message: "Additive bradycardia; rebound hypertension risk if clonidine abruptly withdrawn.",
+  },
+  {
+    id: "triple-antihtn",
+    title: "≥3 antihypertensive/vasodilator agents",
+    severity: "moderate",
+    drugs: ["__VASO_THREE__"],
+    message: "Polypharmacy hypotension risk — check standing BP and consider deprescribing.",
+  },
+];
+
+const drugSets = {
+  BB: ["metoprolol", "bisoprolol", "atenolol", "propranolol", "carvedilol", "nadolol"],
+  NONDHP: ["verapamil", "diltiazem"],
+  QT: [
+    "amiodarone", "sotalol", "quinidine", "procainamide", "flecainide", "propafenone",
+    "dofetilide", "ibutilide", "haloperidol", "chlorpromazine", "fluphenazine",
+    "quetiapine", "risperidone", "olanzapine", "amitriptyline", "imipramine",
+    "citalopram", "escitalopram", "venlafaxine", "ondansetron", "domperidone",
+  ],
+  ABX_QT: ["erythromycin", "clarithromycin", "moxifloxacin", "levofloxacin"],
+  NITRATE: ["nitroglycerin", "isosorbide"],
+  DIURETIC: ["furosemide", "bumetanide", "torsemide", "hctz", "chlorthalidone", "indapamide"],
+  VASO: [
+    "amlodipine", "nifedipine", "felodipine", "enalapril", "lisinopril", "ramipril",
+    "losartan", "valsartan", "candesartan", "prazosin", "doxazosin", "terazosin",
+    "tamsulosin", "nitroglycerin", "isosorbide",
+  ],
+  CENTRAL: ["clonidine", "methyldopa", "guanfacine"],
+};
+
+function evaluateRule(rule: InteractionRule, data: any): boolean {
+  const activeIn = (ids: string[]) => ids.filter((id) => data[id]).length;
+  const anyIn = (ids: string[]) => ids.some((id) => data[id]);
+
+  return rule.drugs.every((token) => {
+    switch (token) {
+      case "__ANY_BB__": return anyIn(drugSets.BB);
+      case "__ANY_NONDHP__": return anyIn(drugSets.NONDHP);
+      case "__QT_ONE__": return anyIn(drugSets.QT);
+      case "__QT_TWO__": return activeIn(drugSets.QT) >= 2;
+      case "__ABX_QT__": return anyIn(drugSets.ABX_QT);
+      case "__ANY_NITRATE__": return anyIn(drugSets.NITRATE);
+      case "__ANY_DIURETIC__": return anyIn(drugSets.DIURETIC);
+      case "__ANY_VASO__": return anyIn(drugSets.VASO);
+      case "__ANY_CENTRAL__": return anyIn(drugSets.CENTRAL);
+      case "__VASO_THREE__": return activeIn(drugSets.VASO) >= 3;
+      default: return !!data[token];
+    }
+  });
+}
+
 const SyncopeMedicationsSection = ({ data, onUpdate }: SyncopeMedicationsSectionProps) => {
+  const activeInteractions = useMemo(
+    () => interactionRules.filter((r) => evaluateRule(r, data)),
+    [data]
+  );
+
   const mechanismCounts = useMemo(() => {
     const counts: Record<Mechanism, number> = { brady: 0, qt: 0, hypotension: 0, autonomic: 0, idiosyncratic: 0 };
     drugGroups.forEach((g) =>
