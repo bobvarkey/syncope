@@ -35,6 +35,7 @@ import DropAttacksSection from "@/components/questionnaire/DropAttacksSection";
 import SyncopeMedicationsSection from "@/components/questionnaire/SyncopeMedicationsSection";
 import EcgSyncopeAbcde from "@/components/questionnaire/EcgSyncopeAbcde";
 import { exportToPDF, exportToWord } from "@/utils/exportUtils";
+import heroImage from "@/assets/syncdx-hero.png.asset.json";
 import {
   DropdownMenu,
   DropdownMenuContent,
