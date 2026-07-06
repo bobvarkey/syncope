@@ -318,6 +318,19 @@ const EcgSyncopeAbcde = ({ data, onUpdate }: EcgSyncopeAbcdeProps) => {
                       </Badge>
                     </div>
                     <p className="mt-2 text-xs text-muted-foreground leading-snug">{p.description}</p>
+                    {patternImages[p.id] && (
+                      <figure className="mt-2 rounded-md border overflow-hidden bg-background">
+                        <img
+                          src={patternImages[p.id].src}
+                          alt={`${p.name} representative ECG`}
+                          loading="lazy"
+                          className="w-full h-auto max-h-40 object-contain"
+                        />
+                        <figcaption className="px-2 py-1 text-[10px] text-muted-foreground leading-snug border-t bg-muted/30">
+                          {patternImages[p.id].caption}
+                        </figcaption>
+                      </figure>
+                    )}
                     <div className="mt-2 flex items-center gap-2 text-xs">
                       <Checkbox checked={isSelected} tabIndex={-1} aria-hidden />
                       <span className="text-muted-foreground">
