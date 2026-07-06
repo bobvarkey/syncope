@@ -35,6 +35,7 @@ import DropAttacksSection from "@/components/questionnaire/DropAttacksSection";
 import SyncopeMedicationsSection from "@/components/questionnaire/SyncopeMedicationsSection";
 import EcgSyncopeAbcde from "@/components/questionnaire/EcgSyncopeAbcde";
 import { exportToPDF, exportToWord } from "@/utils/exportUtils";
+import heroImage from "@/assets/syncdx-hero.png.asset.json";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -125,7 +126,16 @@ const IndexContent = () => {
 
           <div className="py-8 px-4 sm:px-6 lg:px-8">
             <div className="max-w-4xl mx-auto">
+              <section aria-label="SyncDx introduction" className="mb-8 rounded-xl overflow-hidden border shadow-sm bg-card">
+                <img
+                  src={heroImage.url}
+                  alt="SyncDx – simplifies the evaluation of syncope or loss of consciousness in the OPD"
+                  className="w-full h-auto object-cover"
+                  loading="eager"
+                />
+              </section>
               <AssessmentDashboard />
+
               
               <Card className="mb-6">
                 <CardHeader>
