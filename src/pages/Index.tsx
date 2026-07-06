@@ -34,6 +34,7 @@ import InterventionsSection from "@/components/questionnaire/InterventionsSectio
 import DropAttacksSection from "@/components/questionnaire/DropAttacksSection";
 import SyncopeMedicationsSection from "@/components/questionnaire/SyncopeMedicationsSection";
 import EcgSyncopeAbcde from "@/components/questionnaire/EcgSyncopeAbcde";
+import SyncopeMiniApp from "@/components/questionnaire/SyncopeMiniApp";
 import { exportToPDF, exportToWord } from "@/utils/exportUtils";
 import heroImage from "@/assets/syncdx-hero.png.asset.json";
 import {
