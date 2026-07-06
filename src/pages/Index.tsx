@@ -135,6 +135,10 @@ const IndexContent = () => {
                   loading="eager"
                 />
               </section>
+              <div id="syncope-mini-app" className="mb-8">
+                <SyncopeMiniApp />
+              </div>
+
               <AssessmentDashboard />
 
               
