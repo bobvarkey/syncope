@@ -379,6 +379,54 @@ const SyncopeMedicationsSection = ({ data, onUpdate }: SyncopeMedicationsSection
         )}
       </div>
 
+      {/* Interaction warnings */}
+      {activeInteractions.length > 0 && (
+        <div className="border rounded-lg p-4 space-y-3 bg-destructive/5 border-destructive/30">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="h-5 w-5 text-destructive" />
+            <h4 className="font-semibold text-foreground">
+              Medication Interaction Warnings ({activeInteractions.length})
+            </h4>
+          </div>
+          <div className="space-y-2">
+            {activeInteractions.map((rule) => (
+              <Alert
+                key={rule.id}
+                className={
+                  rule.severity === "high"
+                    ? "border-destructive/50 bg-destructive/10"
+                    : "border-amber-500/50 bg-amber-500/10"
+                }
+              >
+                <AlertTriangle
+                  className={`h-4 w-4 ${rule.severity === "high" ? "text-destructive" : "text-amber-500"}`}
+                />
+                <AlertTitle className="flex items-center gap-2">
+                  {rule.title}
+                  <Badge
+                    variant="outline"
+                    className={
+                      rule.severity === "high"
+                        ? "text-[10px] border-destructive/50 text-destructive"
+                        : "text-[10px] border-amber-500/50 text-amber-500"
+                    }
+                  >
+                    {rule.severity === "high" ? "High risk" : "Moderate"}
+                  </Badge>
+                </AlertTitle>
+                <AlertDescription>{rule.message}</AlertDescription>
+              </Alert>
+            ))}
+          </div>
+          <div className="text-xs text-muted-foreground pt-1 border-t border-destructive/20">
+            <strong>Combined syncope risk:</strong>{" "}
+            {activeInteractions.some((r) => r.severity === "high")
+              ? "HIGH — multiple interacting agents significantly elevate arrhythmic and/or hypotensive syncope risk. Prioritise medication review."
+              : "ELEVATED — overlapping mechanisms may contribute to syncope. Reassess necessity and dosing."}
+          </div>
+        </div>
+      )}
+
       {/* Drug groups */}
       {drugGroups.map((group) => (
         <div key={group.id} className="border rounded-lg p-4 space-y-3">
