@@ -8,6 +8,19 @@ import { Activity, Copy, RotateCcw, CheckCircle2, AlertTriangle, Upload, Loader2
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import brugadaImage from "@/assets/brugada-types.jpeg.asset.json";
+import epsilonImage from "@/assets/epsilon-wave-arvd.png.asset.json";
+
+const patternImages: Record<string, { src: string; caption: string }> = {
+  brugada: {
+    src: brugadaImage.url,
+    caption: "Brugada types 1–3: coved (type 1, diagnostic) and saddleback (types 2/3) ST elevation in V1–V3.",
+  },
+  "epsilon-arvc": {
+    src: epsilonImage.url,
+    caption: "Epsilon wave: small terminal deflection at end of QRS in V1 — ARVC/ARVD.",
+  },
+};
 
 /**
  * ABCDE-Left-Right mnemonic for high-risk ECG patterns in syncope.
