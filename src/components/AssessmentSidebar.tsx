@@ -106,12 +106,23 @@ const sections = [
     id: "drop-attacks-group",
     title: "Drop Attacks",
     icon: AlertTriangle,
-    color: "text-[hsl(0_85%_60%)]", // red
+    color: "text-[hsl(0_85%_60%)]",
     subsections: [
       { id: "drop-attacks", title: "Drop Attacks Workup", icon: AlertTriangle, color: "text-[hsl(0_85%_60%)]" },
     ],
   },
+  {
+    id: "pharmacology",
+    title: "Pharmacology",
+    icon: Pill,
+    color: "text-[hsl(280_75%_60%)]",
+    subsections: [
+      { id: "anti-arrhythmics", title: "Anti-arrhythmic Drugs — Vaughan-Williams", icon: Pill, color: "text-[hsl(280_75%_60%)]" },
+    ],
+  },
 ];
+
+const STORAGE_KEY = "assessment-sidebar-open-groups";
 
 export function AssessmentSidebar() {
   const { state } = useSidebar();
