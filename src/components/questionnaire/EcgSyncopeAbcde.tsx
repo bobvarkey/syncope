@@ -324,7 +324,7 @@ const EcgSyncopeAbcde = ({ data, onUpdate }: EcgSyncopeAbcdeProps) => {
                           src={patternImages[p.id].src}
                           alt={`${p.name} representative ECG`}
                           loading="lazy"
-                          className="w-full h-auto max-h-40 object-contain"
+                          className="media-uniform-contain"
                         />
                         <figcaption className="px-2 py-1 text-[10px] text-muted-foreground leading-snug border-t bg-muted/30">
                           {patternImages[p.id].caption}
