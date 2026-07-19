@@ -1,0 +1,3 @@
+/* Info.plist localizable keys. Add matching *.lproj copies before submission. */
+"CFBundleDisplayName" = "MedCalc";
+"NSHumanReadableCopyright" = "© MedCalc. Educational use only.";

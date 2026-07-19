@@ -1,0 +1,27 @@
+/* MedCalc — English base strings */
+"app.name" = "MedCalc";
+"app.disclaimer" = "This app is for informational and educational purposes only and does not provide medical diagnosis, treatment, or emergency advice.";
+"app.consult" = "Always consult a qualified clinician before acting on any result.";
+
+"tab.home" = "Home";
+"tab.calculators" = "Calculators";
+"tab.history" = "History";
+"tab.settings" = "Settings";
+
+"action.calculate" = "Calculate";
+"action.backToTop" = "Back to top";
+"action.backToHome" = "Back to home";
+"action.clear" = "Clear";
+
+"sidebar.search.placeholder" = "Search sections";
+"sidebar.empty" = "No sections match your search.";
+
+"history.empty.title" = "No calculations yet";
+"history.empty.body" = "Run your first calculation to see it here.";
+
+"settings.privacy" = "Privacy Policy";
+"settings.support" = "Contact Support";
+"settings.theme" = "Appearance";
+"settings.about" = "About MedCalc";
+
+"result.interpretation" = "Interpretation (optional)";
