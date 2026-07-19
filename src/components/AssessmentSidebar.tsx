@@ -278,7 +278,7 @@ export function AssessmentSidebar() {
                               <SidebarMenuButton
                                 onClick={() => scrollToSection(subsection.id)}
                                 className={cn(
-                                  "cursor-pointer transition-colors w-full",
+                                  "cursor-pointer transition-colors w-full text-sm py-2 h-auto",
                                   active && "bg-primary/10 text-primary font-medium"
                                 )}
                               >
@@ -287,7 +287,7 @@ export function AssessmentSidebar() {
                                   strokeWidth={active ? 2.5 : 2}
                                 />
                                 {!collapsed && (
-                                  <span className="flex-1">{subsection.title}</span>
+                                  <span className="flex-1 leading-snug">{subsection.title}</span>
                                 )}
                                 {!collapsed && progress > 0 && (
                                   <span className="text-xs text-muted-foreground ml-auto">
