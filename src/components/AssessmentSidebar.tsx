@@ -20,6 +20,8 @@ import {
   AlertTriangle,
   Pill,
   ChevronDown,
+  Search,
+  X,
 } from "lucide-react";
 
 import {
