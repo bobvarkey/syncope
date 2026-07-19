@@ -38,3 +38,31 @@ Reusable primitives live in `UI/DesignSystem/DesignSystem.swift`:
 Every result screen and onboarding screen shows `DisclaimerBanner`:
 > This app is for informational and educational purposes only and does not
 > provide medical diagnosis, treatment, or emergency advice.
+
+## Compliance artifacts (this folder)
+- `Resources/PrivacyInfo.xcprivacy` — required-reason API declarations (UserDefaults only).
+- `Resources/en.lproj/Localizable.strings`, `Resources/ar.lproj/Localizable.strings` — base + RTL locale.
+- `Resources/InfoPlist.strings` — localizable Info.plist keys.
+- `Resources/SupportInfo.md` — Support / Privacy Policy URL placeholders and Privacy Nutrition Label answers.
+- `AppReviewNotes.md` — paste into App Store Connect → App Review Information.
+- `ReleaseChecklist.md` — pre-archive / post-submission checklist.
+
+## Xcode target setup for compliance files
+1. Drag `Resources/` into the Xcode project (**Copy items if needed**, target = `MedCalc`).
+2. Confirm `PrivacyInfo.xcprivacy` appears under **Build Phases → Copy Bundle Resources**.
+3. Project → Info → **Localizations** → add every locale that has an `*.lproj` folder.
+4. Info.plist → `ITSAppUsesNonExemptEncryption = NO` (uses only Apple TLS).
+5. Info.plist → `CFBundleDisplayName = MedCalc`.
+
+## What is intentionally **not** here
+- No RevenueCat, no Razorpay, no StoreKit, no IAP, no paywall.
+- No visible sign-in flow. (Optional Firebase Anonymous Auth can be added later
+  behind a hidden Settings toggle; if you do, update the privacy manifest,
+  `SupportInfo.md`, and App Store Connect privacy answers together.)
+- No analytics or third-party SDKs.
+
+## Risks / open items
+- Placeholder URLs in `SupportInfo.md` must be replaced before submission.
+- Arabic strings are machine-quality placeholders — review with a native medical translator.
+- AppIcon set is not included; ship a real 1024×1024 icon (no alpha).
+

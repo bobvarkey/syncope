@@ -1,0 +1,28 @@
+/* MedCalc — Arabic (RTL smoke-test locale). Translations are placeholders and
+   must be reviewed by a native medical translator before shipping this locale. */
+"app.name" = "ميدكالك";
+"app.disclaimer" = "هذا التطبيق لأغراض تعليمية وإعلامية فقط، ولا يقدم تشخيصًا أو علاجًا أو نصائح طارئة.";
+"app.consult" = "استشر دائمًا طبيبًا مؤهلًا قبل التصرف بناءً على أي نتيجة.";
+
+"tab.home" = "الرئيسية";
+"tab.calculators" = "الحاسبات";
+"tab.history" = "السجل";
+"tab.settings" = "الإعدادات";
+
+"action.calculate" = "احسب";
+"action.backToTop" = "العودة إلى الأعلى";
+"action.backToHome" = "العودة إلى الرئيسية";
+"action.clear" = "مسح";
+
+"sidebar.search.placeholder" = "ابحث في الأقسام";
+"sidebar.empty" = "لا توجد أقسام مطابقة.";
+
+"history.empty.title" = "لا توجد عمليات حسابية بعد";
+"history.empty.body" = "أجرِ أول عملية حسابية لتظهر هنا.";
+
+"settings.privacy" = "سياسة الخصوصية";
+"settings.support" = "تواصل مع الدعم";
+"settings.theme" = "المظهر";
+"settings.about" = "حول ميدكالك";
+
+"result.interpretation" = "التفسير (اختياري)";
