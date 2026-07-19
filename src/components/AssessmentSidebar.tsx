@@ -247,14 +247,14 @@ export function AssessmentSidebar() {
                 <CollapsibleTrigger asChild>
                   <SidebarGroupLabel
                     className={cn(
-                      "flex items-center gap-2 cursor-pointer select-none rounded-md px-2 py-1.5",
+                      "flex items-center gap-2 cursor-pointer select-none rounded-md px-2 py-2 text-base",
                       "hover:bg-muted/60 transition-colors"
                     )}
                   >
-                    <section.icon className={cn("h-4 w-4 shrink-0", section.color)} />
+                    <section.icon className={cn("h-5 w-5 shrink-0", section.color)} />
                     {!collapsed && (
                       <>
-                        <span className="flex-1 font-medium">{section.title}</span>
+                        <span className="flex-1 font-semibold">{section.title}</span>
                         <ChevronDown
                           className={cn(
                             "h-4 w-4 text-muted-foreground transition-transform",
