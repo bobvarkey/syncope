@@ -204,7 +204,7 @@ export function AssessmentSidebar() {
     setOpenGroups((prev) => ({ ...prev, [id]: !prev[id] }));
 
   return (
-    <Sidebar className={cn("border-r", collapsed ? "w-14" : "w-64")} collapsible="icon">
+    <Sidebar className={cn("border-r", collapsed ? "w-14" : "w-72")} collapsible="icon">
       <div className="p-2 space-y-2">
         <SidebarTrigger />
         {!collapsed && (
