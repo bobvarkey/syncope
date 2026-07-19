@@ -256,7 +256,7 @@ const EcgSyncopeAbcde = ({ data, onUpdate }: EcgSyncopeAbcdeProps) => {
                 <img
                   src={uploadedImage}
                   alt="Uploaded ECG"
-                  className="w-full h-auto max-h-48 object-contain"
+                  className="media-uniform-contain"
                 />
               </div>
               {(aiRationale || aiConfidence) && (
