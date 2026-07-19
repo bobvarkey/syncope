@@ -35,6 +35,7 @@ import DropAttacksSection from "@/components/questionnaire/DropAttacksSection";
 import SyncopeMedicationsSection from "@/components/questionnaire/SyncopeMedicationsSection";
 import EcgSyncopeAbcde from "@/components/questionnaire/EcgSyncopeAbcde";
 import SyncopeMiniApp from "@/components/questionnaire/SyncopeMiniApp";
+import AntiArrhythmicsSection from "@/components/questionnaire/AntiArrhythmicsSection";
 import { exportToPDF, exportToWord } from "@/utils/exportUtils";
 import heroImage from "@/assets/syncdx-hero.png.asset.json";
 import {
@@ -259,7 +260,13 @@ const IndexContent = () => {
                       />
                     </SectionWithProgress>
                   </div>
-                  
+
+                  <Separator className="my-8" />
+
+                  <div id="anti-arrhythmics">
+                    <AntiArrhythmicsSection />
+                  </div>
+
                   <Separator className="my-8" />
                   
                   <div id="lab-tests">
