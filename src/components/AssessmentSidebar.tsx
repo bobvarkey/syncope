@@ -106,19 +106,46 @@ const sections = [
     id: "drop-attacks-group",
     title: "Drop Attacks",
     icon: AlertTriangle,
-    color: "text-[hsl(0_85%_60%)]", // red
+    color: "text-[hsl(0_85%_60%)]",
     subsections: [
       { id: "drop-attacks", title: "Drop Attacks Workup", icon: AlertTriangle, color: "text-[hsl(0_85%_60%)]" },
     ],
   },
+  {
+    id: "pharmacology",
+    title: "Pharmacology",
+    icon: Pill,
+    color: "text-[hsl(280_75%_60%)]",
+    subsections: [
+      { id: "anti-arrhythmics", title: "Anti-arrhythmic Drugs — Vaughan-Williams", icon: Pill, color: "text-[hsl(280_75%_60%)]" },
+    ],
+  },
 ];
+
+const STORAGE_KEY = "assessment-sidebar-open-groups";
 
 export function AssessmentSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const [activeSection, setActiveSection] = useState<string>("");
-  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {
+    if (typeof window === "undefined") return {};
+    try {
+      const raw = window.localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : {};
+    } catch {
+      return {};
+    }
+  });
   const [query, setQuery] = useState("");
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(openGroups));
+    } catch {
+      /* ignore quota errors */
+    }
+  }, [openGroups]);
   const { getCompletionPercentage } = useAssessmentProgress();
 
   const q = query.trim().toLowerCase();
@@ -177,7 +204,7 @@ export function AssessmentSidebar() {
     setOpenGroups((prev) => ({ ...prev, [id]: !prev[id] }));
 
   return (
-    <Sidebar className={cn("border-r", collapsed ? "w-14" : "w-64")} collapsible="icon">
+    <Sidebar className={cn("border-r", collapsed ? "w-14" : "w-72")} collapsible="icon">
       <div className="p-2 space-y-2">
         <SidebarTrigger />
         {!collapsed && (
@@ -220,14 +247,14 @@ export function AssessmentSidebar() {
                 <CollapsibleTrigger asChild>
                   <SidebarGroupLabel
                     className={cn(
-                      "flex items-center gap-2 cursor-pointer select-none rounded-md px-2 py-1.5",
+                      "flex items-center gap-2 cursor-pointer select-none rounded-md px-2 py-2 text-base",
                       "hover:bg-muted/60 transition-colors"
                     )}
                   >
-                    <section.icon className={cn("h-4 w-4 shrink-0", section.color)} />
+                    <section.icon className={cn("h-5 w-5 shrink-0", section.color)} />
                     {!collapsed && (
                       <>
-                        <span className="flex-1 font-medium">{section.title}</span>
+                        <span className="flex-1 font-semibold">{section.title}</span>
                         <ChevronDown
                           className={cn(
                             "h-4 w-4 text-muted-foreground transition-transform",
@@ -251,7 +278,7 @@ export function AssessmentSidebar() {
                               <SidebarMenuButton
                                 onClick={() => scrollToSection(subsection.id)}
                                 className={cn(
-                                  "cursor-pointer transition-colors w-full",
+                                  "cursor-pointer transition-colors w-full text-sm py-2 h-auto",
                                   active && "bg-primary/10 text-primary font-medium"
                                 )}
                               >
@@ -260,7 +287,7 @@ export function AssessmentSidebar() {
                                   strokeWidth={active ? 2.5 : 2}
                                 />
                                 {!collapsed && (
-                                  <span className="flex-1">{subsection.title}</span>
+                                  <span className="flex-1 leading-snug">{subsection.title}</span>
                                 )}
                                 {!collapsed && progress > 0 && (
                                   <span className="text-xs text-muted-foreground ml-auto">
