@@ -310,7 +310,7 @@ export function AssessmentSidebar() {
                                   strokeWidth={active ? 2.5 : 2}
                                 />
                                 {!collapsed && (
-                                  <span className="flex-1 leading-snug">{subsection.title}</span>
+                                  <span className="flex-1 leading-snug">{highlight(subsection.title)}</span>
                                 )}
                                 {!collapsed && progress > 0 && (
                                   <span className="text-xs text-muted-foreground ml-auto">
