@@ -20,6 +20,8 @@ import {
   AlertTriangle,
   Pill,
   ChevronDown,
+  Search,
+  X,
 } from "lucide-react";
 
 import {
@@ -40,6 +42,8 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { Progress } from "@/components/ui/progress";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { useAssessmentProgress } from "@/contexts/AssessmentProgressContext";
 import { cn } from "@/lib/utils";
 
@@ -114,7 +118,23 @@ export function AssessmentSidebar() {
   const collapsed = state === "collapsed";
   const [activeSection, setActiveSection] = useState<string>("");
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
+  const [query, setQuery] = useState("");
   const { getCompletionPercentage } = useAssessmentProgress();
+
+  const q = query.trim().toLowerCase();
+  const filteredSections = q
+    ? sections
+        .map((s) => {
+          const sectionMatch = s.title.toLowerCase().includes(q);
+          const subs = s.subsections.filter((sub) =>
+            sub.title.toLowerCase().includes(q)
+          );
+          if (sectionMatch) return s; // keep all subs
+          if (subs.length) return { ...s, subsections: subs };
+          return null;
+        })
+        .filter(Boolean) as typeof sections
+    : sections;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -158,13 +178,42 @@ export function AssessmentSidebar() {
 
   return (
     <Sidebar className={cn("border-r", collapsed ? "w-14" : "w-64")} collapsible="icon">
-      <div className="p-2">
+      <div className="p-2 space-y-2">
         <SidebarTrigger />
+        {!collapsed && (
+          <div className="relative">
+            <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+            <Input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search sections…"
+              className="h-8 pl-8 pr-8 text-sm"
+              aria-label="Search sections"
+            />
+            {query && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => setQuery("")}
+                className="absolute right-0.5 top-1/2 -translate-y-1/2 h-7 w-7"
+                aria-label="Clear search"
+              >
+                <X className="h-3.5 w-3.5" />
+              </Button>
+            )}
+          </div>
+        )}
       </div>
 
       <SidebarContent>
-        {sections.map((section) => {
-          const isOpen = !!openGroups[section.id];
+        {filteredSections.length === 0 && !collapsed && (
+          <div className="px-3 py-6 text-sm text-muted-foreground text-center">
+            No sections match "{query}"
+          </div>
+        )}
+        {filteredSections.map((section) => {
+          const isOpen = q ? true : !!openGroups[section.id];
           return (
             <SidebarGroup key={section.id}>
               <Collapsible open={isOpen} onOpenChange={() => toggleGroup(section.id)}>
