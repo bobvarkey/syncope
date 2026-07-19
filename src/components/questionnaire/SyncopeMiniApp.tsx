@@ -262,51 +262,74 @@ export default function SyncopeMiniApp() {
           </div>
         </Panel>
 
-        <div className="lg:col-span-12 grid gap-5 xl:grid-cols-3">
-          <div className={`rounded-3xl border p-5 shadow-lg xl:col-span-1 ${tone}`}>
-            <div className="text-xs font-semibold uppercase tracking-[0.22em]">Disposition</div>
-            <div className="mt-2 text-3xl font-bold capitalize">{r.badge}</div>
-            <div className="mt-2 text-sm">{r.reason}</div>
-            <ul className="mt-4 list-disc space-y-2 pl-5 text-sm">
-              {r.advice.map((a) => (
-                <li key={a}>{a}</li>
-              ))}
-            </ul>
-            <div className="mt-5 flex gap-2">
-              <button
-                onClick={copy}
-                className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white"
-              >
-                <Download size={16} />
-                Copy
-              </button>
-              <button
-                onClick={() => window.print()}
-                className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-800"
-              >
-                <Printer size={16} />
-                Print
-              </button>
-            </div>
-          </div>
+        <div className="lg:col-span-12 space-y-3">
+          <div className={`rounded-3xl border shadow-lg ${tone}`}>
+            <button
+              type="button"
+              onClick={() => setShowInterpretation((v) => !v)}
+              className="w-full flex items-center justify-between gap-3 p-5 text-left"
+              aria-expanded={showInterpretation}
+            >
+              <div className="flex-1">
+                <div className="text-xs font-semibold uppercase tracking-[0.22em] opacity-80">Interpretation (optional)</div>
+                <div className="mt-1 text-2xl font-bold capitalize">{r.badge}</div>
+                <div className="text-xs mt-0.5 opacity-90">{showInterpretation ? "Tap to hide" : "Tap to review advice, disposition, and how to use"}</div>
+              </div>
+              <ChevronDown
+                size={20}
+                className={`shrink-0 transition-transform ${showInterpretation ? "rotate-180" : ""}`}
+              />
+            </button>
 
-          <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-lg xl:col-span-2">
-            <h3 className="text-lg font-semibold">How to use</h3>
-            <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm text-slate-700">
-              <li>Confirm true syncope with spontaneous recovery.</li>
-              <li>Check ECG and red flags first.</li>
-              <li>Measure standing BP within 3 minutes.</li>
-              <li>Look for classic vasovagal triggers or prodrome.</li>
-            </ol>
-            <p className="mt-4 text-sm text-slate-500">
-              Orthostatic hypotension is flagged when SBP drops by at least 20 mmHg or DBP by at least 10 mmHg on standing.
-            </p>
+            {showInterpretation && (
+              <div className="px-5 pb-5 border-t border-current/10 pt-4 grid gap-5 xl:grid-cols-3">
+                <div className="xl:col-span-1">
+                  <div className="text-xs font-semibold uppercase tracking-wider opacity-80 mb-1">Disposition</div>
+                  <div className="text-sm">{r.reason}</div>
+                  <ul className="mt-3 list-disc space-y-2 pl-5 text-sm">
+                    {r.advice.map((a) => (
+                      <li key={a}>{a}</li>
+                    ))}
+                  </ul>
+                  <div className="mt-4 flex gap-2 flex-wrap">
+                    <button
+                      onClick={copy}
+                      className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white"
+                    >
+                      <Download size={16} />
+                      Copy
+                    </button>
+                    <button
+                      onClick={() => window.print()}
+                      className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-800"
+                    >
+                      <Printer size={16} />
+                      Print
+                    </button>
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-slate-200 bg-white p-4 xl:col-span-2 text-slate-800">
+                  <h3 className="text-base font-semibold">How to use</h3>
+                  <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm text-slate-700">
+                    <li>Confirm true syncope with spontaneous recovery.</li>
+                    <li>Check ECG and red flags first.</li>
+                    <li>Measure standing BP within 3 minutes.</li>
+                    <li>Look for classic vasovagal triggers or prodrome.</li>
+                  </ol>
+                  <p className="mt-3 text-sm text-slate-500">
+                    Orthostatic hypotension is flagged when SBP drops ≥20 mmHg or DBP ≥10 mmHg on standing.
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
     </div>
   );
 }
+
 
 function Panel({
   title,
