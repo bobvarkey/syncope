@@ -118,7 +118,23 @@ export function AssessmentSidebar() {
   const collapsed = state === "collapsed";
   const [activeSection, setActiveSection] = useState<string>("");
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
+  const [query, setQuery] = useState("");
   const { getCompletionPercentage } = useAssessmentProgress();
+
+  const q = query.trim().toLowerCase();
+  const filteredSections = q
+    ? sections
+        .map((s) => {
+          const sectionMatch = s.title.toLowerCase().includes(q);
+          const subs = s.subsections.filter((sub) =>
+            sub.title.toLowerCase().includes(q)
+          );
+          if (sectionMatch) return s; // keep all subs
+          if (subs.length) return { ...s, subsections: subs };
+          return null;
+        })
+        .filter(Boolean) as typeof sections
+    : sections;
 
   useEffect(() => {
     const handleScroll = () => {
