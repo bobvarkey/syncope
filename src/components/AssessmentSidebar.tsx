@@ -277,7 +277,7 @@ export function AssessmentSidebar() {
                     <section.icon className={cn("h-5 w-5 shrink-0", section.color)} />
                     {!collapsed && (
                       <>
-                        <span className="flex-1 font-semibold">{section.title}</span>
+                        <span className="flex-1 font-semibold">{highlight(section.title)}</span>
                         <ChevronDown
                           className={cn(
                             "h-4 w-4 text-muted-foreground transition-transform",
