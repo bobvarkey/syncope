@@ -108,31 +108,41 @@ const IndexContent = () => {
           <AssessmentSidebar />
         
         <div className="flex-1 bg-background">
-          <header className="sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
-            <div className="flex items-center gap-4 px-6 py-4">
+          <header className="sticky top-0 z-40 border-b border-border/50 bg-background/60 backdrop-blur-xl supports-[backdrop-filter]:bg-background/40 shadow-soft">
+            <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-sunset" aria-hidden />
+            <div className="flex items-center gap-4 px-6 py-3">
               <SidebarTrigger className="lg:hidden" />
-              <div className="flex items-center flex-1">
-                <FileText className="w-8 h-8 text-primary mr-3" />
-                <div>
-                  <h1 className="text-2xl font-bold text-foreground">
+              <div className="flex items-center flex-1 min-w-0">
+                <div className="w-10 h-10 rounded-xl bg-gradient-sunset flex items-center justify-center shadow-glow mr-3 shrink-0">
+                  <FileText className="w-5 h-5 text-white" />
+                </div>
+                <div className="min-w-0">
+                  <h1 className="text-xl sm:text-2xl font-bold text-gradient-sunset truncate">
                     {t('app.title')}
                   </h1>
-                  <p className="text-sm text-muted-foreground hidden sm:block">
+                  <p className="text-xs text-muted-foreground hidden sm:block truncate">
                     {t('app.subtitle')}
                   </p>
                 </div>
               </div>
               <LanguageSwitcher />
+              <Button
+                onClick={() => document.getElementById('syncope-mini-app')?.scrollIntoView({ behavior: 'smooth' })}
+                className="hidden sm:inline-flex bg-gradient-sunset hover:opacity-90 text-white border-0 shadow-glow"
+                size="sm"
+              >
+                Start triage
+              </Button>
             </div>
           </header>
 
           <div className="py-8 px-4 sm:px-6 lg:px-8">
             <div className="max-w-4xl mx-auto">
-              <section aria-label="SyncDx introduction" className="mb-8 rounded-xl overflow-hidden border shadow-sm bg-card">
+              <section aria-label="SyncDx introduction" className="mb-8 rounded-2xl overflow-hidden border shadow-soft bg-card">
                 <img
                   src={heroImage.url}
                   alt="SyncDx – simplifies the evaluation of syncope or loss of consciousness in the OPD"
-                  className="w-full h-auto object-cover"
+                  className="media-uniform"
                   loading="eager"
                 />
               </section>
@@ -141,6 +151,7 @@ const IndexContent = () => {
               </div>
 
               <AssessmentDashboard />
+
 
               
               <Card className="mb-6">
@@ -441,7 +452,7 @@ const IndexContent = () => {
                 </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="default" size="lg">
+                    <Button size="lg" className="bg-gradient-sunset hover:opacity-90 text-white border-0 shadow-glow">
                       <FileDown className="w-4 h-4 mr-2" />
                       {t('button.export')}
                     </Button>
@@ -459,6 +470,7 @@ const IndexContent = () => {
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
+
               </div>
             </div>
           </div>
