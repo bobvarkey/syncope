@@ -42,6 +42,8 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { Progress } from "@/components/ui/progress";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { useAssessmentProgress } from "@/contexts/AssessmentProgressContext";
 import { cn } from "@/lib/utils";
 
