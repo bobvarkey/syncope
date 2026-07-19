@@ -452,7 +452,7 @@ const IndexContent = () => {
                 </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="default" size="lg">
+                    <Button size="lg" className="bg-gradient-sunset hover:opacity-90 text-white border-0 shadow-glow">
                       <FileDown className="w-4 h-4 mr-2" />
                       {t('button.export')}
                     </Button>
@@ -470,6 +470,7 @@ const IndexContent = () => {
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
+
               </div>
             </div>
           </div>
