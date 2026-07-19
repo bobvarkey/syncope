@@ -128,8 +128,24 @@ export function AssessmentSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const [activeSection, setActiveSection] = useState<string>("");
-  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {
+    if (typeof window === "undefined") return {};
+    try {
+      const raw = window.localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : {};
+    } catch {
+      return {};
+    }
+  });
   const [query, setQuery] = useState("");
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(openGroups));
+    } catch {
+      /* ignore quota errors */
+    }
+  }, [openGroups]);
   const { getCompletionPercentage } = useAssessmentProgress();
 
   const q = query.trim().toLowerCase();
