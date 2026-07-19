@@ -334,5 +334,6 @@ export function AssessmentSidebar() {
         })}
       </SidebarContent>
     </Sidebar>
+    </>
   );
 }
