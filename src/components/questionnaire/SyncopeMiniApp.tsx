@@ -7,6 +7,7 @@ import {
   ClipboardList,
   Download,
   Printer,
+  ChevronDown,
 } from "lucide-react";
 
 type Input = {
@@ -151,6 +152,7 @@ function get(obj: any, path: string) {
 
 export default function SyncopeMiniApp() {
   const [i, setI] = useState<Input>(initial);
+  const [showInterpretation, setShowInterpretation] = useState<boolean>(false);
   const r = useMemo(() => classify(i), [i]);
 
   const tone =
