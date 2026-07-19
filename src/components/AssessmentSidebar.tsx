@@ -203,8 +203,31 @@ export function AssessmentSidebar() {
   const toggleGroup = (id: string) =>
     setOpenGroups((prev) => ({ ...prev, [id]: !prev[id] }));
 
+  const highlight = (text: string) => {
+    if (!q) return text;
+    const idx = text.toLowerCase().indexOf(q);
+    if (idx === -1) return text;
+    return (
+      <>
+        {text.slice(0, idx)}
+        <mark className="bg-[hsl(45_100%_60%/0.55)] text-foreground rounded px-0.5">
+          {text.slice(idx, idx + q.length)}
+        </mark>
+        {text.slice(idx + q.length)}
+      </>
+    );
+  };
+
   return (
-    <Sidebar className={cn("border-r", collapsed ? "w-14" : "w-72")} collapsible="icon">
+    <>
+      {q && (
+        <div
+          onClick={() => setQuery("")}
+          className="fixed inset-0 z-30 bg-background/40 backdrop-blur-md animate-in fade-in"
+          aria-hidden="true"
+        />
+      )}
+      <Sidebar className={cn("border-r relative z-40", collapsed ? "w-14" : "w-72")} collapsible="icon">
       <div className="p-2 space-y-2">
         <SidebarTrigger />
         {!collapsed && (
