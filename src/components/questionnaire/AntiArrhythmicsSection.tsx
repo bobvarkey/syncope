@@ -612,6 +612,36 @@ const AntiArrhythmicsSection = () => {
                   </ul>
                 </div>
 
+                {activeDrug.cautions && activeDrug.cautions.length > 0 && (
+                  <div className="rounded-lg border p-3 bg-amber-500/5 border-amber-500/30">
+                    <div className="flex items-center gap-2 text-sm font-semibold mb-2">
+                      <AlertTriangle className="h-4 w-4 text-amber-500" /> Major cautions
+                    </div>
+                    <ul className="space-y-1">
+                      {activeDrug.cautions.map((c) => (
+                        <li key={c} className="text-sm text-foreground pl-3 relative before:content-['•'] before:absolute before:left-0 before:text-amber-500">
+                          {c}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {activeDrug.adverseEffects && activeDrug.adverseEffects.length > 0 && (
+                  <div className="rounded-lg border p-3 bg-muted/40">
+                    <div className="flex items-center gap-2 text-sm font-semibold mb-2">
+                      <HeartPulse className="h-4 w-4 text-foreground/70" /> Common adverse effects
+                    </div>
+                    <ul className="space-y-1">
+                      {activeDrug.adverseEffects.map((a) => (
+                        <li key={a} className="text-sm text-foreground pl-3 relative before:content-['•'] before:absolute before:left-0 before:text-foreground/60">
+                          {a}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
                 <DoseCalculator drug={activeDrug} />
 
                 <Button variant="outline" onClick={() => setActiveDrug(null)} className="w-full">
