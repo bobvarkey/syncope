@@ -671,12 +671,40 @@ ${result.note}`;
                       <Download size={16} /> Copy EMR note
                     </button>
                     <button
+                      onClick={exportTxt}
+                      className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50"
+                    >
+                      <FileText size={16} /> Export .txt
+                    </button>
+                    <button
+                      onClick={exportPdf}
+                      className="inline-flex items-center gap-2 rounded-xl bg-gradient-sunset px-4 py-2 text-sm font-semibold text-white shadow-glow"
+                    >
+                      <Download size={16} /> Export PDF
+                    </button>
+                    <button
+                      onClick={shareNote}
+                      className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50"
+                    >
+                      <Share2 size={16} /> Share
+                    </button>
+                    <button
                       onClick={() => window.print()}
-                      className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-800"
+                      className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50"
                     >
                       <Printer size={16} /> Print
                     </button>
                   </div>
+                  <div className="mt-3 flex items-center gap-2 text-[11px] text-slate-500">
+                    <Save size={12} /> Draft auto-saves locally
+                    <button
+                      onClick={clearDraft}
+                      className="ml-auto text-[11px] text-slate-500 underline hover:text-rose-600"
+                    >
+                      Clear draft
+                    </button>
+                  </div>
+
                 </div>
                 <pre className="whitespace-pre-wrap rounded-2xl border border-slate-200 bg-white p-4 text-xs text-slate-800 xl:col-span-2">
 {emrNote}
