@@ -151,6 +151,11 @@ const IndexContent = () => {
                 <SyncopeMiniApp />
               </div>
 
+              <div id="hutt-mini-app" className="mb-8">
+                <HuttMiniApp />
+              </div>
+
+
               <AssessmentDashboard />
 
 
