@@ -111,17 +111,20 @@ const IndexContent = () => {
         <div className="flex-1 bg-background">
           <header className="sticky top-0 z-40 border-b border-border/50 bg-background/60 backdrop-blur-xl supports-[backdrop-filter]:bg-background/40 shadow-soft">
             <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-sunset" aria-hidden />
-            <div className="flex items-center gap-4 px-6 py-3">
-              <SidebarTrigger className="lg:hidden" />
+            <div
+              className="flex items-center gap-2 sm:gap-4 px-3 sm:px-6 py-2.5 sm:py-3"
+              style={{ paddingTop: "max(0.625rem, env(safe-area-inset-top))" }}
+            >
+              <SidebarTrigger className="lg:hidden shrink-0" />
               <div className="flex items-center flex-1 min-w-0">
-                <div className="w-10 h-10 rounded-xl bg-gradient-sunset flex items-center justify-center shadow-glow mr-3 shrink-0">
-                  <FileText className="w-5 h-5 text-white" />
+                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-sunset flex items-center justify-center shadow-glow mr-2.5 sm:mr-3 shrink-0">
+                  <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                 </div>
                 <div className="min-w-0">
-                  <h1 className="text-xl sm:text-2xl font-bold text-gradient-sunset truncate">
+                  <h1 className="text-base sm:text-2xl font-bold text-gradient-sunset truncate leading-tight">
                     {t('app.title')}
                   </h1>
-                  <p className="text-xs text-muted-foreground hidden sm:block truncate">
+                  <p className="text-[11px] sm:text-xs text-muted-foreground hidden sm:block truncate">
                     {t('app.subtitle')}
                   </p>
                 </div>
@@ -137,23 +140,46 @@ const IndexContent = () => {
             </div>
           </header>
 
-          <div className="py-8 px-4 sm:px-6 lg:px-8">
+          <div className="py-5 sm:py-8 px-3 sm:px-6 lg:px-8">
             <div className="max-w-4xl mx-auto">
-              <section aria-label="SyncDx introduction" className="mb-8 rounded-2xl overflow-hidden border shadow-soft bg-card">
+              <section
+                aria-label="SyncDx introduction"
+                className="mb-5 sm:mb-8 rounded-2xl overflow-hidden border shadow-soft bg-card"
+              >
                 <img
                   src={heroImage.url}
                   alt="SyncDx – simplifies the evaluation of syncope or loss of consciousness in the OPD"
-                  className="media-uniform"
+                  className="media-uniform w-full h-auto object-cover"
                   loading="eager"
                 />
+                <div className="p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                  <div className="min-w-0">
+                    <h2 className="text-lg sm:text-xl font-bold text-foreground leading-tight">
+                      Ready to evaluate an episode?
+                    </h2>
+                    <p className="text-sm text-muted-foreground mt-0.5">
+                      Start with a 60-second bedside triage.
+                    </p>
+                  </div>
+                  <Button
+                    onClick={() =>
+                      document.getElementById('syncope-mini-app')?.scrollIntoView({ behavior: 'smooth' })
+                    }
+                    className="w-full sm:w-auto bg-gradient-sunset hover:opacity-90 text-white border-0 shadow-glow rounded-full h-12 px-6 text-base font-semibold active:scale-[0.98] transition-transform"
+                  >
+                    Start assessment
+                  </Button>
+                </div>
               </section>
-              <div id="syncope-mini-app" className="mb-8">
+
+              <div id="syncope-mini-app" className="mb-6 sm:mb-8 scroll-mt-20">
                 <SyncopeMiniApp />
               </div>
 
-              <div id="hutt-mini-app" className="mb-8">
+              <div id="hutt-mini-app" className="mb-6 sm:mb-8 scroll-mt-20">
                 <HuttMiniApp />
               </div>
+
 
 
               <AssessmentDashboard />
