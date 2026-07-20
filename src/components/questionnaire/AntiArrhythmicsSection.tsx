@@ -29,6 +29,8 @@ type Drug = {
   mechanism: string;
   ecgEffects: string[];
   contraindications: string[];
+  cautions?: string[];
+  adverseEffects?: string[];
   dosing: Dosing;
 };
 
