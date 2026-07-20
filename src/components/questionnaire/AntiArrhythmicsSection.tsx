@@ -287,6 +287,17 @@ const drugMap = Object.fromEntries(drugList.map((d) => [d.id, d]));
 
 const classes: DrugClass[] = [
   {
+    id: "0",
+    label: "Class 0",
+    title: "HCN (funny) channel blockers",
+    mnemonicWord: "Funny → HCN / If current",
+    target: "SA node HCN channels (If) — slows sinus rate without inotropy or BP change",
+    accent: "from-accent/20 via-primary/10 to-primary/5 border-primary/40",
+    notes:
+      "Added in the 2018 modernised Vaughan-Williams classification (Lei et al.). Only clinically licensed member: Ivabradine. Investigational agents: zatebradine, cilobradine (not in clinical use).",
+    drugs: ["ivabradine"].map((id) => drugMap[id]),
+  },
+  {
     id: "I",
     label: "Class I",
     title: "Na⁺ channel blockers",
