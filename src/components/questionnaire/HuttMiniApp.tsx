@@ -1024,9 +1024,59 @@ function ProtocolReference({
           </ul>
         </section>
 
-        <p className="text-xs text-slate-500">
-          References: ESC 2018 syncope guidelines; Bartoletti A et al. "The Italian protocol" Europace 2000; VASIS classification Sutton R et al.; BHRS HUTT SOP.
-        </p>
+        <div className="rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/40 p-3">
+          <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100 mb-2">References & source citations</h4>
+          <ul className="text-xs space-y-1.5 text-slate-700 dark:text-slate-300 list-disc pl-5 marker:text-slate-400">
+            <li>
+              Brignole M et al. <b>2018 ESC Guidelines for the diagnosis and management of syncope.</b> Eur Heart J 2018;39:1883–1948 —
+              tilt indications, protocol duration, stop rules.{" "}
+              <a href="https://academic.oup.com/eurheartj/article/39/21/1883/4939241" target="_blank" rel="noopener noreferrer" className="text-primary underline underline-offset-2">Full text</a>
+            </li>
+            <li>
+              Fitzpatrick AP, Theodorakis G, Vardas P, Sutton R. <b>Methodology of head-up tilt testing in patients with unexplained syncope.</b>
+              J Am Coll Cardiol 1991;17:125–130 — original <b>Westminster</b> passive 60°/45-min protocol.{" "}
+              <a href="https://www.jacc.org/doi/10.1016/0735-1097(91)90714-K" target="_blank" rel="noopener noreferrer" className="text-primary underline underline-offset-2">JACC</a>
+            </li>
+            <li>
+              Bartoletti A, Alboni P, Ammirati F, Brignole M et al. <b>"The Italian Protocol": a simplified head-up tilt testing potentiated with
+              oral nitroglycerin</b> to assess patients with unexplained syncope. Europace 2000;2:339–342 — GTN 300–400 µg SL after 20 min passive.{" "}
+              <a href="https://academic.oup.com/europace/article/2/4/339/436795" target="_blank" rel="noopener noreferrer" className="text-primary underline underline-offset-2">Europace</a>
+            </li>
+            <li>
+              Brignole M, Menozzi C, Del Rosso A et al. <b>New classification of haemodynamic patterns during head-up tilt testing (VASIS).</b>
+              Europace 2000;2:66–76 — VASIS 1 / 2A / 2B / 3 definitions.{" "}
+              <a href="https://academic.oup.com/europace/article/2/1/66/436722" target="_blank" rel="noopener noreferrer" className="text-primary underline underline-offset-2">Europace</a>
+            </li>
+            <li>
+              Kenny RA, Ingram A, Bayliss J, Sutton R. <b>Head-up tilt: a useful test for investigating unexplained syncope.</b> Lancet 1986;1:1352–1355 —
+              foundational tilt-table description.{" "}
+              <a href="https://www.thelancet.com/journals/lancet/article/PIIS0140-6736(86)91665-X/fulltext" target="_blank" rel="noopener noreferrer" className="text-primary underline underline-offset-2">Lancet</a>
+            </li>
+            <li>
+              Sheldon RS, Grubb BP, Olshansky B et al. <b>2015 HRS Expert Consensus Statement on Postural Tachycardia Syndrome,
+              Inappropriate Sinus Tachycardia, and Vasovagal Syncope.</b> Heart Rhythm 2015;12:e41–e63 — POTS/reflex tilt criteria.{" "}
+              <a href="https://www.heartrhythmjournal.com/article/S1547-5271(15)00382-4/fulltext" target="_blank" rel="noopener noreferrer" className="text-primary underline underline-offset-2">HRS</a>
+            </li>
+            <li>
+              Freeman R, Wieling W, Axelrod FB et al. <b>Consensus statement on the definition of orthostatic hypotension, neurally mediated
+              syncope and the postural tachycardia syndrome.</b> Clin Auton Res 2011;21:69–72 — OH ≥ 20/10 mmHg, POTS ≥ 30 bpm thresholds.{" "}
+              <a href="https://link.springer.com/article/10.1007/s10286-011-0119-5" target="_blank" rel="noopener noreferrer" className="text-primary underline underline-offset-2">Springer</a>
+            </li>
+            <li>
+              Parry SW, Reeve P, Lawson J et al. <b>The Newcastle protocols 2008: an update on head-up tilt table testing and the management of
+              vasovagal syncope and related disorders.</b> Heart 2009;95:416–420 — isoproterenol dosing 1–3 µg/min, atropine rescue.{" "}
+              <a href="https://heart.bmj.com/content/95/5/416" target="_blank" rel="noopener noreferrer" className="text-primary underline underline-offset-2">Heart (BMJ)</a>
+            </li>
+            <li>
+              Benditt DG, Ferguson DW, Grubb BP et al. <b>Tilt table testing for assessing syncope. ACC Expert Consensus Document.</b>
+              J Am Coll Cardiol 1996;28:263–275 — endpoints and safety.{" "}
+              <a href="https://www.jacc.org/doi/10.1016/0735-1097(96)00236-7" target="_blank" rel="noopener noreferrer" className="text-primary underline underline-offset-2">JACC</a>
+            </li>
+          </ul>
+          <p className="mt-2 text-[11px] text-slate-500 italic">
+            Citations are for source verification only — always follow your local cardiology / syncope-unit SOP for drug doses and stop criteria.
+          </p>
+        </div>
       </div>
     </details>
   );
