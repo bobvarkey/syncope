@@ -277,24 +277,34 @@ export function AssessmentSidebar() {
         {filteredSections.map((section) => {
           const isOpen = q ? true : !!openGroups[section.id];
           return (
-            <SidebarGroup key={section.id}>
+            <SidebarGroup key={section.id} className="mb-1">
               <Collapsible open={isOpen} onOpenChange={() => toggleGroup(section.id)}>
                 <CollapsibleTrigger asChild>
                   <SidebarGroupLabel
                     className={cn(
-                      "flex items-center gap-2 cursor-pointer select-none rounded-md px-2 py-2 text-base",
-                      "hover:bg-muted/60 transition-colors"
+                      "flex items-center gap-2 cursor-pointer select-none rounded-lg px-2 py-2.5 text-base h-auto",
+                      "bg-gradient-to-r border border-transparent transition-all",
+                      section.gradient,
+                      "hover:border-[color:var(--ring-color)]/40 hover:shadow-sm"
                     )}
+                    style={{ ["--ring-color" as any]: section.ring }}
                   >
-                    <section.icon className={cn("h-5 w-5 shrink-0", section.color)} />
+                    <section.icon
+                      className={cn("h-5 w-5 shrink-0 drop-shadow-sm", section.color)}
+                      strokeWidth={2.5}
+                    />
                     {!collapsed && (
                       <>
-                        <span className="flex-1 font-semibold">{highlight(section.title)}</span>
+                        <span className={cn("flex-1 font-extrabold tracking-tight uppercase text-[13px]", section.color)}>
+                          {highlight(section.title)}
+                        </span>
                         <ChevronDown
                           className={cn(
-                            "h-4 w-4 text-muted-foreground transition-transform",
+                            "h-4 w-4 transition-transform",
+                            section.color,
                             isOpen && "rotate-180"
                           )}
+                          strokeWidth={2.75}
                         />
                       </>
                     )}
@@ -313,19 +323,27 @@ export function AssessmentSidebar() {
                               <SidebarMenuButton
                                 onClick={() => scrollToSection(subsection.id)}
                                 className={cn(
-                                  "cursor-pointer transition-colors w-full text-sm py-2 h-auto",
-                                  active && "bg-primary/10 text-primary font-medium"
+                                  "cursor-pointer transition-all w-full text-sm py-2 h-auto rounded-md font-semibold",
+                                  "hover:bg-muted/70",
+                                  active && "bg-gradient-to-r shadow-sm",
+                                  active && section.gradient
                                 )}
+                                style={active ? { borderLeft: `3px solid ${section.ring}` } : undefined}
                               >
                                 <subsection.icon
                                   className={cn("h-4 w-4 shrink-0", subsection.color)}
-                                  strokeWidth={active ? 2.5 : 2}
+                                  strokeWidth={active ? 2.75 : 2.25}
                                 />
                                 {!collapsed && (
-                                  <span className="flex-1 leading-snug">{highlight(subsection.title)}</span>
+                                  <span className={cn(
+                                    "flex-1 leading-snug",
+                                    active ? "font-bold text-foreground" : "font-semibold"
+                                  )}>
+                                    {highlight(subsection.title)}
+                                  </span>
                                 )}
                                 {!collapsed && progress > 0 && (
-                                  <span className="text-xs text-muted-foreground ml-auto">
+                                  <span className={cn("text-xs ml-auto font-bold", subsection.color)}>
                                     {progress}%
                                   </span>
                                 )}
