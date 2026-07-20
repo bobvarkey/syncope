@@ -22,6 +22,7 @@ import {
   ChevronDown,
   Search,
   X,
+  ArrowUpFromLine,
 } from "lucide-react";
 
 import {
