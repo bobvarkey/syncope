@@ -163,33 +163,67 @@ function classify(input: {
   };
 }
 
+const STORAGE_KEY = "hutt-mini-app-draft-v1";
+
+type PersistedState = {
+  protocolType: ProtocolType;
+  phaseIdx: number;
+  seconds: number;
+  running: boolean;
+  obs: Observation[];
+  entry: Omit<Observation, "id" | "timeSeconds" | "phase">;
+  flags: {
+    symptomsReproduced: boolean;
+    loc: boolean;
+    hrDrop: boolean;
+    bpDrop: boolean;
+    potsHrRise: boolean;
+    delayedDrop: boolean;
+    psychogenic: boolean;
+  };
+  asystoleSec: number | "";
+  savedAt: number;
+};
+
+function loadPersisted(): PersistedState | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    return raw ? (JSON.parse(raw) as PersistedState) : null;
+  } catch {
+    return null;
+  }
+}
+
 export default function HuttMiniApp() {
-  const [protocolType, setProtocolType] = useState<ProtocolType>("standard");
+  const persisted = useMemo(() => loadPersisted(), []);
+
+  const [protocolType, setProtocolType] = useState<ProtocolType>(persisted?.protocolType ?? "standard");
   const protocol = PROTOCOLS[protocolType];
 
-  const [phaseIdx, setPhaseIdx] = useState(0);
-  const [seconds, setSeconds] = useState(0);
-  const [running, setRunning] = useState(false);
+  const [phaseIdx, setPhaseIdx] = useState(persisted?.phaseIdx ?? 0);
+  const [seconds, setSeconds] = useState(persisted?.seconds ?? 0);
+  const [running, setRunning] = useState(persisted?.running ?? false);
   const timerRef = useRef<number | null>(null);
+  const isFirstProtocolRun = useRef(true);
 
-  const [obs, setObs] = useState<Observation[]>([]);
-  const [entry, setEntry] = useState<Omit<Observation, "id" | "timeSeconds" | "phase">>({
-    hr: "",
-    sbp: "",
-    dbp: "",
-    symptoms: "",
-  });
+  const [obs, setObs] = useState<Observation[]>(persisted?.obs ?? []);
+  const [entry, setEntry] = useState<Omit<Observation, "id" | "timeSeconds" | "phase">>(
+    persisted?.entry ?? { hr: "", sbp: "", dbp: "", symptoms: "" }
+  );
 
-  const [flags, setFlags] = useState({
-    symptomsReproduced: false,
-    loc: false,
-    hrDrop: false,
-    bpDrop: false,
-    potsHrRise: false,
-    delayedDrop: false,
-    psychogenic: false,
-  });
-  const [asystoleSec, setAsystoleSec] = useState<number | "">("");
+  const [flags, setFlags] = useState(
+    persisted?.flags ?? {
+      symptomsReproduced: false,
+      loc: false,
+      hrDrop: false,
+      bpDrop: false,
+      potsHrRise: false,
+      delayedDrop: false,
+      psychogenic: false,
+    }
+  );
+  const [asystoleSec, setAsystoleSec] = useState<number | "">(persisted?.asystoleSec ?? "");
   const [showInterpretation, setShowInterpretation] = useState(false);
 
   useEffect(() => {
@@ -201,13 +235,40 @@ export default function HuttMiniApp() {
     }
   }, [running]);
 
-  // reset phases when protocol changes
+  // reset phases when protocol changes (but not on initial hydration)
   useEffect(() => {
+    if (isFirstProtocolRun.current) {
+      isFirstProtocolRun.current = false;
+      return;
+    }
     setPhaseIdx(0);
     setSeconds(0);
     setRunning(false);
     setObs([]);
   }, [protocolType]);
+
+  // Auto-save draft to localStorage (debounced)
+  useEffect(() => {
+    const t = window.setTimeout(() => {
+      try {
+        const payload: PersistedState = {
+          protocolType,
+          phaseIdx,
+          seconds,
+          running,
+          obs,
+          entry,
+          flags,
+          asystoleSec,
+          savedAt: Date.now(),
+        };
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+      } catch {
+        /* ignore quota errors */
+      }
+    }, 400);
+    return () => window.clearTimeout(t);
+  }, [protocolType, phaseIdx, seconds, running, obs, entry, flags, asystoleSec]);
 
   const currentPhase = protocol.phases[phaseIdx];
   const nextPhase = () => {
@@ -234,6 +295,30 @@ export default function HuttMiniApp() {
 
   const removeObs = (id: string) => setObs((o) => o.filter((x) => x.id !== id));
 
+  const clearDraft = () => {
+    try {
+      window.localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      /* ignore */
+    }
+    setPhaseIdx(0);
+    setSeconds(0);
+    setRunning(false);
+    setObs([]);
+    setEntry({ hr: "", sbp: "", dbp: "", symptoms: "" });
+    setFlags({
+      symptomsReproduced: false,
+      loc: false,
+      hrDrop: false,
+      bpDrop: false,
+      potsHrRise: false,
+      delayedDrop: false,
+      psychogenic: false,
+    });
+    setAsystoleSec("");
+    toast.success("HUTT draft cleared");
+  };
+
   const result = useMemo(() => classify({ ...flags, asystoleSec }), [flags, asystoleSec]);
 
   const emrNote = useMemo(() => {
@@ -254,9 +339,112 @@ Interpretation: ${result.label}
 ${result.note}`;
   }, [obs, protocol.label, flags, asystoleSec, result]);
 
+  const stamp = () => new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+
   const copy = async () => {
-    await navigator.clipboard.writeText(emrNote);
+    try {
+      await navigator.clipboard.writeText(emrNote);
+      toast.success("EMR note copied to clipboard");
+    } catch {
+      toast.error("Copy failed");
+    }
   };
+
+  const exportTxt = () => {
+    const blob = new Blob([emrNote], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `HUTT-report-${stamp()}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    toast.success("Text file downloaded");
+  };
+
+  const exportPdf = () => {
+    const doc = new jsPDF({ unit: "pt", format: "a4" });
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 48;
+    let y = margin;
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.text("Head-up Tilt-Table Test Report", margin, y);
+    y += 22;
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.setTextColor(120);
+    doc.text(`Generated ${new Date().toLocaleString()}`, margin, y);
+    y += 20;
+    doc.setTextColor(0);
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.text(`Protocol: ${protocol.label}`, margin, y);
+    y += 16;
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(11);
+    const noteLines = doc.splitTextToSize(emrNote, pageWidth - margin * 2);
+    for (const line of noteLines) {
+      if (y > pageHeight - margin) {
+        doc.addPage();
+        y = margin;
+      }
+      doc.text(line, margin, y);
+      y += 14;
+    }
+
+    // Interpretation banner
+    if (y > pageHeight - margin - 60) {
+      doc.addPage();
+      y = margin;
+    }
+    y += 8;
+    doc.setDrawColor(200);
+    doc.line(margin, y, pageWidth - margin, y);
+    y += 18;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(13);
+    doc.text("Interpretation", margin, y);
+    y += 16;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(11);
+    const interp = doc.splitTextToSize(`${result.label} — ${result.note}`, pageWidth - margin * 2);
+    for (const line of interp) {
+      if (y > pageHeight - margin) {
+        doc.addPage();
+        y = margin;
+      }
+      doc.text(line, margin, y);
+      y += 14;
+    }
+
+    doc.save(`HUTT-report-${stamp()}.pdf`);
+    toast.success("PDF downloaded");
+  };
+
+  const shareNote = async () => {
+    const shareData = {
+      title: "HUTT Report",
+      text: emrNote,
+    };
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.clipboard.writeText(emrNote);
+        toast.success("Sharing not supported — copied to clipboard instead");
+      }
+    } catch (err: any) {
+      if (err?.name !== "AbortError") toast.error("Share failed");
+    }
+  };
+
 
   return (
     <div className="text-slate-900">
