@@ -31,6 +31,12 @@ type Drug = {
   contraindications: string[];
   cautions?: string[];
   adverseEffects?: string[];
+  interactions?: {
+    severity: "contraindicated" | "high-risk" | "caution";
+    label: string;
+    examples?: string;
+    effect: string;
+  }[];
   dosing: Dosing;
 };
 
