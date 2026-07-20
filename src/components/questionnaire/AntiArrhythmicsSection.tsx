@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Pill, ChevronDown, Calculator, HeartPulse, ShieldAlert, Info, X } from "lucide-react";
+import { Pill, ChevronDown, Calculator, HeartPulse, ShieldAlert, Info, X, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   Sheet,
@@ -29,6 +29,8 @@ type Drug = {
   mechanism: string;
   ecgEffects: string[];
   contraindications: string[];
+  cautions?: string[];
+  adverseEffects?: string[];
   dosing: Dosing;
 };
 
@@ -239,16 +241,62 @@ const drugList: Drug[] = [
   {
     id: "ivabradine",
     name: "Ivabradine",
-    mechanism: "Selective If channel blocker in SA node — pure heart-rate reduction.",
-    ecgEffects: ["↓ HR only"],
-    contraindications: ["Resting HR < 60", "Sick sinus", "AV block", "Atrial fibrillation"],
-    dosing: { route: "PO", fixed: { mgMin: 2.5, mgMax: 7.5, frequencyHrs: 12 }, maxDailyMg: 15 },
+    mechanism:
+      "Selective HCN (If, 'funny') channel blocker in the SA node — pure heart-rate reduction without inotropy, lusitropy, or BP effect.",
+    ecgEffects: ["↓ HR only", "No change in PR/QRS/QT", "May unmask latent AF"],
+    contraindications: [
+      "Resting HR < 70 bpm before treatment (per SmPC)",
+      "Sick sinus / SA block / 2°–3° AV block without a functioning pacemaker",
+      "Atrial fibrillation or any non-sinus rhythm dependent on SA node",
+      "Acute decompensated HF, cardiogenic shock, unstable angina, acute MI",
+      "Severe hypotension (< 90/50 mmHg)",
+      "Severe hepatic impairment (Child-Pugh C)",
+      "Congenital long QT syndrome",
+      "Pregnancy, breastfeeding, women of child-bearing potential without contraception",
+      "Strong CYP3A4 inhibitors (ketoconazole, itraconazole, clarithromycin, ritonavir, nefazodone)",
+      "Non-DHP calcium-channel blockers (verapamil, diltiazem)",
+    ],
+    cautions: [
+      "Risk of new-onset atrial fibrillation — monitor rhythm; discontinue if AF develops",
+      "Bradycardia — hold or reduce dose if HR persistently < 50 bpm or symptomatic",
+      "Moderate CYP3A4 inhibitors/inducers, grapefruit juice, St John's wort — avoid or halve dose",
+      "Retinal disease / retinitis pigmentosa — luminous phenomena may worsen",
+      "Recent stroke, chronic bradyarrhythmias, moderate hepatic impairment",
+      "QT-prolonging drug combinations (indirect risk via bradycardia)",
+    ],
+    adverseEffects: [
+      "Luminous phenomena / phosphenes (transient bright spots) — up to ~15%",
+      "Symptomatic or asymptomatic bradycardia",
+      "New-onset atrial fibrillation",
+      "Headache, dizziness",
+      "Blurred vision",
+      "First-degree AV block / PR prolongation",
+      "Nausea, constipation, diarrhoea",
+    ],
+    dosing: {
+      route: "PO",
+      fixed: { mgMin: 2.5, mgMax: 7.5, frequencyHrs: 12 },
+      maxDailyMg: 15,
+      notes:
+        "Adults: start 5 mg BD with food. Review resting HR at 2 weeks — titrate to 7.5 mg BD if HR > 60 bpm, keep 5 mg BD if 50–60 bpm, reduce to 2.5 mg BD or stop if HR < 50 bpm or symptomatic bradycardia. Start 2.5 mg BD if ≥ 75 y, frail, or moderate hepatic impairment. Take morning and evening with meals. Do NOT combine with verapamil/diltiazem or strong CYP3A4 inhibitors; avoid grapefruit juice.",
+    },
   },
 ];
 
 const drugMap = Object.fromEntries(drugList.map((d) => [d.id, d]));
 
 const classes: DrugClass[] = [
+  {
+    id: "0",
+    label: "Class 0",
+    title: "HCN (funny) channel blockers",
+    mnemonicWord: "Funny → HCN / If current",
+    target: "SA node HCN channels (If) — slows sinus rate without inotropy or BP change",
+    accent: "from-accent/20 via-primary/10 to-primary/5 border-primary/40",
+    notes:
+      "Added in the 2018 modernised Vaughan-Williams classification (Lei et al.). Only clinically licensed member: Ivabradine. Investigational agents: zatebradine, cilobradine (not in clinical use).",
+    drugs: ["ivabradine"].map((id) => drugMap[id]),
+  },
   {
     id: "I",
     label: "Class I",
@@ -300,7 +348,7 @@ const classes: DrugClass[] = [
     mnemonicWord: "Mainly → Miscellaneous",
     target: "Varied — vagal tone, Na/K-ATPase, adenosine receptors",
     accent: "from-primary/20 via-accent/10 to-tertiary/10 border-accent/40",
-    drugs: ["digoxin", "adenosine", "magnesium", "ivabradine"].map((id) => drugMap[id]),
+    drugs: ["digoxin", "adenosine", "magnesium"].map((id) => drugMap[id]),
   },
 ];
 
@@ -422,9 +470,10 @@ const AntiArrhythmicsSection = () => {
         <div className="rounded-xl border p-4 bg-gradient-to-br from-primary/5 via-accent/5 to-tertiary/5">
           <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1">Master mnemonic</p>
           <p className="text-base font-semibold text-gradient-sunset">
-            “Some Block Potassium Channels Mainly”
+            “Funny, Some Block Potassium Channels Mainly”
           </p>
           <ul className="mt-2 grid gap-1 sm:grid-cols-2 text-xs text-muted-foreground">
+            <li><span className="font-medium text-foreground">Funny</span> → HCN / If current · Class 0</li>
             <li><span className="font-medium text-foreground">Some</span> → Sodium · Class I</li>
             <li><span className="font-medium text-foreground">Block</span> → Beta blockers · Class II</li>
             <li><span className="font-medium text-foreground">Potassium</span> → Potassium · Class III</li>
@@ -562,6 +611,36 @@ const AntiArrhythmicsSection = () => {
                     ))}
                   </ul>
                 </div>
+
+                {activeDrug.cautions && activeDrug.cautions.length > 0 && (
+                  <div className="rounded-lg border p-3 bg-amber-500/5 border-amber-500/30">
+                    <div className="flex items-center gap-2 text-sm font-semibold mb-2">
+                      <AlertTriangle className="h-4 w-4 text-amber-500" /> Major cautions
+                    </div>
+                    <ul className="space-y-1">
+                      {activeDrug.cautions.map((c) => (
+                        <li key={c} className="text-sm text-foreground pl-3 relative before:content-['•'] before:absolute before:left-0 before:text-amber-500">
+                          {c}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {activeDrug.adverseEffects && activeDrug.adverseEffects.length > 0 && (
+                  <div className="rounded-lg border p-3 bg-muted/40">
+                    <div className="flex items-center gap-2 text-sm font-semibold mb-2">
+                      <HeartPulse className="h-4 w-4 text-foreground/70" /> Common adverse effects
+                    </div>
+                    <ul className="space-y-1">
+                      {activeDrug.adverseEffects.map((a) => (
+                        <li key={a} className="text-sm text-foreground pl-3 relative before:content-['•'] before:absolute before:left-0 before:text-foreground/60">
+                          {a}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
 
                 <DoseCalculator drug={activeDrug} />
 
