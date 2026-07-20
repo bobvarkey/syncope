@@ -47,13 +47,15 @@ import { Button } from "@/components/ui/button";
 import { useAssessmentProgress } from "@/contexts/AssessmentProgressContext";
 import { cn } from "@/lib/utils";
 
-// Sunset Blaze accent classes per icon
+// Sunset Blaze accent classes per icon + group gradients
 const sections = [
   {
     id: "clinical-history",
     title: "Clinical History",
     icon: FileText,
     color: "text-[hsl(16_100%_60%)]", // coral
+    gradient: "from-[hsl(16_100%_60%/0.22)] via-[hsl(28_100%_58%/0.18)] to-transparent",
+    ring: "hsl(16_100%_60%)",
     subsections: [
       { id: "circumstances", title: "Circumstances", icon: Eye, color: "text-[hsl(16_100%_60%)]" },
       { id: "onset", title: "Onset", icon: Clock, color: "text-[hsl(28_100%_58%)]" },
@@ -67,7 +69,9 @@ const sections = [
     id: "investigations",
     title: "Investigations",
     icon: TestTube,
-    color: "text-[hsl(28_100%_58%)]", // amber
+    color: "text-[hsl(28_100%_58%)]",
+    gradient: "from-[hsl(28_100%_58%/0.22)] via-[hsl(45_100%_55%/0.18)] to-transparent",
+    ring: "hsl(28_100%_58%)",
     subsections: [
       { id: "ecg-findings", title: "ECG Findings", icon: Activity, color: "text-[hsl(340_85%_60%)]" },
       { id: "ecg-abcde", title: "ECG ABCDE Screen", icon: Activity, color: "text-[hsl(16_100%_60%)]" },
@@ -86,7 +90,9 @@ const sections = [
     id: "differential-diagnosis",
     title: "Differential Diagnosis",
     icon: Brain,
-    color: "text-[hsl(280_75%_60%)]", // magenta
+    color: "text-[hsl(280_75%_60%)]",
+    gradient: "from-[hsl(280_75%_60%/0.22)] via-[hsl(260_80%_65%/0.18)] to-transparent",
+    ring: "hsl(280_75%_60%)",
     subsections: [
       { id: "differential-diagnosis-section", title: "Differential Diagnosis", icon: Lightbulb, color: "text-[hsl(45_100%_55%)]" },
       { id: "diagnostic-criteria", title: "Diagnostic Criteria", icon: CheckSquare, color: "text-[hsl(160_70%_45%)]" },
@@ -97,7 +103,9 @@ const sections = [
     id: "management",
     title: "Interventions",
     icon: Shield,
-    color: "text-[hsl(160_70%_45%)]", // teal-green
+    color: "text-[hsl(160_70%_45%)]",
+    gradient: "from-[hsl(160_70%_45%/0.22)] via-[hsl(190_80%_50%/0.18)] to-transparent",
+    ring: "hsl(160_70%_45%)",
     subsections: [
       { id: "interventions", title: "Interventions & Management", icon: Shield, color: "text-[hsl(160_70%_45%)]" },
     ],
@@ -107,6 +115,8 @@ const sections = [
     title: "Drop Attacks",
     icon: AlertTriangle,
     color: "text-[hsl(0_85%_60%)]",
+    gradient: "from-[hsl(0_85%_60%/0.22)] via-[hsl(16_100%_60%/0.18)] to-transparent",
+    ring: "hsl(0_85%_60%)",
     subsections: [
       { id: "drop-attacks", title: "Drop Attacks Workup", icon: AlertTriangle, color: "text-[hsl(0_85%_60%)]" },
     ],
@@ -116,6 +126,8 @@ const sections = [
     title: "Pharmacology",
     icon: Pill,
     color: "text-[hsl(280_75%_60%)]",
+    gradient: "from-[hsl(280_75%_60%/0.22)] via-[hsl(340_85%_60%/0.18)] to-transparent",
+    ring: "hsl(280_75%_60%)",
     subsections: [
       { id: "anti-arrhythmics", title: "Anti-arrhythmic Drugs — Vaughan-Williams", icon: Pill, color: "text-[hsl(280_75%_60%)]" },
     ],
