@@ -470,9 +470,10 @@ const AntiArrhythmicsSection = () => {
         <div className="rounded-xl border p-4 bg-gradient-to-br from-primary/5 via-accent/5 to-tertiary/5">
           <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1">Master mnemonic</p>
           <p className="text-base font-semibold text-gradient-sunset">
-            “Some Block Potassium Channels Mainly”
+            “Funny, Some Block Potassium Channels Mainly”
           </p>
           <ul className="mt-2 grid gap-1 sm:grid-cols-2 text-xs text-muted-foreground">
+            <li><span className="font-medium text-foreground">Funny</span> → HCN / If current · Class 0</li>
             <li><span className="font-medium text-foreground">Some</span> → Sodium · Class I</li>
             <li><span className="font-medium text-foreground">Block</span> → Beta blockers · Class II</li>
             <li><span className="font-medium text-foreground">Potassium</span> → Potassium · Class III</li>
