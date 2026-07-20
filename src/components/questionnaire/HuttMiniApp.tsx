@@ -4,14 +4,19 @@ import {
   AlertTriangle,
   ClipboardList,
   Download,
+  FileText,
   HeartPulse,
   Pause,
   Play,
   Printer,
   RotateCcw,
+  Share2,
   Timer,
   ChevronDown,
+  Save,
 } from "lucide-react";
+import jsPDF from "jspdf";
+import { toast } from "sonner";
 
 type ProtocolType = "standard" | "italian";
 
