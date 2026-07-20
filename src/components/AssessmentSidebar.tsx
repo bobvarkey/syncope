@@ -22,6 +22,7 @@ import {
   ChevronDown,
   Search,
   X,
+  ArrowUpFromLine,
 } from "lucide-react";
 
 import {
@@ -49,6 +50,18 @@ import { cn } from "@/lib/utils";
 
 // Sunset Blaze accent classes per icon + group gradients
 const sections = [
+  {
+    id: "hutt-group",
+    title: "HUTT Mini App",
+    icon: ArrowUpFromLine,
+    color: "text-[hsl(340_85%_60%)]",
+    gradient: "from-[hsl(340_85%_60%/0.35)] via-[hsl(280_75%_60%/0.28)] to-[hsl(28_100%_58%/0.22)]",
+    ring: "hsl(340_85%_60%)",
+    prominent: true,
+    subsections: [
+      { id: "hutt-mini-app", title: "Head-Up Tilt Table Test", icon: ArrowUpFromLine, color: "text-[hsl(340_85%_60%)]" },
+    ],
+  },
   {
     id: "clinical-history",
     title: "Clinical History",
@@ -277,26 +290,41 @@ export function AssessmentSidebar() {
         {filteredSections.map((section) => {
           const isOpen = q ? true : !!openGroups[section.id];
           return (
-            <SidebarGroup key={section.id} className="mb-1">
+            <SidebarGroup key={section.id} className={cn("mb-1", (section as any).prominent && "mb-2")}>
               <Collapsible open={isOpen} onOpenChange={() => toggleGroup(section.id)}>
                 <CollapsibleTrigger asChild>
                   <SidebarGroupLabel
                     className={cn(
                       "flex items-center gap-2 cursor-pointer select-none rounded-lg px-2 py-2.5 text-base h-auto",
-                      "bg-gradient-to-r border border-transparent transition-all",
+                      "bg-gradient-to-r border transition-all",
                       section.gradient,
-                      "hover:border-[color:var(--ring-color)]/40 hover:shadow-sm"
+                      (section as any).prominent
+                        ? "border-[color:var(--ring-color)]/60 shadow-md ring-1 ring-[color:var(--ring-color)]/30 py-3"
+                        : "border-transparent hover:border-[color:var(--ring-color)]/40 hover:shadow-sm"
                     )}
                     style={{ ["--ring-color" as any]: section.ring }}
                   >
                     <section.icon
-                      className={cn("h-5 w-5 shrink-0 drop-shadow-sm", section.color)}
-                      strokeWidth={2.5}
+                      className={cn(
+                        "shrink-0 drop-shadow-sm",
+                        section.color,
+                        (section as any).prominent ? "h-6 w-6" : "h-5 w-5"
+                      )}
+                      strokeWidth={2.75}
                     />
                     {!collapsed && (
                       <>
-                        <span className={cn("flex-1 font-extrabold tracking-tight uppercase text-[13px]", section.color)}>
+                        <span className={cn(
+                          "flex-1 font-extrabold tracking-tight uppercase",
+                          (section as any).prominent ? "text-sm" : "text-[13px]",
+                          section.color
+                        )}>
                           {highlight(section.title)}
+                          {(section as any).prominent && (
+                            <span className="ml-1.5 inline-block align-middle rounded-full bg-[color:var(--ring-color)] text-white text-[9px] font-black px-1.5 py-0.5 leading-none">
+                              NEW
+                            </span>
+                          )}
                         </span>
                         <ChevronDown
                           className={cn(
