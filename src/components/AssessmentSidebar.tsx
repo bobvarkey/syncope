@@ -47,13 +47,15 @@ import { Button } from "@/components/ui/button";
 import { useAssessmentProgress } from "@/contexts/AssessmentProgressContext";
 import { cn } from "@/lib/utils";
 
-// Sunset Blaze accent classes per icon
+// Sunset Blaze accent classes per icon + group gradients
 const sections = [
   {
     id: "clinical-history",
     title: "Clinical History",
     icon: FileText,
     color: "text-[hsl(16_100%_60%)]", // coral
+    gradient: "from-[hsl(16_100%_60%/0.22)] via-[hsl(28_100%_58%/0.18)] to-transparent",
+    ring: "hsl(16_100%_60%)",
     subsections: [
       { id: "circumstances", title: "Circumstances", icon: Eye, color: "text-[hsl(16_100%_60%)]" },
       { id: "onset", title: "Onset", icon: Clock, color: "text-[hsl(28_100%_58%)]" },
@@ -67,7 +69,9 @@ const sections = [
     id: "investigations",
     title: "Investigations",
     icon: TestTube,
-    color: "text-[hsl(28_100%_58%)]", // amber
+    color: "text-[hsl(28_100%_58%)]",
+    gradient: "from-[hsl(28_100%_58%/0.22)] via-[hsl(45_100%_55%/0.18)] to-transparent",
+    ring: "hsl(28_100%_58%)",
     subsections: [
       { id: "ecg-findings", title: "ECG Findings", icon: Activity, color: "text-[hsl(340_85%_60%)]" },
       { id: "ecg-abcde", title: "ECG ABCDE Screen", icon: Activity, color: "text-[hsl(16_100%_60%)]" },
@@ -86,7 +90,9 @@ const sections = [
     id: "differential-diagnosis",
     title: "Differential Diagnosis",
     icon: Brain,
-    color: "text-[hsl(280_75%_60%)]", // magenta
+    color: "text-[hsl(280_75%_60%)]",
+    gradient: "from-[hsl(280_75%_60%/0.22)] via-[hsl(260_80%_65%/0.18)] to-transparent",
+    ring: "hsl(280_75%_60%)",
     subsections: [
       { id: "differential-diagnosis-section", title: "Differential Diagnosis", icon: Lightbulb, color: "text-[hsl(45_100%_55%)]" },
       { id: "diagnostic-criteria", title: "Diagnostic Criteria", icon: CheckSquare, color: "text-[hsl(160_70%_45%)]" },
@@ -97,7 +103,9 @@ const sections = [
     id: "management",
     title: "Interventions",
     icon: Shield,
-    color: "text-[hsl(160_70%_45%)]", // teal-green
+    color: "text-[hsl(160_70%_45%)]",
+    gradient: "from-[hsl(160_70%_45%/0.22)] via-[hsl(190_80%_50%/0.18)] to-transparent",
+    ring: "hsl(160_70%_45%)",
     subsections: [
       { id: "interventions", title: "Interventions & Management", icon: Shield, color: "text-[hsl(160_70%_45%)]" },
     ],
@@ -107,6 +115,8 @@ const sections = [
     title: "Drop Attacks",
     icon: AlertTriangle,
     color: "text-[hsl(0_85%_60%)]",
+    gradient: "from-[hsl(0_85%_60%/0.22)] via-[hsl(16_100%_60%/0.18)] to-transparent",
+    ring: "hsl(0_85%_60%)",
     subsections: [
       { id: "drop-attacks", title: "Drop Attacks Workup", icon: AlertTriangle, color: "text-[hsl(0_85%_60%)]" },
     ],
@@ -116,6 +126,8 @@ const sections = [
     title: "Pharmacology",
     icon: Pill,
     color: "text-[hsl(280_75%_60%)]",
+    gradient: "from-[hsl(280_75%_60%/0.22)] via-[hsl(340_85%_60%/0.18)] to-transparent",
+    ring: "hsl(280_75%_60%)",
     subsections: [
       { id: "anti-arrhythmics", title: "Anti-arrhythmic Drugs — Vaughan-Williams", icon: Pill, color: "text-[hsl(280_75%_60%)]" },
     ],
@@ -265,24 +277,34 @@ export function AssessmentSidebar() {
         {filteredSections.map((section) => {
           const isOpen = q ? true : !!openGroups[section.id];
           return (
-            <SidebarGroup key={section.id}>
+            <SidebarGroup key={section.id} className="mb-1">
               <Collapsible open={isOpen} onOpenChange={() => toggleGroup(section.id)}>
                 <CollapsibleTrigger asChild>
                   <SidebarGroupLabel
                     className={cn(
-                      "flex items-center gap-2 cursor-pointer select-none rounded-md px-2 py-2 text-base",
-                      "hover:bg-muted/60 transition-colors"
+                      "flex items-center gap-2 cursor-pointer select-none rounded-lg px-2 py-2.5 text-base h-auto",
+                      "bg-gradient-to-r border border-transparent transition-all",
+                      section.gradient,
+                      "hover:border-[color:var(--ring-color)]/40 hover:shadow-sm"
                     )}
+                    style={{ ["--ring-color" as any]: section.ring }}
                   >
-                    <section.icon className={cn("h-5 w-5 shrink-0", section.color)} />
+                    <section.icon
+                      className={cn("h-5 w-5 shrink-0 drop-shadow-sm", section.color)}
+                      strokeWidth={2.5}
+                    />
                     {!collapsed && (
                       <>
-                        <span className="flex-1 font-semibold">{highlight(section.title)}</span>
+                        <span className={cn("flex-1 font-extrabold tracking-tight uppercase text-[13px]", section.color)}>
+                          {highlight(section.title)}
+                        </span>
                         <ChevronDown
                           className={cn(
-                            "h-4 w-4 text-muted-foreground transition-transform",
+                            "h-4 w-4 transition-transform",
+                            section.color,
                             isOpen && "rotate-180"
                           )}
+                          strokeWidth={2.75}
                         />
                       </>
                     )}
@@ -301,19 +323,27 @@ export function AssessmentSidebar() {
                               <SidebarMenuButton
                                 onClick={() => scrollToSection(subsection.id)}
                                 className={cn(
-                                  "cursor-pointer transition-colors w-full text-sm py-2 h-auto",
-                                  active && "bg-primary/10 text-primary font-medium"
+                                  "cursor-pointer transition-all w-full text-sm py-2 h-auto rounded-md font-semibold",
+                                  "hover:bg-muted/70",
+                                  active && "bg-gradient-to-r shadow-sm",
+                                  active && section.gradient
                                 )}
+                                style={active ? { borderLeft: `3px solid ${section.ring}` } : undefined}
                               >
                                 <subsection.icon
                                   className={cn("h-4 w-4 shrink-0", subsection.color)}
-                                  strokeWidth={active ? 2.5 : 2}
+                                  strokeWidth={active ? 2.75 : 2.25}
                                 />
                                 {!collapsed && (
-                                  <span className="flex-1 leading-snug">{highlight(subsection.title)}</span>
+                                  <span className={cn(
+                                    "flex-1 leading-snug",
+                                    active ? "font-bold text-foreground" : "font-semibold"
+                                  )}>
+                                    {highlight(subsection.title)}
+                                  </span>
                                 )}
                                 {!collapsed && progress > 0 && (
-                                  <span className="text-xs text-muted-foreground ml-auto">
+                                  <span className={cn("text-xs ml-auto font-bold", subsection.color)}>
                                     {progress}%
                                   </span>
                                 )}
