@@ -692,7 +692,46 @@ const AntiArrhythmicsSection = () => {
                   </div>
                 )}
 
+                {activeDrug.interactions && activeDrug.interactions.length > 0 && (
+                  <div className="rounded-lg border p-3 bg-rose-500/5 border-rose-500/30">
+                    <div className="flex items-center gap-2 text-sm font-semibold mb-2">
+                      <ShieldAlert className="h-4 w-4 text-rose-500" /> Key drug interactions
+                    </div>
+                    <ul className="space-y-2">
+                      {activeDrug.interactions.map((it) => {
+                        const tone =
+                          it.severity === "contraindicated"
+                            ? "bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/40"
+                            : it.severity === "high-risk"
+                            ? "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/40"
+                            : "bg-muted text-foreground/80 border-border";
+                        const badge =
+                          it.severity === "contraindicated"
+                            ? "Contraindicated"
+                            : it.severity === "high-risk"
+                            ? "High-risk"
+                            : "Caution";
+                        return (
+                          <li key={it.label} className="rounded-md border bg-background/60 p-2">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className={`text-[10px] uppercase tracking-wide font-bold border rounded px-1.5 py-0.5 ${tone}`}>
+                                {badge}
+                              </span>
+                              <span className="text-sm font-semibold text-foreground">{it.label}</span>
+                            </div>
+                            {it.examples && (
+                              <p className="mt-1 text-xs text-muted-foreground"><span className="font-medium text-foreground/80">Examples:</span> {it.examples}</p>
+                            )}
+                            <p className="mt-1 text-xs text-foreground/90">{it.effect}</p>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                )}
+
                 <DoseCalculator drug={activeDrug} />
+
 
                 <Button variant="outline" onClick={() => setActiveDrug(null)} className="w-full">
                   <X className="h-4 w-4" /> Close
