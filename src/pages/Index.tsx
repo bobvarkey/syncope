@@ -130,6 +130,9 @@ const IndexContent = () => {
                   </p>
                 </div>
               </div>
+              <div className="hidden md:block">
+                <QuickSearch />
+              </div>
               <LanguageSwitcher />
               <Button
                 onClick={() => document.getElementById('syncope-mini-app')?.scrollIntoView({ behavior: 'smooth' })}
@@ -138,6 +141,9 @@ const IndexContent = () => {
               >
                 Start triage
               </Button>
+            </div>
+            <div className="md:hidden px-3 pb-2">
+              <QuickSearch />
             </div>
           </header>
 
