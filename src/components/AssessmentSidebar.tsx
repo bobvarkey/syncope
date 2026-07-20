@@ -51,6 +51,18 @@ import { cn } from "@/lib/utils";
 // Sunset Blaze accent classes per icon + group gradients
 const sections = [
   {
+    id: "hutt-group",
+    title: "HUTT Mini App",
+    icon: ArrowUpFromLine,
+    color: "text-[hsl(340_85%_60%)]",
+    gradient: "from-[hsl(340_85%_60%/0.35)] via-[hsl(280_75%_60%/0.28)] to-[hsl(28_100%_58%/0.22)]",
+    ring: "hsl(340_85%_60%)",
+    prominent: true,
+    subsections: [
+      { id: "hutt-mini-app", title: "Head-Up Tilt Table Test", icon: ArrowUpFromLine, color: "text-[hsl(340_85%_60%)]" },
+    ],
+  },
+  {
     id: "clinical-history",
     title: "Clinical History",
     icon: FileText,
