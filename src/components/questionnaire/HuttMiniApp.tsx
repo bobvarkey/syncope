@@ -779,3 +779,255 @@ function Field({
     </div>
   );
 }
+
+// ============================================================
+// Protocol reference: Standard vs Italian with medications table
+// ============================================================
+type MedRow = {
+  drug: string;
+  role: string;
+  dose: string;
+  route: string;
+  notes: string;
+};
+
+const STANDARD_MEDS: MedRow[] = [
+  {
+    drug: "0.9% Saline",
+    role: "IV access / maintenance",
+    dose: "TKVO ~20–30 mL/h; bolus 250–500 mL for hypotension",
+    route: "IV peripheral cannula (18–20 G)",
+    notes: "Establish before tilt; volume-load only if clinically hypovolaemic.",
+  },
+  {
+    drug: "Atropine",
+    role: "Rescue — bradycardia / asystole",
+    dose: "0.5 mg IV bolus; repeat every 3–5 min up to 3 mg total",
+    route: "IV push",
+    notes: "For symptomatic HR < 40 bpm or asystole > 3 s not resolving on return to supine.",
+  },
+  {
+    drug: "Phenylephrine",
+    role: "Rescue — refractory hypotension",
+    dose: "50–200 µg IV bolus, or infusion 0.1–0.5 µg/kg/min titrated to MAP ≥ 65",
+    route: "IV bolus or infusion pump",
+    notes: "Reserve for hypotension unresponsive to supine + fluids; caution in coronary/CV disease.",
+  },
+];
+
+const ITALIAN_MEDS: MedRow[] = [
+  {
+    drug: "Glyceryl trinitrate (GTN / NTG)",
+    role: "Provocation agent",
+    dose: "300–400 µg — single sublingual spray (1–2 puffs, 400 µg spray delivers 400 µg/puff)",
+    route: "Sublingual spray while patient upright at 60–70°",
+    notes:
+      "Given after 20 min negative passive tilt; keep upright 15–20 min or until endpoint. Do not repeat.",
+  },
+  {
+    drug: "Isoproterenol (Isoprenaline)",
+    role: "Alternative provocation (if GTN contraindicated)",
+    dose: "Start 1 µg/min IV infusion; titrate by 1 µg/min every 5 min up to 3 µg/min",
+    route: "IV infusion pump (dilute 1 mg in 250 mL D5W = 4 µg/mL)",
+    notes:
+      "Target HR rise ~20–25% above baseline. Stop if HR > 150, ectopy, chest pain, or endpoint reached.",
+  },
+  {
+    drug: "0.9% Saline",
+    role: "Carrier / bolus",
+    dose: "TKVO; bolus 250–500 mL for hypotension",
+    route: "IV",
+    notes: "Mandatory line for potentiated protocol.",
+  },
+  {
+    drug: "Atropine",
+    role: "Rescue — bradycardia / asystole",
+    dose: "0.5 mg IV; repeat q3–5 min (max 3 mg)",
+    route: "IV push",
+    notes: "First-line for cardioinhibitory endpoint with slow recovery.",
+  },
+  {
+    drug: "Phenylephrine",
+    role: "Rescue — refractory hypotension",
+    dose: "50–200 µg IV bolus, or 0.1–0.5 µg/kg/min infusion",
+    route: "IV",
+    notes: "Especially relevant after GTN — nitrate-induced vasoplegia unresponsive to fluids.",
+  },
+];
+
+function MedicationsTable({ rows, accent }: { rows: MedRow[]; accent: string }) {
+  return (
+    <div className="mt-3 overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700">
+      <table className="w-full min-w-[640px] text-left text-xs">
+        <thead className={`text-white ${accent}`}>
+          <tr>
+            <th className="px-3 py-2 font-semibold">Drug</th>
+            <th className="px-3 py-2 font-semibold">Role</th>
+            <th className="px-3 py-2 font-semibold">Dose / infusion rate</th>
+            <th className="px-3 py-2 font-semibold">Route</th>
+            <th className="px-3 py-2 font-semibold">Administration notes</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-slate-200 bg-white dark:divide-slate-700 dark:bg-slate-900">
+          {rows.map((r) => (
+            <tr key={r.drug} className="align-top">
+              <td className="px-3 py-2 font-semibold text-slate-900 dark:text-slate-100">{r.drug}</td>
+              <td className="px-3 py-2 text-slate-700 dark:text-slate-300">{r.role}</td>
+              <td className="px-3 py-2 text-slate-700 dark:text-slate-300">{r.dose}</td>
+              <td className="px-3 py-2 text-slate-700 dark:text-slate-300">{r.route}</td>
+              <td className="px-3 py-2 text-slate-600 dark:text-slate-400">{r.notes}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function ProtocolReference({
+  activeProtocol,
+  onSelect,
+}: {
+  activeProtocol: ProtocolType;
+  onSelect: (p: ProtocolType) => void;
+}) {
+  const [view, setView] = useState<ProtocolType>(activeProtocol);
+  useEffect(() => setView(activeProtocol), [activeProtocol]);
+
+  const isStd = view === "standard";
+  const accent = isStd
+    ? "bg-[hsl(28_100%_58%)]"
+    : "bg-[hsl(280_75%_55%)]";
+  const ring = isStd ? "border-[hsl(28_100%_58%/0.4)]" : "border-[hsl(280_75%_60%/0.4)]";
+  const tint = isStd ? "bg-[hsl(28_100%_58%/0.06)]" : "bg-[hsl(280_75%_60%/0.06)]";
+
+  return (
+    <details
+      open
+      className="mt-5 group rounded-2xl border border-slate-200 bg-white shadow-sm open:shadow-md dark:border-slate-700 dark:bg-slate-900"
+    >
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4 select-none">
+        <div>
+          <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[hsl(280_75%_60%)]">
+            Study setup & protocol reference
+          </div>
+          <div className="mt-0.5 text-base font-bold text-slate-900 dark:text-slate-100">
+            HUTT — setup, phases, medications & endpoints
+          </div>
+        </div>
+        <span className="text-slate-400 transition-transform group-open:rotate-180">▾</span>
+      </summary>
+
+      <div className="border-t border-slate-100 px-5 py-5 space-y-5 text-sm text-slate-700 dark:border-slate-800 dark:text-slate-300">
+        {/* Protocol toggle */}
+        <div className="inline-flex rounded-full bg-slate-100 p-1 dark:bg-slate-800">
+          {(["standard", "italian"] as ProtocolType[]).map((p) => (
+            <button
+              key={p}
+              type="button"
+              onClick={() => {
+                setView(p);
+                onSelect(p);
+              }}
+              className={`rounded-full px-4 py-1.5 text-xs font-bold transition ${
+                view === p
+                  ? "bg-white text-slate-900 shadow dark:bg-slate-900 dark:text-white"
+                  : "text-slate-600 hover:bg-white/60 dark:text-slate-300"
+              }`}
+            >
+              {p === "standard" ? "Standard (Westminster)" : "Italian (NTG-potentiated)"}
+            </button>
+          ))}
+        </div>
+
+        {/* Common preparation */}
+        <section>
+          <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100">Pre-test setup (both protocols)</h4>
+          <ul className="mt-2 list-disc space-y-1 pl-5">
+            <li>Fasting ≥ 2 h; empty bladder; quiet, dim, temperature-controlled room (~22 °C).</li>
+            <li>Withhold vasoactive drugs where safe (β-blockers, nitrates, diuretics, α-blockers) for ≥ 5 half-lives; document those that cannot be stopped.</li>
+            <li>Informed consent; IV access with 0.9% saline TKVO; resuscitation trolley with atropine, IV fluids, phenylephrine at bedside.</li>
+            <li>Tilt table with footboard, safety straps at knee / thigh / chest; ability to return to supine in ≤ 10 s.</li>
+            <li>Continuous 3-lead ECG, non-invasive beat-to-beat BP (Finometer / Finapres / Task Force) plus intermittent cuff cross-check.</li>
+            <li>Supine baseline monitoring ≥ 5–10 min before tilt. End-tilt angle <b>60–70°</b> (70° most common).</li>
+          </ul>
+        </section>
+
+        {/* Phase timing */}
+        <section className={`rounded-xl border ${ring} ${tint} p-4`}>
+          <h4 className={`text-sm font-bold ${isStd ? "text-[hsl(16_100%_45%)] dark:text-[hsl(28_100%_65%)]" : "text-[hsl(280_75%_45%)] dark:text-[hsl(280_75%_70%)]"}`}>
+            {isStd ? "Standard (Westminster) — phase timing" : "Italian (NTG-potentiated) — phase timing"}
+          </h4>
+          {isStd ? (
+            <ol className="mt-2 list-decimal space-y-1.5 pl-5">
+              <li><b>Supine baseline</b> — 5–10 min; record HR, BP, symptoms.</li>
+              <li><b>Passive head-up tilt 60–70°</b> — 20–45 min (typically 40 min if asymptomatic).</li>
+              <li><b>Return to supine</b> at endpoint or symptom onset; monitor 3–5 min until stable.</li>
+            </ol>
+          ) : (
+            <ol className="mt-2 list-decimal space-y-1.5 pl-5">
+              <li><b>Supine baseline</b> — 5–10 min.</li>
+              <li><b>Passive tilt at 60°</b> — 20 min. If diagnostic → stop.</li>
+              <li><b>Sublingual GTN 300–400 µg</b> spray while upright; continue tilt <b>15–20 min</b>.</li>
+              <li><b>Return to supine</b> at endpoint or symptom onset; monitor until stable.</li>
+            </ol>
+          )}
+          <div className="mt-3 text-xs text-slate-600 dark:text-slate-400">
+            Diagnostic yield:{" "}
+            {isStd
+              ? "~30–50% sensitivity in reflex syncope; specificity ~90%."
+              : "~60–65% sensitivity in reflex syncope; specificity ~90%. Shorter total test time."}
+          </div>
+        </section>
+
+        {/* Medications table */}
+        <section>
+          <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100">
+            Medications — {isStd ? "Standard protocol" : "Italian protocol"}
+          </h4>
+          <p className="mt-1 text-xs text-slate-500">
+            Doses shown for adults with normal renal/hepatic function. Confirm against local formulary before use.
+          </p>
+          <MedicationsTable rows={isStd ? STANDARD_MEDS : ITALIAN_MEDS} accent={accent} />
+        </section>
+
+        {/* VASIS */}
+        <section>
+          <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100">VASIS classification (positive tests)</h4>
+          <ul className="mt-2 list-disc space-y-1 pl-5">
+            <li><b>Type 1 — Mixed:</b> HR falls but not &lt; 40 bpm (or &lt; 40 for &lt; 10 s); BP falls before HR.</li>
+            <li><b>Type 2A — Cardioinhibitory without asystole:</b> HR &lt; 40 bpm for &gt; 10 s, no asystole ≥ 3 s; BP falls before HR.</li>
+            <li><b>Type 2B — Cardioinhibitory with asystole:</b> asystole &gt; 3 s; BP falls with or before HR.</li>
+            <li><b>Type 3 — Vasodepressor:</b> HR does not fall &gt; 10% from peak; BP fall causes syncope.</li>
+            <li>Additional patterns: POTS (HR rise ≥ 30 bpm within 10 min, no hypotension), classical / delayed OH, psychogenic pseudosyncope.</li>
+          </ul>
+        </section>
+
+        {/* Stop rules & contraindications */}
+        <section className="rounded-xl border border-rose-200 bg-rose-50/60 p-4 dark:border-rose-900/40 dark:bg-rose-950/20">
+          <h4 className="text-sm font-bold text-rose-700 dark:text-rose-300">Stop rules / endpoints</h4>
+          <ul className="mt-2 list-disc space-y-1 pl-5">
+            <li>Reproduction of the patient's typical syncope or presyncope with hypotension / bradycardia.</li>
+            <li>SBP &lt; 90 mmHg or fall ≥ 30 mmHg from baseline.</li>
+            <li>Asystole &gt; 3 s or symptomatic HR &lt; 40 bpm for &gt; 10 s.</li>
+            <li>Isoproterenol: HR &gt; 150 bpm, sustained ectopy, chest pain, or intolerable symptoms.</li>
+            <li>Completion of protocol time without symptoms → negative test.</li>
+          </ul>
+
+          <h4 className="mt-4 text-sm font-bold text-rose-700 dark:text-rose-300">Contraindications / cautions</h4>
+          <ul className="mt-2 list-disc space-y-1 pl-5">
+            <li>Severe aortic stenosis, critical mitral stenosis, obstructive HCM, proximal coronary stenosis, severe cerebrovascular disease.</li>
+            <li>Recent (&lt; 48 h) sildenafil / vardenafil, or (&lt; 72 h) tadalafil → avoid GTN and isoproterenol potentiation.</li>
+            <li>Pregnancy — relative contraindication, especially for GTN protocol.</li>
+            <li>Uncontrolled hypertension, unstable arrhythmia, active ischaemia, raised intracranial pressure (GTN).</li>
+            <li>Isoproterenol: avoid in ischaemic heart disease, significant LVOT obstruction, uncontrolled hyperthyroidism.</li>
+          </ul>
+        </section>
+
+        <p className="text-xs text-slate-500">
+          References: ESC 2018 syncope guidelines; Bartoletti A et al. "The Italian protocol" Europace 2000; VASIS classification Sutton R et al.; BHRS HUTT SOP.
+        </p>
+      </div>
+    </details>
+  );
+}
