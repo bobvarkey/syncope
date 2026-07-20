@@ -296,17 +296,18 @@ export function AssessmentSidebar() {
                   <SidebarGroupLabel
                     className={cn(
                       "flex items-center gap-2 cursor-pointer select-none rounded-lg px-2 py-2.5 text-base h-auto",
-                      "bg-gradient-to-r border transition-all",
+                      "bg-gradient-to-r border transition-all duration-300 ease-out",
                       section.gradient,
+                      "dark:bg-background/40 dark:backdrop-blur-sm",
                       (section as any).prominent
-                        ? "border-[color:var(--ring-color)]/60 shadow-md ring-1 ring-[color:var(--ring-color)]/30 py-3"
-                        : "border-transparent hover:border-[color:var(--ring-color)]/40 hover:shadow-sm"
+                        ? "border-[color:var(--ring-color)]/60 shadow-md ring-1 ring-[color:var(--ring-color)]/30 dark:ring-[color:var(--ring-color)]/50 py-3"
+                        : "border-transparent hover:border-[color:var(--ring-color)]/40 hover:shadow-sm dark:hover:border-[color:var(--ring-color)]/60"
                     )}
                     style={{ ["--ring-color" as any]: section.ring }}
                   >
                     <section.icon
                       className={cn(
-                        "shrink-0 drop-shadow-sm",
+                        "shrink-0 drop-shadow-sm dark:brightness-125 dark:saturate-150",
                         section.color,
                         (section as any).prominent ? "h-6 w-6" : "h-5 w-5"
                       )}
@@ -317,7 +318,8 @@ export function AssessmentSidebar() {
                         <span className={cn(
                           "flex-1 font-extrabold tracking-tight uppercase",
                           (section as any).prominent ? "text-sm" : "text-[13px]",
-                          section.color
+                          section.color,
+                          "dark:brightness-150 dark:saturate-150 dark:drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]"
                         )}>
                           {highlight(section.title)}
                           {(section as any).prominent && (
@@ -328,8 +330,9 @@ export function AssessmentSidebar() {
                         </span>
                         <ChevronDown
                           className={cn(
-                            "h-4 w-4 transition-transform",
+                            "h-4 w-4 transition-transform duration-300 ease-out",
                             section.color,
+                            "dark:brightness-150",
                             isOpen && "rotate-180"
                           )}
                           strokeWidth={2.75}
@@ -339,7 +342,7 @@ export function AssessmentSidebar() {
                   </SidebarGroupLabel>
                 </CollapsibleTrigger>
 
-                <CollapsibleContent>
+                <CollapsibleContent className="overflow-hidden data-[state=open]:animate-accordion-down data-[state=closed]:animate-accordion-up">
                   <SidebarGroupContent>
                     <SidebarMenu>
                       {section.subsections.map((subsection) => {
@@ -351,27 +354,36 @@ export function AssessmentSidebar() {
                               <SidebarMenuButton
                                 onClick={() => scrollToSection(subsection.id)}
                                 className={cn(
-                                  "cursor-pointer transition-all w-full text-sm py-2 h-auto rounded-md font-semibold",
-                                  "hover:bg-muted/70",
-                                  active && "bg-gradient-to-r shadow-sm",
+                                  "cursor-pointer transition-all duration-200 ease-out w-full text-sm py-2 h-auto rounded-md font-semibold",
+                                  "hover:bg-muted/70 dark:hover:bg-muted/40",
+                                  "dark:text-foreground/90",
+                                  active && "bg-gradient-to-r shadow-sm dark:bg-background/60",
                                   active && section.gradient
                                 )}
                                 style={active ? { borderLeft: `3px solid ${section.ring}` } : undefined}
                               >
                                 <subsection.icon
-                                  className={cn("h-4 w-4 shrink-0", subsection.color)}
+                                  className={cn(
+                                    "h-4 w-4 shrink-0 dark:brightness-125 dark:saturate-150",
+                                    subsection.color
+                                  )}
                                   strokeWidth={active ? 2.75 : 2.25}
                                 />
                                 {!collapsed && (
                                   <span className={cn(
                                     "flex-1 leading-snug",
-                                    active ? "font-bold text-foreground" : "font-semibold"
+                                    active
+                                      ? "font-bold text-foreground dark:text-white"
+                                      : "font-semibold text-foreground/90 dark:text-foreground/95"
                                   )}>
                                     {highlight(subsection.title)}
                                   </span>
                                 )}
                                 {!collapsed && progress > 0 && (
-                                  <span className={cn("text-xs ml-auto font-bold", subsection.color)}>
+                                  <span className={cn(
+                                    "text-xs ml-auto font-bold dark:brightness-150 dark:saturate-150",
+                                    subsection.color
+                                  )}>
                                     {progress}%
                                   </span>
                                 )}
