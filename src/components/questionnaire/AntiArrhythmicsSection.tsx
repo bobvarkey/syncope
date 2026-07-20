@@ -14,6 +14,7 @@ import {
   SheetDescription,
 } from "@/components/ui/sheet";
 import diagram from "@/assets/anti-arrhythmic-classes.png.asset.json";
+import targetsDiagram from "@/assets/vaughan-williams-targets.png.asset.json";
 
 type Dosing = {
   route: "PO" | "IV" | "PO/IV";
