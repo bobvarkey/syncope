@@ -348,7 +348,7 @@ const classes: DrugClass[] = [
     mnemonicWord: "Mainly → Miscellaneous",
     target: "Varied — vagal tone, Na/K-ATPase, adenosine receptors",
     accent: "from-primary/20 via-accent/10 to-tertiary/10 border-accent/40",
-    drugs: ["digoxin", "adenosine", "magnesium", "ivabradine"].map((id) => drugMap[id]),
+    drugs: ["digoxin", "adenosine", "magnesium"].map((id) => drugMap[id]),
   },
 ];
 
