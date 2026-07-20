@@ -286,6 +286,50 @@ const drugList: Drug[] = [
       notes:
         "Adults: start 5 mg BD with food. Review resting HR at 2 weeks — titrate to 7.5 mg BD if HR > 60 bpm, keep 5 mg BD if 50–60 bpm, reduce to 2.5 mg BD or stop if HR < 50 bpm or symptomatic bradycardia. Start 2.5 mg BD if ≥ 75 y, frail, or moderate hepatic impairment. Take morning and evening with meals. Do NOT combine with verapamil/diltiazem or strong CYP3A4 inhibitors; avoid grapefruit juice.",
     },
+    interactions: [
+      {
+        severity: "contraindicated",
+        label: "Strong CYP3A4 inhibitors",
+        examples: "Ketoconazole, itraconazole, clarithromycin, telithromycin, ritonavir, nelfinavir, nefazodone, cobicistat",
+        effect: "↑ Ivabradine plasma levels 7–8×, marked bradycardia and QT-related risk — combination is contraindicated.",
+      },
+      {
+        severity: "contraindicated",
+        label: "Non-dihydropyridine calcium-channel blockers",
+        examples: "Verapamil, diltiazem",
+        effect: "Additive rate slowing plus CYP3A4 inhibition — bradycardia, AV block; do not co-prescribe.",
+      },
+      {
+        severity: "high-risk",
+        label: "Moderate CYP3A4 inhibitors",
+        examples: "Diltiazem (if unavoidable), fluconazole, grapefruit juice",
+        effect: "2–3× rise in ivabradine exposure — start at 2.5 mg BD and monitor HR closely.",
+      },
+      {
+        severity: "high-risk",
+        label: "CYP3A4 inducers",
+        examples: "Rifampicin, phenytoin, carbamazepine, St John's wort, efavirenz",
+        effect: "↓ Ivabradine efficacy — may need dose up-titration; monitor resting HR.",
+      },
+      {
+        severity: "high-risk",
+        label: "Other rate-slowing / AV-nodal blockers",
+        examples: "Beta-blockers, digoxin, amiodarone, sotalol, dronedarone",
+        effect: "Additive sinus bradycardia and PR prolongation — permitted (esp. β-blocker in HFrEF) but review if HR persistently < 50 bpm.",
+      },
+      {
+        severity: "high-risk",
+        label: "QT-prolonging drugs",
+        examples: "Class Ia/III antiarrhythmics, macrolides, fluoroquinolones, methadone, ondansetron, some antipsychotics",
+        effect: "Indirect risk — ivabradine-induced bradycardia increases QT-related torsades susceptibility.",
+      },
+      {
+        severity: "caution",
+        label: "Potassium-losing diuretics",
+        examples: "Furosemide, bumetanide, thiazides",
+        effect: "Hypokalaemia + bradycardia raises arrhythmia risk — check U&Es and replace K⁺/Mg²⁺.",
+      },
+    ],
   },
 ];
 
