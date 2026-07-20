@@ -241,10 +241,45 @@ const drugList: Drug[] = [
   {
     id: "ivabradine",
     name: "Ivabradine",
-    mechanism: "Selective If channel blocker in SA node — pure heart-rate reduction.",
-    ecgEffects: ["↓ HR only"],
-    contraindications: ["Resting HR < 60", "Sick sinus", "AV block", "Atrial fibrillation"],
-    dosing: { route: "PO", fixed: { mgMin: 2.5, mgMax: 7.5, frequencyHrs: 12 }, maxDailyMg: 15 },
+    mechanism:
+      "Selective HCN (If, 'funny') channel blocker in the SA node — pure heart-rate reduction without inotropy, lusitropy, or BP effect.",
+    ecgEffects: ["↓ HR only", "No change in PR/QRS/QT", "May unmask latent AF"],
+    contraindications: [
+      "Resting HR < 70 bpm before treatment (per SmPC)",
+      "Sick sinus / SA block / 2°–3° AV block without a functioning pacemaker",
+      "Atrial fibrillation or any non-sinus rhythm dependent on SA node",
+      "Acute decompensated HF, cardiogenic shock, unstable angina, acute MI",
+      "Severe hypotension (< 90/50 mmHg)",
+      "Severe hepatic impairment (Child-Pugh C)",
+      "Congenital long QT syndrome",
+      "Pregnancy, breastfeeding, women of child-bearing potential without contraception",
+      "Strong CYP3A4 inhibitors (ketoconazole, itraconazole, clarithromycin, ritonavir, nefazodone)",
+      "Non-DHP calcium-channel blockers (verapamil, diltiazem)",
+    ],
+    cautions: [
+      "Risk of new-onset atrial fibrillation — monitor rhythm; discontinue if AF develops",
+      "Bradycardia — hold or reduce dose if HR persistently < 50 bpm or symptomatic",
+      "Moderate CYP3A4 inhibitors/inducers, grapefruit juice, St John's wort — avoid or halve dose",
+      "Retinal disease / retinitis pigmentosa — luminous phenomena may worsen",
+      "Recent stroke, chronic bradyarrhythmias, moderate hepatic impairment",
+      "QT-prolonging drug combinations (indirect risk via bradycardia)",
+    ],
+    adverseEffects: [
+      "Luminous phenomena / phosphenes (transient bright spots) — up to ~15%",
+      "Symptomatic or asymptomatic bradycardia",
+      "New-onset atrial fibrillation",
+      "Headache, dizziness",
+      "Blurred vision",
+      "First-degree AV block / PR prolongation",
+      "Nausea, constipation, diarrhoea",
+    ],
+    dosing: {
+      route: "PO",
+      fixed: { mgMin: 2.5, mgMax: 7.5, frequencyHrs: 12 },
+      maxDailyMg: 15,
+      notes:
+        "Adults: start 5 mg BD with food. Review resting HR at 2 weeks — titrate to 7.5 mg BD if HR > 60 bpm, keep 5 mg BD if 50–60 bpm, reduce to 2.5 mg BD or stop if HR < 50 bpm or symptomatic bradycardia. Start 2.5 mg BD if ≥ 75 y, frail, or moderate hepatic impairment. Take morning and evening with meals. Do NOT combine with verapamil/diltiazem or strong CYP3A4 inhibitors; avoid grapefruit juice.",
+    },
   },
 ];
 
