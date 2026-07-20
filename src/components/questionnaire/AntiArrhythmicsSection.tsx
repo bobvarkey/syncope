@@ -14,6 +14,7 @@ import {
   SheetDescription,
 } from "@/components/ui/sheet";
 import diagram from "@/assets/anti-arrhythmic-classes.png.asset.json";
+import targetsDiagram from "@/assets/vaughan-williams-targets.png.asset.json";
 
 type Dosing = {
   route: "PO" | "IV" | "PO/IV";
@@ -542,6 +543,18 @@ const AntiArrhythmicsSection = () => {
           />
           <figcaption className="px-3 py-2 text-[11px] text-muted-foreground border-t bg-muted/30 leading-snug">
             Cellular targets: Class I (Na⁺), Class II (β-receptors), Class III (K⁺), Class IV (Ca²⁺).
+          </figcaption>
+        </figure>
+
+        <figure className="rounded-xl border overflow-hidden bg-background">
+          <img
+            src={targetsDiagram.url}
+            alt="Ion targets of Vaughan-Williams anti-arrhythmic classes 1–4"
+            loading="lazy"
+            className="media-uniform-contain"
+          />
+          <figcaption className="px-3 py-2 text-[11px] text-muted-foreground border-t bg-muted/30 leading-snug">
+            Ion-channel targets: Class 1 (Na⁺ outside), Class 2 (β-receptors on cell surface), Class 3 (K⁺ inside), Class 4 (Ca²⁺ in sarcoplasmic reticulum).
           </figcaption>
         </figure>
 
