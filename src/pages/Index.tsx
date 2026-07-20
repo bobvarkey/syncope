@@ -35,6 +35,7 @@ import DropAttacksSection from "@/components/questionnaire/DropAttacksSection";
 import SyncopeMedicationsSection from "@/components/questionnaire/SyncopeMedicationsSection";
 import EcgSyncopeAbcde from "@/components/questionnaire/EcgSyncopeAbcde";
 import SyncopeMiniApp from "@/components/questionnaire/SyncopeMiniApp";
+import HuttMiniApp from "@/components/questionnaire/HuttMiniApp";
 import AntiArrhythmicsSection from "@/components/questionnaire/AntiArrhythmicsSection";
 import { exportToPDF, exportToWord } from "@/utils/exportUtils";
 import heroImage from "@/assets/syncdx-hero.png.asset.json";
