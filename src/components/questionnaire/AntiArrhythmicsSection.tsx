@@ -31,6 +31,12 @@ type Drug = {
   contraindications: string[];
   cautions?: string[];
   adverseEffects?: string[];
+  interactions?: {
+    severity: "contraindicated" | "high-risk" | "caution";
+    label: string;
+    examples?: string;
+    effect: string;
+  }[];
   dosing: Dosing;
 };
 
@@ -280,6 +286,50 @@ const drugList: Drug[] = [
       notes:
         "Adults: start 5 mg BD with food. Review resting HR at 2 weeks — titrate to 7.5 mg BD if HR > 60 bpm, keep 5 mg BD if 50–60 bpm, reduce to 2.5 mg BD or stop if HR < 50 bpm or symptomatic bradycardia. Start 2.5 mg BD if ≥ 75 y, frail, or moderate hepatic impairment. Take morning and evening with meals. Do NOT combine with verapamil/diltiazem or strong CYP3A4 inhibitors; avoid grapefruit juice.",
     },
+    interactions: [
+      {
+        severity: "contraindicated",
+        label: "Strong CYP3A4 inhibitors",
+        examples: "Ketoconazole, itraconazole, clarithromycin, telithromycin, ritonavir, nelfinavir, nefazodone, cobicistat",
+        effect: "↑ Ivabradine plasma levels 7–8×, marked bradycardia and QT-related risk — combination is contraindicated.",
+      },
+      {
+        severity: "contraindicated",
+        label: "Non-dihydropyridine calcium-channel blockers",
+        examples: "Verapamil, diltiazem",
+        effect: "Additive rate slowing plus CYP3A4 inhibition — bradycardia, AV block; do not co-prescribe.",
+      },
+      {
+        severity: "high-risk",
+        label: "Moderate CYP3A4 inhibitors",
+        examples: "Diltiazem (if unavoidable), fluconazole, grapefruit juice",
+        effect: "2–3× rise in ivabradine exposure — start at 2.5 mg BD and monitor HR closely.",
+      },
+      {
+        severity: "high-risk",
+        label: "CYP3A4 inducers",
+        examples: "Rifampicin, phenytoin, carbamazepine, St John's wort, efavirenz",
+        effect: "↓ Ivabradine efficacy — may need dose up-titration; monitor resting HR.",
+      },
+      {
+        severity: "high-risk",
+        label: "Other rate-slowing / AV-nodal blockers",
+        examples: "Beta-blockers, digoxin, amiodarone, sotalol, dronedarone",
+        effect: "Additive sinus bradycardia and PR prolongation — permitted (esp. β-blocker in HFrEF) but review if HR persistently < 50 bpm.",
+      },
+      {
+        severity: "high-risk",
+        label: "QT-prolonging drugs",
+        examples: "Class Ia/III antiarrhythmics, macrolides, fluoroquinolones, methadone, ondansetron, some antipsychotics",
+        effect: "Indirect risk — ivabradine-induced bradycardia increases QT-related torsades susceptibility.",
+      },
+      {
+        severity: "caution",
+        label: "Potassium-losing diuretics",
+        examples: "Furosemide, bumetanide, thiazides",
+        effect: "Hypokalaemia + bradycardia raises arrhythmia risk — check U&Es and replace K⁺/Mg²⁺.",
+      },
+    ],
   },
 ];
 
@@ -642,7 +692,46 @@ const AntiArrhythmicsSection = () => {
                   </div>
                 )}
 
+                {activeDrug.interactions && activeDrug.interactions.length > 0 && (
+                  <div className="rounded-lg border p-3 bg-rose-500/5 border-rose-500/30">
+                    <div className="flex items-center gap-2 text-sm font-semibold mb-2">
+                      <ShieldAlert className="h-4 w-4 text-rose-500" /> Key drug interactions
+                    </div>
+                    <ul className="space-y-2">
+                      {activeDrug.interactions.map((it) => {
+                        const tone =
+                          it.severity === "contraindicated"
+                            ? "bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/40"
+                            : it.severity === "high-risk"
+                            ? "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/40"
+                            : "bg-muted text-foreground/80 border-border";
+                        const badge =
+                          it.severity === "contraindicated"
+                            ? "Contraindicated"
+                            : it.severity === "high-risk"
+                            ? "High-risk"
+                            : "Caution";
+                        return (
+                          <li key={it.label} className="rounded-md border bg-background/60 p-2">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className={`text-[10px] uppercase tracking-wide font-bold border rounded px-1.5 py-0.5 ${tone}`}>
+                                {badge}
+                              </span>
+                              <span className="text-sm font-semibold text-foreground">{it.label}</span>
+                            </div>
+                            {it.examples && (
+                              <p className="mt-1 text-xs text-muted-foreground"><span className="font-medium text-foreground/80">Examples:</span> {it.examples}</p>
+                            )}
+                            <p className="mt-1 text-xs text-foreground/90">{it.effect}</p>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                )}
+
                 <DoseCalculator drug={activeDrug} />
+
 
                 <Button variant="outline" onClick={() => setActiveDrug(null)} className="w-full">
                   <X className="h-4 w-4" /> Close
