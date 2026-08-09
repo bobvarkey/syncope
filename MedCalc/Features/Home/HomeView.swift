@@ -4,7 +4,7 @@ struct HomeView: View {
     var onOpenCalculator: (CalculatorKind) -> Void
     @Environment(DIContainer.self) private var di
 
-    private let featured: [CalculatorKind] = [.bmi, .map, .qtc, .gfrCockcroftGault]
+    private let featured: [CalculatorKind] = [.qtc, .syncopeRisk, .hutt]
 
     var body: some View {
         ScrollView {

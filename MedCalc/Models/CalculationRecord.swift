@@ -26,7 +26,7 @@ final class CalculationRecord {
         self.createdAt = createdAt
     }
 
-    var kind: CalculatorKind { CalculatorKind(rawValue: kindRaw) ?? .bmi }
+    var kind: CalculatorKind { CalculatorKind(rawValue: kindRaw) ?? .qtc }
     var inputs: [String: Double] {
         guard let data = inputsJSON.data(using: .utf8) else { return [:] }
         return (try? JSONDecoder().decode([String: Double].self, from: data)) ?? [:]

@@ -43,16 +43,8 @@ final class SidebarViewModel {
                                 route: .tab($0))
                 }),
             SidebarGroupSpec(
-                id: "general", title: "General", systemImage: "square.grid.2x2.fill",
-                accent: .amber,
-                items: CalculatorKind.allCases.filter { $0.group == .general }.map(Self.item)),
-            SidebarGroupSpec(
-                id: "lab", title: "Lab & Chemistry", systemImage: "flask.fill",
-                accent: .magenta,
-                items: CalculatorKind.allCases.filter { $0.group == .lab }.map(Self.item)),
-            SidebarGroupSpec(
                 id: "cardiology", title: "Cardiology", systemImage: "heart.fill",
-                accent: .violet,
+                accent: .magenta,
                 items: CalculatorKind.allCases.filter { $0.group == .cardiology }.map(Self.item))
         ]
     }

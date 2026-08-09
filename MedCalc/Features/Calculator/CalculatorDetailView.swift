@@ -13,27 +13,22 @@ final class CalculatorViewModel {
 
     var fields: [InputField] {
         switch kind {
-        case .bmi:
-            [.init(key: "weightKg", label: "Weight", unit: "kg"),
-             .init(key: "heightCm", label: "Height", unit: "cm")]
-        case .map:
-            [.init(key: "sbp", label: "SBP", unit: "mmHg"),
-             .init(key: "dbp", label: "DBP", unit: "mmHg")]
-        case .gfrCockcroftGault:
-            [.init(key: "age", label: "Age", unit: "yr"),
-             .init(key: "weightKg", label: "Weight", unit: "kg"),
-             .init(key: "creatinineMgDl", label: "Creatinine", unit: "mg/dL"),
-             .init(key: "isFemale", label: "Female (1/0)", unit: "")]
-        case .correctedCalcium:
-            [.init(key: "calciumMgDl", label: "Calcium", unit: "mg/dL"),
-             .init(key: "albuminGdl", label: "Albumin", unit: "g/dL")]
-        case .aniongap:
-            [.init(key: "sodium", label: "Na⁺", unit: "mEq/L"),
-             .init(key: "chloride", label: "Cl⁻", unit: "mEq/L"),
-             .init(key: "bicarb", label: "HCO₃⁻", unit: "mEq/L")]
         case .qtc:
             [.init(key: "qtMs", label: "QT", unit: "ms"),
              .init(key: "rrSec", label: "RR", unit: "s")]
+        case .syncopeRisk:
+            [.init(key: "age", label: "Age", unit: "yr"),
+             .init(key: "noCvHistory", label: "No prior CV history", unit: "", toggle: true),
+             .init(key: "noProdrome", label: "Syncope without prodrome", unit: "", toggle: true),
+             .init(key: "abnormalEcg", label: "Abnormal ECG", unit: "", toggle: true),
+             .init(key: "sfsrAbnormalEcg", label: "SFSR: abnormal ECG", unit: "", toggle: true),
+             .init(key: "dyspnea", label: "SFSR: dyspnea", unit: "", toggle: true),
+             .init(key: "lowHematocrit", label: "SFSR: hematocrit <30%", unit: "", toggle: true),
+             .init(key: "lowSbp", label: "SFSR: SBP <90", unit: "", toggle: true),
+             .init(key: "heartFailure", label: "SFSR: heart failure history", unit: "", toggle: true)]
+        case .hutt:
+            [.init(key: "responseType", label: "Response type", unit: "", picker: ["Negative": "0", "Vasovagal (mixed)": "1", "Cardioinhibitory": "2", "Vasodepressor": "3", "POTS-like": "4"]),
+             .init(key: "symptomsReproduced", label: "Symptoms reproduced", unit: "", toggle: true)]
         }
     }
 
@@ -59,7 +54,11 @@ final class CalculatorViewModel {
 }
 
 struct InputField: Identifiable, Hashable {
-    let key: String; let label: String; let unit: String
+    let key: String
+    let label: String
+    let unit: String
+    var toggle: Bool = false
+    var picker: [String: String]? = nil
     var id: String { key }
 }
 
@@ -82,16 +81,35 @@ struct CalculatorDetailView: View {
                 GlassCard {
                     VStack(spacing: DS.Spacing.m) {
                         ForEach(vm.fields) { f in
-                            HStack {
-                                Text(f.label).font(.system(size: 16, weight: .medium))
-                                Spacer()
-                                TextField("—", text: Binding(
-                                    get: { vm.inputs[f.key] ?? "" },
-                                    set: { vm.inputs[f.key] = $0 }))
-                                    .keyboardType(.decimalPad)
-                                    .multilineTextAlignment(.trailing)
-                                    .frame(maxWidth: 120)
-                                Text(f.unit).foregroundStyle(.secondary).frame(width: 56, alignment: .leading)
+                            if let picker = f.picker {
+                                Picker(f.label, selection: Binding(
+                                    get: { vm.inputs[f.key] ?? picker.values.first ?? "0" },
+                                    set: { vm.inputs[f.key] = $0 }
+                                )) {
+                                    ForEach(Array(picker.keys), id: \.self) { label in
+                                        Text(label).tag(picker[label] ?? "0")
+                                    }
+                                }
+                                .pickerStyle(.menu)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            } else if f.toggle {
+                                Toggle(f.label, isOn: Binding(
+                                    get: { (vm.inputs[f.key] ?? "0") == "1" },
+                                    set: { vm.inputs[f.key] = $0 ? "1" : "0" }
+                                ))
+                                .font(.system(size: 16, weight: .medium))
+                            } else {
+                                HStack {
+                                    Text(f.label).font(.system(size: 16, weight: .medium))
+                                    Spacer()
+                                    TextField("—", text: Binding(
+                                        get: { vm.inputs[f.key] ?? "" },
+                                        set: { vm.inputs[f.key] = $0 }))
+                                        .keyboardType(.decimalPad)
+                                        .multilineTextAlignment(.trailing)
+                                        .frame(maxWidth: 120)
+                                    Text(f.unit).foregroundStyle(.secondary).frame(width: 56, alignment: .leading)
+                                }
                             }
                         }
                     }

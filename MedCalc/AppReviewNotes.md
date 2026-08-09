@@ -4,8 +4,10 @@ Paste (trimmed) into App Store Connect → App Review Information → Notes.
 
 ## What the app does
 MedCalc is an offline medical calculator reference for clinicians, residents, and
-medical students. It performs manual, user-entered calculations (BMI, MAP, QTc,
-Cockcroft–Gault CrCl, corrected calcium, anion gap) and stores results locally.
+medical students. It performs manual, user-entered calculations (QTc, syncope risk
+scoring, and a head-up tilt test interpretation helper) and stores results locally.
+All results are descriptive and educational — the app never directs diagnosis,
+treatment, triage, or emergency care.
 
 ## Demo account
 Not required. The app has **no sign-in flow**, no paywall, no subscription, no
