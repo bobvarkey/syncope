@@ -518,6 +518,7 @@ const IndexContent = () => {
                   <Link to="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link>
                   <Link to="/terms" className="hover:text-primary transition-colors">Terms of Use</Link>
                   <Link to="/disclaimer" className="hover:text-primary transition-colors">Medical Disclaimer</Link>
+                  <Link to="/account-deletion" className="hover:text-primary transition-colors">Account Deletion</Link>
                 </div>
                 <p className="mt-3 text-center text-[11px] text-muted-foreground/70">
                   © 2026 Syncope &amp; Loss of Consciousness Assessment. For educational use only.
