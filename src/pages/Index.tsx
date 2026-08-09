@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -106,7 +107,7 @@ const IndexContent = () => {
   return (
     <AssessmentProgressProvider>
       <SidebarProvider>
-        <div className="min-h-screen flex w-full">
+        <div className="min-h-dvh flex w-full">
           <AssessmentSidebar />
         
         <div className="flex-1 bg-background">
@@ -147,7 +148,7 @@ const IndexContent = () => {
             </div>
           </header>
 
-          <div className="py-5 sm:py-8 px-3 sm:px-6 lg:px-8">
+          <div className="py-5 sm:py-8 px-3 sm:px-6 lg:px-8" style={{ paddingBottom: "max(1.25rem, env(safe-area-inset-bottom))" }}>
             <div className="max-w-4xl mx-auto">
               <section
                 aria-label="SyncDx introduction"
@@ -511,6 +512,17 @@ const IndexContent = () => {
                 </DropdownMenu>
 
               </div>
+
+              <footer className="mt-10 border-t border-border/50 pt-6 pb-2 print:hidden">
+                <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-muted-foreground">
+                  <Link to="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link>
+                  <Link to="/terms" className="hover:text-primary transition-colors">Terms of Use</Link>
+                  <Link to="/disclaimer" className="hover:text-primary transition-colors">Medical Disclaimer</Link>
+                </div>
+                <p className="mt-3 text-center text-[11px] text-muted-foreground/70">
+                  © 2026 Syncope &amp; Loss of Consciousness Assessment. For educational use only.
+                </p>
+              </footer>
             </div>
           </div>
         </div>
