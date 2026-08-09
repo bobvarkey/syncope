@@ -6,7 +6,7 @@ import { Shield, ArrowLeft, Mail } from "lucide-react";
 
 const PrivacyPolicy = () => {
   return (
-    <div className="min-h-dvh bg-background">
+    <div className="min-h-dvh bg-background overflow-x-hidden">
       <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
         <Button asChild variant="ghost" size="sm" className="mb-6">
           <Link to="/">

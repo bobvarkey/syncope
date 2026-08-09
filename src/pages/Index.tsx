@@ -107,7 +107,7 @@ const IndexContent = () => {
   return (
     <AssessmentProgressProvider>
       <SidebarProvider>
-        <div className="min-h-dvh flex w-full">
+        <div className="min-h-dvh flex w-full overflow-x-hidden">
           <AssessmentSidebar />
         
         <div className="flex-1 bg-background">
