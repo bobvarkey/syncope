@@ -40,6 +40,15 @@ const DifferentialDiagnosisSection = ({ data, onUpdate }: DifferentialDiagnosisS
           {/* Neurally-mediated (reflex) */}
           <div className="border-l-4 border-primary pl-4">
             <h4 className="font-semibold text-foreground mb-3">Neurally-Mediated (Reflex)</h4>
+            <Alert className="mb-4 border-primary/40 bg-primary/5">
+              <Info className="h-4 w-4 text-primary" />
+              <AlertDescription className="text-sm">
+                <strong>Evaluation:</strong> When the initial evaluation suggests reflex syncope, additional testing
+                includes <strong>head-up tilt-table testing</strong> and <strong>carotid sinus massage</strong> (per
+                ACC–AHA–HRS guidelines). Carotid sinus massage is especially important in patients &gt;40 years and
+                should be performed in both supine and upright positions.
+              </AlertDescription>
+            </Alert>
             <div className="space-y-3">
               <div className="font-medium text-sm">Vasovagal Syncope (Common Faint)</div>
               <div className="ml-4 space-y-2">
