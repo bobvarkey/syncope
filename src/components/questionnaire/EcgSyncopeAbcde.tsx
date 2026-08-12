@@ -10,7 +10,8 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import brugadaImage from "@/assets/brugada-types.jpeg.asset.json";
 import epsilonImage from "@/assets/epsilon-wave-arvd.png.asset.json";
-import wellensImage from "@/assets/wellens-syndrome.png.asset.json";
+import wellensImage from "@/assets/wellens-syndrome-ecg.png.asset.json";
+import wobblerImage from "@/assets/wobbler-mnemonic.png.asset.json";
 
 const patternImages: Record<string, { src: string; caption: string }> = {
   brugada: {
@@ -23,7 +24,7 @@ const patternImages: Record<string, { src: string; caption: string }> = {
   },
   wellens: {
     src: wellensImage.url,
-    caption: "Wellens' syndrome: type A biphasic and type B deeply inverted T waves in V2–V3 — critical proximal LAD stenosis.",
+    caption: "Wellens' syndrome: pattern A biphasic and pattern B deeply inverted T waves in V2–V3 — critical proximal LAD stenosis.",
   },
 };
 
