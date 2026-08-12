@@ -164,6 +164,10 @@ const ECGFindingsSection = ({ data, onUpdate }: ECGFindingsSectionProps) => {
                 label: "Features of ARVD (negative T waves in right precordial leads, epsilon waves, late potentials)" 
               },
               { 
+                id: "wellens-syndrome", 
+                label: "Wellens' syndrome (biphasic or deep symmetric inverted T waves in V2–V3, pain-free, preserved R waves — critical proximal LAD stenosis)" 
+              },
+              { 
                 id: "mi-q-waves", 
                 label: "Q waves suggesting myocardial infarction" 
               },
