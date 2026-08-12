@@ -50,6 +50,7 @@ const patterns: EcgPattern[] = [
   { id: "complete-hb",        key: "C", name: "Chronic ischaemia / Q-waves", risk: "high",         description: "Q waves suggesting prior MI; substrate for VT." },
   { id: "delta-wpw",          key: "D", name: "Delta wave (WPW)",            risk: "high",         description: "Short PR + slurred QRS upstroke; pre-excitation." },
   { id: "epsilon-arvc",       key: "E", name: "Epsilon wave (ARVC)",         risk: "high",         description: "Small deflection at end of QRS in V1–V3; RV cardiomyopathy." },
+  { id: "wellens",            key: "W", name: "Wellens' syndrome",           risk: "high",         description: "Biphasic (type A) or deep symmetric inverted (type B) T waves in V2–V3 during pain-free interval, with preserved R waves and no Q waves — critical proximal LAD stenosis. Usually presents with chest pain, but transient severe LAD ischaemia can cause arrhythmia or a sudden fall in cardiac output leading to syncope." },
   { id: "long-qt",            key: "L", name: "Long QT (QTc >480 ms)",       risk: "high",         description: "Torsades risk; check meds and electrolytes." },
   { id: "short-qt",           key: "R", name: "Short QT (QTc <340 ms)",      risk: "high",         description: "Genetic short QT syndrome; VF risk." },
   { id: "rv-strain",          key: "R", name: "RV strain pattern",           risk: "intermediate", description: "S1Q3T3, RBBB, RV strain — consider PE." },
