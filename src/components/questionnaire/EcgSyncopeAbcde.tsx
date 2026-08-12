@@ -227,8 +227,23 @@ const EcgSyncopeAbcde = ({ data, onUpdate }: EcgSyncopeAbcdeProps) => {
       </CardHeader>
 
       <CardContent className="space-y-4">
+        {/* WOBBLER mnemonic reference */}
+        <figure className="rounded-lg border overflow-hidden bg-background">
+          <img
+            src={wobblerImage.url}
+            alt="WOBBLER mnemonic for ECG assessment in syncope: Wolff-Parkinson-White, Wellens syndrome, Obstructed AV pathway, Bifascicular block, Brugada, Left ventricular hypertrophy, Epsilon wave, Repolarisation abnormality"
+            loading="lazy"
+            className="media-uniform-contain"
+          />
+          <figcaption className="px-3 py-2 text-[11px] text-muted-foreground leading-snug border-t bg-muted/30">
+            WOBBLER — structured ECG read in syncope. Exclude obvious ischaemia or dysrhythmia first; apply to
+            well-looking patients without immediately obvious ECG abnormalities.
+          </figcaption>
+        </figure>
+
         {/* Upload / AI auto-detect */}
         <div className="rounded-lg border border-dashed p-3 bg-muted/20 space-y-3">
+
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
               <Label className="text-sm font-medium flex items-center gap-2">
