@@ -254,6 +254,7 @@ export default function SyncopeMiniApp() {
               ["ecg.qtProlonged", "QT prolongation"],
               ["ecg.preexcitation", "Pre-excitation"],
               ["ecg.brugadaPattern", "Brugada pattern"],
+              ["ecg.wellens", "Wellens' syndrome (V2–V3 T-wave changes)"],
               ["ecg.afib", "Atrial fibrillation"],
               ["ecg.avBlock", "AV block"],
             ].map(([k, l]) => (

@@ -7,6 +7,7 @@ const PATTERN_IDS = [
   "complete-hb",
   "delta-wpw",
   "epsilon-arvc",
+  "wellens",
   "long-qt",
   "short-qt",
   "rv-strain",
@@ -26,6 +27,7 @@ Pattern IDs and their definitions:
 - complete-hb: Q waves suggesting prior MI / chronic ischaemia
 - delta-wpw: Delta wave / WPW pre-excitation (short PR + slurred QRS upstroke)
 - epsilon-arvc: Epsilon wave in V1-V3 (ARVC)
+- wellens: Wellens' syndrome — biphasic (type A) or deep symmetric inverted (type B) T waves in V2-V3 with preserved R waves and no pathological Q waves (critical proximal LAD stenosis)
 - long-qt: Prolonged QT interval (QTc >480 ms)
 - short-qt: Short QT interval (QTc <340 ms)
 - rv-strain: RV strain pattern (S1Q3T3, RBBB with RV strain — consider PE)

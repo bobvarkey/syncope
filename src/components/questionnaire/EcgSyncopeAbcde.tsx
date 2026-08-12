@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import brugadaImage from "@/assets/brugada-types.jpeg.asset.json";
 import epsilonImage from "@/assets/epsilon-wave-arvd.png.asset.json";
+import wellensImage from "@/assets/wellens-syndrome.png.asset.json";
 
 const patternImages: Record<string, { src: string; caption: string }> = {
   brugada: {
@@ -20,7 +21,12 @@ const patternImages: Record<string, { src: string; caption: string }> = {
     src: epsilonImage.url,
     caption: "Epsilon wave: small terminal deflection at end of QRS in V1 — ARVC/ARVD.",
   },
+  wellens: {
+    src: wellensImage.url,
+    caption: "Wellens' syndrome: type A biphasic and type B deeply inverted T waves in V2–V3 — critical proximal LAD stenosis.",
+  },
 };
+
 
 /**
  * ABCDE-Left-Right mnemonic for high-risk ECG patterns in syncope.
@@ -44,6 +50,7 @@ const patterns: EcgPattern[] = [
   { id: "complete-hb",        key: "C", name: "Chronic ischaemia / Q-waves", risk: "high",         description: "Q waves suggesting prior MI; substrate for VT." },
   { id: "delta-wpw",          key: "D", name: "Delta wave (WPW)",            risk: "high",         description: "Short PR + slurred QRS upstroke; pre-excitation." },
   { id: "epsilon-arvc",       key: "E", name: "Epsilon wave (ARVC)",         risk: "high",         description: "Small deflection at end of QRS in V1–V3; RV cardiomyopathy." },
+  { id: "wellens",            key: "W", name: "Wellens' syndrome",           risk: "high",         description: "Biphasic (type A) or deep symmetric inverted (type B) T waves in V2–V3 during pain-free interval, with preserved R waves and no Q waves — critical proximal LAD stenosis. Usually presents with chest pain, but transient severe LAD ischaemia can cause arrhythmia or a sudden fall in cardiac output leading to syncope." },
   { id: "long-qt",            key: "L", name: "Long QT (QTc >480 ms)",       risk: "high",         description: "Torsades risk; check meds and electrolytes." },
   { id: "short-qt",           key: "R", name: "Short QT (QTc <340 ms)",      risk: "high",         description: "Genetic short QT syndrome; VF risk." },
   { id: "rv-strain",          key: "R", name: "RV strain pattern",           risk: "intermediate", description: "S1Q3T3, RBBB, RV strain — consider PE." },
@@ -158,6 +165,10 @@ const EcgSyncopeAbcde = ({ data, onUpdate }: EcgSyncopeAbcdeProps) => {
     }
     if (activePatterns.some((p) => p.id === "brugada")) {
       out.push("Avoid Brugada-triggering drugs; consider EP referral.");
+    }
+    if (activePatterns.some((p) => p.id === "wellens")) {
+      out.push("Wellens' pattern: urgent cardiology referral for coronary angiography — avoid stress testing.");
+      out.push("Serial troponins and ECGs; treat as pre-infarction proximal LAD stenosis even if pain-free.");
     }
     if (activePatterns.some((p) => p.id === "delta-wpw")) {
       out.push("Consider EP study / ablation for symptomatic WPW.");
