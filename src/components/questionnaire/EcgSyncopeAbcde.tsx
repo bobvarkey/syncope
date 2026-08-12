@@ -166,6 +166,10 @@ const EcgSyncopeAbcde = ({ data, onUpdate }: EcgSyncopeAbcdeProps) => {
     if (activePatterns.some((p) => p.id === "brugada")) {
       out.push("Avoid Brugada-triggering drugs; consider EP referral.");
     }
+    if (activePatterns.some((p) => p.id === "wellens")) {
+      out.push("Wellens' pattern: urgent cardiology referral for coronary angiography — avoid stress testing.");
+      out.push("Serial troponins and ECGs; treat as pre-infarction proximal LAD stenosis even if pain-free.");
+    }
     if (activePatterns.some((p) => p.id === "delta-wpw")) {
       out.push("Consider EP study / ablation for symptomatic WPW.");
     }
