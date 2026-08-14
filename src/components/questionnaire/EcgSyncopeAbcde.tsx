@@ -12,6 +12,13 @@ import brugadaImage from "@/assets/brugada-types.jpeg.asset.json";
 import epsilonImage from "@/assets/epsilon-wave-arvd.png.asset.json";
 import wellensImage from "@/assets/wellens-syndrome-ecg.png.asset.json";
 import wobblerImage from "@/assets/wobbler-mnemonic.png.asset.json";
+import {
+  computeEcgRisk,
+  ecgPatterns,
+  ecgTestCases,
+  type EcgPattern as SharedEcgPattern,
+  type RiskLevel as EcgRiskLevel,
+} from "@/lib/ecgRiskScoring";
 
 const patternImages: Record<string, { src: string; caption: string }> = {
   brugada: {
@@ -35,31 +42,11 @@ const patternImages: Record<string, { src: string; caption: string }> = {
  * D – Delta wave (WPW)  |  E – Epsilon wave (ARVC)
  * L – Long QT  |  R – (Short QT, Right ventricular strain / RV overload)
  */
-type RiskLevel = "high" | "intermediate";
+type RiskLevel = EcgRiskLevel;
 
-interface EcgPattern {
-  id: string;
-  key: string; // mnemonic letter
-  name: string;
-  risk: RiskLevel;
-  description: string;
-}
+type EcgPattern = SharedEcgPattern;
 
-const patterns: EcgPattern[] = [
-  { id: "av-block",           key: "A", name: "AV block (2°/3°)",           risk: "high",         description: "Mobitz II or complete AV block — pacing pathway." },
-  { id: "brugada",            key: "B", name: "Brugada type 1",              risk: "high",         description: "Coved ST-elevation ≥2mm with T inversion in V1–V2." },
-  { id: "complete-hb",        key: "C", name: "Chronic ischaemia / Q-waves", risk: "high",         description: "Q waves suggesting prior MI; substrate for VT." },
-  { id: "delta-wpw",          key: "D", name: "Delta wave (WPW)",            risk: "high",         description: "Short PR + slurred QRS upstroke; pre-excitation." },
-  { id: "epsilon-arvc",       key: "E", name: "Epsilon wave (ARVC)",         risk: "high",         description: "Small deflection at end of QRS in V1–V3; RV cardiomyopathy." },
-  { id: "wellens",            key: "W", name: "Wellens' syndrome",           risk: "high",         description: "Biphasic (type A) or deep symmetric inverted (type B) T waves in V2–V3 during pain-free interval, with preserved R waves and no Q waves — critical proximal LAD stenosis. Usually presents with chest pain, but transient severe LAD ischaemia can cause arrhythmia or a sudden fall in cardiac output leading to syncope." },
-  { id: "long-qt",            key: "L", name: "Long QT (QTc >480 ms)",       risk: "high",         description: "Torsades risk; check meds and electrolytes." },
-  { id: "short-qt",           key: "R", name: "Short QT (QTc <340 ms)",      risk: "high",         description: "Genetic short QT syndrome; VF risk." },
-  { id: "rv-strain",          key: "R", name: "RV strain pattern",           risk: "intermediate", description: "S1Q3T3, RBBB, RV strain — consider PE." },
-  { id: "bifascicular",       key: "A", name: "Bifascicular block",          risk: "intermediate", description: "LBBB or RBBB + fascicular block; may progress to CHB." },
-  { id: "sinus-brady",        key: "A", name: "Sinus bradycardia <40 bpm",   risk: "intermediate", description: "Off rate-lowering meds — sinus node dysfunction." },
-  { id: "lvh-hocm",           key: "C", name: "LVH / HOCM pattern",          risk: "intermediate", description: "Prominent LVH with T-wave inversion; consider HOCM/AS." },
-  { id: "early-repol",        key: "E", name: "Early repolarisation (inferior)", risk: "intermediate", description: "J-point elevation with slurring in inferior leads." },
-];
+const patterns: EcgPattern[] = ecgPatterns;
 
 interface EcgSyncopeAbcdeProps {
   data: any;
@@ -141,46 +128,17 @@ const EcgSyncopeAbcde = ({ data, onUpdate }: EcgSyncopeAbcdeProps) => {
     e.target.value = ""; // allow re-selecting the same file
   };
 
-  const activePatterns = useMemo(
-    () => patterns.filter((p) => selected[p.id]),
-    [selected]
-  );
-
-  const highCount = activePatterns.filter((p) => p.risk === "high").length;
-  const intCount = activePatterns.filter((p) => p.risk === "intermediate").length;
-
-  const overallRisk: "high" | "intermediate" | "low" =
-    highCount > 0 ? "high" : intCount > 0 ? "intermediate" : "low";
-
-  const riskScore = useMemo(() => {
-    if (activePatterns.length === 0) return 0;
-    return activePatterns.reduce((acc, p) => acc + (p.risk === "high" ? 3 : 1), 0);
-  }, [activePatterns]);
+  const risk = useMemo(() => computeEcgRisk(selected), [selected]);
+  const { activePatterns, breakdown, highCount, intermediateCount: intCount, riskScore, overallRisk } = risk;
 
   const actionRecommendation = useMemo(() => {
-    if (highCount > 0 || riskScore >= 3) {
-      return {
-        action: "Urgent Cardiology Referral & Admission",
-        priority: "Critical",
-        color: "text-destructive",
-        bg: "bg-destructive/10"
-      };
-    }
-    if (intCount > 0 || riskScore >= 1) {
-      return {
-        action: "Cardiology Consult & Monitoring",
-        priority: "Intermediate",
-        color: "text-amber-600",
-        bg: "bg-amber-500/10"
-      };
-    }
-    return {
-      action: "Routine Follow-up / Observation",
-      priority: "Low",
-      color: "text-emerald-600",
-      bg: "bg-emerald-500/10"
-    };
-  }, [highCount, intCount, riskScore]);
+    const styles = {
+      Critical: { color: "text-destructive", bg: "bg-destructive/10" },
+      Intermediate: { color: "text-amber-600", bg: "bg-amber-500/10" },
+      Low: { color: "text-emerald-600", bg: "bg-emerald-500/10" },
+    } as const;
+    return { ...risk.recommendation, ...styles[risk.recommendation.priority] };
+  }, [risk]);
 
   const suggestions = useMemo(() => {
     if (activePatterns.length === 0) {
@@ -280,34 +238,34 @@ const EcgSyncopeAbcde = ({ data, onUpdate }: EcgSyncopeAbcdeProps) => {
 
         {/* Example Test Cases */}
         <div className="rounded-lg border bg-muted/10 p-3">
-          <Label className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2 block">Verification Test Cases</Label>
+          <Label className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2 block">
+            Verification test cases (incl. intermediate &amp; borderline)
+          </Label>
           <div className="flex flex-wrap gap-2">
-            {[
-              { label: "Brugada T1", patterns: ["brugada"], score: 3, action: "Urgent" },
-              { label: "WPW + LVH", patterns: ["delta-wpw", "lvh-hocm"], score: 4, action: "Urgent" },
-              { label: "RV Strain", patterns: ["rv-strain"], score: 1, action: "Intermediate" },
-              { label: "Sinus Brady", patterns: ["sinus-brady"], score: 1, action: "Intermediate" }
-            ].map((test, i) => (
-              <Button 
+            {ecgTestCases.map((test, i) => (
+              <Button
                 key={i}
-                variant="outline" 
-                size="sm" 
+                variant="outline"
+                size="sm"
+                title={`${test.note} — expected ${test.expectedScore} pts, ${test.expectedPriority}`}
                 className="h-7 text-[10px] bg-background"
                 onClick={() => {
                   const nextSelected: Record<string, boolean> = {};
-                  test.patterns.forEach(id => nextSelected[id] = true);
+                  test.patterns.forEach((id) => (nextSelected[id] = true));
                   onUpdate({ selectedPatterns: nextSelected });
-                  toast({ 
-                    title: `Test Case: ${test.label}`, 
-                    description: `Expected Score: ${test.score}, Action: ${test.action}` 
+                  toast({
+                    title: `Test case: ${test.label}`,
+                    description: `Expected score ${test.expectedScore} • ${test.expectedPriority} — ${test.note}`,
                   });
                 }}
               >
                 {test.label}
+                <span className="ml-1 opacity-60">({test.expectedScore})</span>
               </Button>
             ))}
           </div>
         </div>
+
 
         {/* Upload / AI auto-detect */}
         <div className="rounded-lg border border-dashed p-3 bg-muted/20 space-y-3">
@@ -484,25 +442,73 @@ const EcgSyncopeAbcde = ({ data, onUpdate }: EcgSyncopeAbcdeProps) => {
                 <p className={cn("text-xs font-bold leading-tight", actionRecommendation.color)}>
                   {actionRecommendation.action}
                 </p>
-                {riskScore > 0 && (
-                  <div className="mt-2 space-y-1">
-                    <p className="text-[10px] opacity-80 italic">
-                      Calculated Risk Score: {riskScore} (High risk = 3 pts, Intermediate = 1 pt)
-                    </p>
-                    <div className="flex flex-wrap gap-1">
-                      {activePatterns.map(p => (
-                        <Badge 
-                          key={p.id} 
-                          variant="outline" 
-                          className="px-1.5 py-0 h-4 text-[9px] bg-background/50 border-current opacity-70"
-                        >
-                          {p.key}: {p.name} (+{p.risk === "high" ? "3" : "1"})
-                        </Badge>
+                <p className="text-[10px] mt-1 opacity-80 italic">
+                  Why: {actionRecommendation.reason}
+                </p>
+              </div>
+
+              {/* Scoring breakdown */}
+              <div className="rounded-md border bg-background/60 p-3 mb-3">
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                    Scoring breakdown — triggered WOBBLER checks
+                  </Label>
+                  <Badge variant="outline" className="text-[10px] h-5">
+                    Total {riskScore} pts
+                  </Badge>
+                </div>
+
+                {breakdown.length === 0 ? (
+                  <p className="text-xs text-muted-foreground">
+                    No WOBBLER red-flag check triggered — score 0, routine follow-up.
+                  </p>
+                ) : (
+                  <>
+                    <ul className="divide-y">
+                      {breakdown.map((b) => (
+                        <li key={b.id} className="flex items-center justify-between gap-2 py-1.5">
+                          <span className="flex items-center gap-2 min-w-0">
+                            <Badge
+                              variant="outline"
+                              className={cn(
+                                "h-5 w-5 justify-center p-0 text-[10px] font-bold shrink-0",
+                                b.risk === "high"
+                                  ? "border-destructive/50 text-destructive"
+                                  : "border-amber-500/50 text-amber-600"
+                              )}
+                            >
+                              {b.key}
+                            </Badge>
+                            <span className="text-xs truncate">{b.name}</span>
+                          </span>
+                          <span className="flex items-center gap-2 shrink-0">
+                            <span
+                              className={cn(
+                                "text-[10px] uppercase tracking-wide",
+                                b.risk === "high" ? "text-destructive" : "text-amber-600"
+                              )}
+                            >
+                              {b.risk}
+                            </span>
+                            <span className="text-xs font-semibold tabular-nums">+{b.points}</span>
+                          </span>
+                        </li>
                       ))}
+                    </ul>
+                    <div className="flex items-center justify-between border-t pt-1.5 mt-1">
+                      <span className="text-[11px] font-medium">
+                        {highCount} high ×3 + {intCount} intermediate ×1
+                      </span>
+                      <span className="text-xs font-bold tabular-nums">= {riskScore} pts</span>
                     </div>
-                  </div>
+                    <p className="text-[10px] text-muted-foreground mt-1.5">
+                      Thresholds: any high-risk pattern or ≥3 pts → urgent referral; 1–2 pts → cardiology
+                      consult &amp; monitoring; 0 pts → routine follow-up.
+                    </p>
+                  </>
                 )}
               </div>
+
 
               <div className="flex gap-2 justify-end">
                 <Button variant="outline" size="sm" onClick={copyJson}>
