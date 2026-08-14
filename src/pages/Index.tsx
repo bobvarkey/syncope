@@ -154,12 +154,14 @@ const IndexContent = () => {
                 aria-label="SyncDx introduction"
                 className="mb-5 sm:mb-8 rounded-2xl overflow-hidden border shadow-soft bg-card"
               >
-                <img
-                  src={heroImage.url}
-                  alt="SyncDx – simplifies the evaluation of syncope or loss of consciousness in the OPD"
-                  className="media-uniform w-full h-auto object-cover"
-                  loading="eager"
-                />
+                <div className="relative flex justify-center items-center bg-muted/20">
+                  <img
+                    src={heroImage.url}
+                    alt="SyncDx – simplifies the evaluation of syncope or loss of consciousness in the OPD"
+                    className="max-w-full h-auto object-contain max-h-[400px]"
+                    loading="eager"
+                  />
+                </div>
                 <div className="p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   <div className="min-w-0">
                     <h2 className="text-lg sm:text-xl font-bold text-foreground leading-tight">
