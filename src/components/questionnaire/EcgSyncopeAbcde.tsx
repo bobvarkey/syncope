@@ -238,34 +238,34 @@ const EcgSyncopeAbcde = ({ data, onUpdate }: EcgSyncopeAbcdeProps) => {
 
         {/* Example Test Cases */}
         <div className="rounded-lg border bg-muted/10 p-3">
-          <Label className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2 block">Verification Test Cases</Label>
+          <Label className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2 block">
+            Verification test cases (incl. intermediate &amp; borderline)
+          </Label>
           <div className="flex flex-wrap gap-2">
-            {[
-              { label: "Brugada T1", patterns: ["brugada"], score: 3, action: "Urgent" },
-              { label: "WPW + LVH", patterns: ["delta-wpw", "lvh-hocm"], score: 4, action: "Urgent" },
-              { label: "RV Strain", patterns: ["rv-strain"], score: 1, action: "Intermediate" },
-              { label: "Sinus Brady", patterns: ["sinus-brady"], score: 1, action: "Intermediate" }
-            ].map((test, i) => (
-              <Button 
+            {ecgTestCases.map((test, i) => (
+              <Button
                 key={i}
-                variant="outline" 
-                size="sm" 
+                variant="outline"
+                size="sm"
+                title={`${test.note} — expected ${test.expectedScore} pts, ${test.expectedPriority}`}
                 className="h-7 text-[10px] bg-background"
                 onClick={() => {
                   const nextSelected: Record<string, boolean> = {};
-                  test.patterns.forEach(id => nextSelected[id] = true);
+                  test.patterns.forEach((id) => (nextSelected[id] = true));
                   onUpdate({ selectedPatterns: nextSelected });
-                  toast({ 
-                    title: `Test Case: ${test.label}`, 
-                    description: `Expected Score: ${test.score}, Action: ${test.action}` 
+                  toast({
+                    title: `Test case: ${test.label}`,
+                    description: `Expected score ${test.expectedScore} • ${test.expectedPriority} — ${test.note}`,
                   });
                 }}
               >
                 {test.label}
+                <span className="ml-1 opacity-60">({test.expectedScore})</span>
               </Button>
             ))}
           </div>
         </div>
+
 
         {/* Upload / AI auto-detect */}
         <div className="rounded-lg border border-dashed p-3 bg-muted/20 space-y-3">
