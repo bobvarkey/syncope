@@ -128,46 +128,17 @@ const EcgSyncopeAbcde = ({ data, onUpdate }: EcgSyncopeAbcdeProps) => {
     e.target.value = ""; // allow re-selecting the same file
   };
 
-  const activePatterns = useMemo(
-    () => patterns.filter((p) => selected[p.id]),
-    [selected]
-  );
-
-  const highCount = activePatterns.filter((p) => p.risk === "high").length;
-  const intCount = activePatterns.filter((p) => p.risk === "intermediate").length;
-
-  const overallRisk: "high" | "intermediate" | "low" =
-    highCount > 0 ? "high" : intCount > 0 ? "intermediate" : "low";
-
-  const riskScore = useMemo(() => {
-    if (activePatterns.length === 0) return 0;
-    return activePatterns.reduce((acc, p) => acc + (p.risk === "high" ? 3 : 1), 0);
-  }, [activePatterns]);
+  const risk = useMemo(() => computeEcgRisk(selected), [selected]);
+  const { activePatterns, breakdown, highCount, intermediateCount: intCount, riskScore, overallRisk } = risk;
 
   const actionRecommendation = useMemo(() => {
-    if (highCount > 0 || riskScore >= 3) {
-      return {
-        action: "Urgent Cardiology Referral & Admission",
-        priority: "Critical",
-        color: "text-destructive",
-        bg: "bg-destructive/10"
-      };
-    }
-    if (intCount > 0 || riskScore >= 1) {
-      return {
-        action: "Cardiology Consult & Monitoring",
-        priority: "Intermediate",
-        color: "text-amber-600",
-        bg: "bg-amber-500/10"
-      };
-    }
-    return {
-      action: "Routine Follow-up / Observation",
-      priority: "Low",
-      color: "text-emerald-600",
-      bg: "bg-emerald-500/10"
-    };
-  }, [highCount, intCount, riskScore]);
+    const styles = {
+      Critical: { color: "text-destructive", bg: "bg-destructive/10" },
+      Intermediate: { color: "text-amber-600", bg: "bg-amber-500/10" },
+      Low: { color: "text-emerald-600", bg: "bg-emerald-500/10" },
+    } as const;
+    return { ...risk.recommendation, ...styles[risk.recommendation.priority] };
+  }, [risk]);
 
   const suggestions = useMemo(() => {
     if (activePatterns.length === 0) {
