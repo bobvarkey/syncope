@@ -443,6 +443,23 @@ const EcgSyncopeAbcde = ({ data, onUpdate }: EcgSyncopeAbcdeProps) => {
                 </ul>
               </div>
 
+              <div className={cn("rounded-md p-3 mb-3 border", actionRecommendation.bg)}>
+                <div className="flex items-center justify-between gap-2 mb-1">
+                  <span className="text-[10px] uppercase tracking-wider font-semibold opacity-70">Action Recommendation</span>
+                  <Badge variant="secondary" className={cn("text-[10px] h-4", actionRecommendation.color)}>
+                    {actionRecommendation.priority}
+                  </Badge>
+                </div>
+                <p className={cn("text-xs font-bold leading-tight", actionRecommendation.color)}>
+                  {actionRecommendation.action}
+                </p>
+                {riskScore > 0 && (
+                  <p className="text-[10px] mt-1 opacity-80 italic">
+                    Calculated Risk Score: {riskScore} (High risk = 3 pts, Intermediate = 1 pt)
+                  </p>
+                )}
+              </div>
+
               <div className="flex gap-2 justify-end">
                 <Button variant="outline" size="sm" onClick={copyJson}>
                   <Copy className="h-3.5 w-3.5" /> Copy JSON
