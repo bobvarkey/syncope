@@ -485,9 +485,22 @@ const EcgSyncopeAbcde = ({ data, onUpdate }: EcgSyncopeAbcdeProps) => {
                   {actionRecommendation.action}
                 </p>
                 {riskScore > 0 && (
-                  <p className="text-[10px] mt-1 opacity-80 italic">
-                    Calculated Risk Score: {riskScore} (High risk = 3 pts, Intermediate = 1 pt)
-                  </p>
+                  <div className="mt-2 space-y-1">
+                    <p className="text-[10px] opacity-80 italic">
+                      Calculated Risk Score: {riskScore} (High risk = 3 pts, Intermediate = 1 pt)
+                    </p>
+                    <div className="flex flex-wrap gap-1">
+                      {activePatterns.map(p => (
+                        <Badge 
+                          key={p.id} 
+                          variant="outline" 
+                          className="px-1.5 py-0 h-4 text-[9px] bg-background/50 border-current opacity-70"
+                        >
+                          {p.key}: {p.name} (+{p.risk === "high" ? "3" : "1"})
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
                 )}
               </div>
 
