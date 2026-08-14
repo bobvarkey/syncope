@@ -442,25 +442,73 @@ const EcgSyncopeAbcde = ({ data, onUpdate }: EcgSyncopeAbcdeProps) => {
                 <p className={cn("text-xs font-bold leading-tight", actionRecommendation.color)}>
                   {actionRecommendation.action}
                 </p>
-                {riskScore > 0 && (
-                  <div className="mt-2 space-y-1">
-                    <p className="text-[10px] opacity-80 italic">
-                      Calculated Risk Score: {riskScore} (High risk = 3 pts, Intermediate = 1 pt)
-                    </p>
-                    <div className="flex flex-wrap gap-1">
-                      {activePatterns.map(p => (
-                        <Badge 
-                          key={p.id} 
-                          variant="outline" 
-                          className="px-1.5 py-0 h-4 text-[9px] bg-background/50 border-current opacity-70"
-                        >
-                          {p.key}: {p.name} (+{p.risk === "high" ? "3" : "1"})
-                        </Badge>
+                <p className="text-[10px] mt-1 opacity-80 italic">
+                  Why: {actionRecommendation.reason}
+                </p>
+              </div>
+
+              {/* Scoring breakdown */}
+              <div className="rounded-md border bg-background/60 p-3 mb-3">
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                    Scoring breakdown — triggered WOBBLER checks
+                  </Label>
+                  <Badge variant="outline" className="text-[10px] h-5">
+                    Total {riskScore} pts
+                  </Badge>
+                </div>
+
+                {breakdown.length === 0 ? (
+                  <p className="text-xs text-muted-foreground">
+                    No WOBBLER red-flag check triggered — score 0, routine follow-up.
+                  </p>
+                ) : (
+                  <>
+                    <ul className="divide-y">
+                      {breakdown.map((b) => (
+                        <li key={b.id} className="flex items-center justify-between gap-2 py-1.5">
+                          <span className="flex items-center gap-2 min-w-0">
+                            <Badge
+                              variant="outline"
+                              className={cn(
+                                "h-5 w-5 justify-center p-0 text-[10px] font-bold shrink-0",
+                                b.risk === "high"
+                                  ? "border-destructive/50 text-destructive"
+                                  : "border-amber-500/50 text-amber-600"
+                              )}
+                            >
+                              {b.key}
+                            </Badge>
+                            <span className="text-xs truncate">{b.name}</span>
+                          </span>
+                          <span className="flex items-center gap-2 shrink-0">
+                            <span
+                              className={cn(
+                                "text-[10px] uppercase tracking-wide",
+                                b.risk === "high" ? "text-destructive" : "text-amber-600"
+                              )}
+                            >
+                              {b.risk}
+                            </span>
+                            <span className="text-xs font-semibold tabular-nums">+{b.points}</span>
+                          </span>
+                        </li>
                       ))}
+                    </ul>
+                    <div className="flex items-center justify-between border-t pt-1.5 mt-1">
+                      <span className="text-[11px] font-medium">
+                        {highCount} high ×3 + {intCount} intermediate ×1
+                      </span>
+                      <span className="text-xs font-bold tabular-nums">= {riskScore} pts</span>
                     </div>
-                  </div>
+                    <p className="text-[10px] text-muted-foreground mt-1.5">
+                      Thresholds: any high-risk pattern or ≥3 pts → urgent referral; 1–2 pts → cardiology
+                      consult &amp; monitoring; 0 pts → routine follow-up.
+                    </p>
+                  </>
                 )}
               </div>
+
 
               <div className="flex gap-2 justify-end">
                 <Button variant="outline" size="sm" onClick={copyJson}>
