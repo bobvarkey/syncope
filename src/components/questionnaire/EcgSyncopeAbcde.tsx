@@ -152,13 +152,50 @@ const EcgSyncopeAbcde = ({ data, onUpdate }: EcgSyncopeAbcdeProps) => {
   const overallRisk: "high" | "intermediate" | "low" =
     highCount > 0 ? "high" : intCount > 0 ? "intermediate" : "low";
 
+  const riskScore = useMemo(() => {
+    if (activePatterns.length === 0) return 0;
+    return activePatterns.reduce((acc, p) => acc + (p.risk === "high" ? 3 : 1), 0);
+  }, [activePatterns]);
+
+  const actionRecommendation = useMemo(() => {
+    if (highCount > 0 || riskScore >= 3) {
+      return {
+        action: "Urgent Cardiology Referral & Admission",
+        priority: "Critical",
+        color: "text-destructive",
+        bg: "bg-destructive/10"
+      };
+    }
+    if (intCount > 0 || riskScore >= 1) {
+      return {
+        action: "Cardiology Consult & Monitoring",
+        priority: "Intermediate",
+        color: "text-amber-600",
+        bg: "bg-amber-500/10"
+      };
+    }
+    return {
+      action: "Routine Follow-up / Observation",
+      priority: "Low",
+      color: "text-emerald-600",
+      bg: "bg-emerald-500/10"
+    };
+  }, [highCount, intCount, riskScore]);
+
   const suggestions = useMemo(() => {
     if (activePatterns.length === 0) {
       return ["No high-risk ECG pattern detected. Normal ECG does not exclude cardiac syncope."];
     }
     const out: string[] = [];
+    
+    // WOBBLER Specific Summary
+    const wobblerMatches = activePatterns.map(p => p.key).filter((v, i, a) => a.indexOf(v) === i);
+    if (wobblerMatches.length > 0) {
+      out.push(`WOBBLER Red Flags: ${wobblerMatches.join(", ")}`);
+    }
+
     if (highCount > 0) {
-      out.push("Consider urgent cardiology referral / admission for monitoring.");
+      out.push("Consider urgent cardiology referral / admission for telemetry monitoring.");
       out.push("Review medications for QT-prolonging or bradycardic agents.");
     }
     if (activePatterns.some((p) => p.id === "long-qt")) {
@@ -404,6 +441,23 @@ const EcgSyncopeAbcde = ({ data, onUpdate }: EcgSyncopeAbcdeProps) => {
                     </li>
                   ))}
                 </ul>
+              </div>
+
+              <div className={cn("rounded-md p-3 mb-3 border", actionRecommendation.bg)}>
+                <div className="flex items-center justify-between gap-2 mb-1">
+                  <span className="text-[10px] uppercase tracking-wider font-semibold opacity-70">Action Recommendation</span>
+                  <Badge variant="secondary" className={cn("text-[10px] h-4", actionRecommendation.color)}>
+                    {actionRecommendation.priority}
+                  </Badge>
+                </div>
+                <p className={cn("text-xs font-bold leading-tight", actionRecommendation.color)}>
+                  {actionRecommendation.action}
+                </p>
+                {riskScore > 0 && (
+                  <p className="text-[10px] mt-1 opacity-80 italic">
+                    Calculated Risk Score: {riskScore} (High risk = 3 pts, Intermediate = 1 pt)
+                  </p>
+                )}
               </div>
 
               <div className="flex gap-2 justify-end">
