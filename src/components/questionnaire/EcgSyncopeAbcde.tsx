@@ -35,31 +35,11 @@ const patternImages: Record<string, { src: string; caption: string }> = {
  * D – Delta wave (WPW)  |  E – Epsilon wave (ARVC)
  * L – Long QT  |  R – (Short QT, Right ventricular strain / RV overload)
  */
-type RiskLevel = "high" | "intermediate";
+type RiskLevel = EcgRiskLevel;
 
-interface EcgPattern {
-  id: string;
-  key: string; // mnemonic letter
-  name: string;
-  risk: RiskLevel;
-  description: string;
-}
+type EcgPattern = SharedEcgPattern;
 
-const patterns: EcgPattern[] = [
-  { id: "av-block",           key: "A", name: "AV block (2°/3°)",           risk: "high",         description: "Mobitz II or complete AV block — pacing pathway." },
-  { id: "brugada",            key: "B", name: "Brugada type 1",              risk: "high",         description: "Coved ST-elevation ≥2mm with T inversion in V1–V2." },
-  { id: "complete-hb",        key: "C", name: "Chronic ischaemia / Q-waves", risk: "high",         description: "Q waves suggesting prior MI; substrate for VT." },
-  { id: "delta-wpw",          key: "D", name: "Delta wave (WPW)",            risk: "high",         description: "Short PR + slurred QRS upstroke; pre-excitation." },
-  { id: "epsilon-arvc",       key: "E", name: "Epsilon wave (ARVC)",         risk: "high",         description: "Small deflection at end of QRS in V1–V3; RV cardiomyopathy." },
-  { id: "wellens",            key: "W", name: "Wellens' syndrome",           risk: "high",         description: "Biphasic (type A) or deep symmetric inverted (type B) T waves in V2–V3 during pain-free interval, with preserved R waves and no Q waves — critical proximal LAD stenosis. Usually presents with chest pain, but transient severe LAD ischaemia can cause arrhythmia or a sudden fall in cardiac output leading to syncope." },
-  { id: "long-qt",            key: "L", name: "Long QT (QTc >480 ms)",       risk: "high",         description: "Torsades risk; check meds and electrolytes." },
-  { id: "short-qt",           key: "R", name: "Short QT (QTc <340 ms)",      risk: "high",         description: "Genetic short QT syndrome; VF risk." },
-  { id: "rv-strain",          key: "R", name: "RV strain pattern",           risk: "intermediate", description: "S1Q3T3, RBBB, RV strain — consider PE." },
-  { id: "bifascicular",       key: "A", name: "Bifascicular block",          risk: "intermediate", description: "LBBB or RBBB + fascicular block; may progress to CHB." },
-  { id: "sinus-brady",        key: "A", name: "Sinus bradycardia <40 bpm",   risk: "intermediate", description: "Off rate-lowering meds — sinus node dysfunction." },
-  { id: "lvh-hocm",           key: "C", name: "LVH / HOCM pattern",          risk: "intermediate", description: "Prominent LVH with T-wave inversion; consider HOCM/AS." },
-  { id: "early-repol",        key: "E", name: "Early repolarisation (inferior)", risk: "intermediate", description: "J-point elevation with slurring in inferior leads." },
-];
+const patterns: EcgPattern[] = ecgPatterns;
 
 interface EcgSyncopeAbcdeProps {
   data: any;
