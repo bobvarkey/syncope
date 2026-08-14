@@ -12,6 +12,13 @@ import brugadaImage from "@/assets/brugada-types.jpeg.asset.json";
 import epsilonImage from "@/assets/epsilon-wave-arvd.png.asset.json";
 import wellensImage from "@/assets/wellens-syndrome-ecg.png.asset.json";
 import wobblerImage from "@/assets/wobbler-mnemonic.png.asset.json";
+import {
+  computeEcgRisk,
+  ecgPatterns,
+  ecgTestCases,
+  type EcgPattern as SharedEcgPattern,
+  type RiskLevel as EcgRiskLevel,
+} from "@/lib/ecgRiskScoring";
 
 const patternImages: Record<string, { src: string; caption: string }> = {
   brugada: {
