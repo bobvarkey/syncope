@@ -114,6 +114,38 @@ const EcgScoringChecklist = ({ linkedAbcdeSelection }: EcgScoringChecklistProps)
         </CardHeader>
         
         <CardContent className="space-y-6">
+          {/* Linked to the ABCDE / WOBBLER screen */}
+          <section className="rounded-xl border border-primary/20 bg-primary/5 p-3 flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-start gap-2 min-w-0">
+              <Link2 className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+              <div className="min-w-0">
+                <p className="text-xs font-semibold">Linked to the ECG ABCDE / WOBBLER screen</p>
+                <p className="text-[11px] text-muted-foreground leading-snug">
+                  {linkedIds.length > 0
+                    ? `${linkedIds.length} mapped finding(s) available from the ABCDE screen.`
+                    : "Select patterns in the ABCDE screen (or upload an ECG for AI detection) and they appear here."}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <label className="flex items-center gap-1.5 text-[11px] font-medium cursor-pointer">
+                <Checkbox checked={autoSync} onCheckedChange={(v) => setAutoSync(!!v)} className="scale-90" />
+                Auto-sync
+              </label>
+              <Button variant="outline" size="sm" className="h-7 text-[11px]" onClick={importLinked}>
+                Import findings
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 text-[11px]"
+                onClick={() => document.getElementById("ecg-abcde")?.scrollIntoView({ behavior: "smooth" })}
+              >
+                Open ABCDE screen
+              </Button>
+            </div>
+          </section>
+
           {/* Global Urgent Triggers Section */}
           <section className="rounded-xl border border-destructive/20 bg-destructive/5 p-4 space-y-3">
             <div className="flex items-center gap-2 text-destructive">
