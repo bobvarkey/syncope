@@ -114,7 +114,7 @@ const IndexContent = () => {
           <header className="sticky top-0 z-40 w-full border-b border-border/50 bg-background/60 backdrop-blur-xl supports-[backdrop-filter]:bg-background/40 shadow-soft">
             <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-sunset" aria-hidden />
             <div
-              className="flex items-center gap-2 sm:gap-4 px-3 sm:px-6 py-2.5 sm:py-3"
+              className="max-w-7xl mx-auto flex items-center gap-2 sm:gap-4 px-3 sm:px-6 py-2.5 sm:py-3 w-full"
               style={{ paddingTop: "max(0.625rem, env(safe-area-inset-top))" }}
             >
               <SidebarTrigger className="lg:hidden shrink-0" />
