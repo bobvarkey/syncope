@@ -83,11 +83,14 @@ const DiagnosticCriteriaSection = ({ data, onUpdate }: DiagnosticCriteriaSection
             </div>
 
             <div className="border rounded-lg p-4">
-              <div className="flex items-center space-x-2 mb-2">
-                <RadioGroupItem value="cardiac-ischemia" id="cardiac-ischemia-dx" />
-                <Label htmlFor="cardiac-ischemia-dx" className="font-semibold cursor-pointer">
-                  Cardiac Ischemia-Related Syncope
-                </Label>
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="cardiac-ischemia" id="cardiac-ischemia-dx" />
+                  <Label htmlFor="cardiac-ischemia-dx" className="font-semibold cursor-pointer">
+                    Cardiac Ischemia-Related Syncope
+                  </Label>
+                </div>
+                <ChecklistLink label="Check ECG Findings" className="text-sunset-orange hover:text-sunset-red" />
               </div>
               <p className="text-sm text-muted-foreground ml-6">
                 ECG evidence of acute ischemia with or without MI (mechanism may be cardiac low output, 
