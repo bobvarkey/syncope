@@ -381,14 +381,31 @@ const IndexContent = () => {
                     {/* Investigations Group */}
                     <AccordionItem value="investigations" className="border rounded-xl overflow-hidden shadow-sm">
                       <AccordionTrigger className="px-6 py-4 bg-muted/30 hover:no-underline hover:bg-muted/50 transition-all">
-                        <div className="flex items-center gap-3 text-left">
-                          <div className="p-2 rounded-lg bg-yellow-500/10">
-                            <TestTube className="h-5 w-5 text-[hsl(28_100%_58%)]" />
+                        <div className="flex-1 flex items-center justify-between pr-4">
+                          <div className="flex items-center gap-3 text-left">
+                            <div className="p-2 rounded-lg bg-yellow-500/10">
+                              <TestTube className="h-5 w-5 text-[hsl(28_100%_58%)]" />
+                            </div>
+                            <div>
+                              <h2 className="text-xl font-bold text-foreground leading-tight">Clinical Investigations</h2>
+                              <p className="text-xs text-muted-foreground font-normal">Diagnostic tests, examinations, and objective findings</p>
+                            </div>
                           </div>
-                          <div>
-                            <h2 className="text-xl font-bold text-foreground leading-tight">Clinical Investigations</h2>
-                            <p className="text-xs text-muted-foreground font-normal">Diagnostic tests, examinations, and objective findings</p>
-                          </div>
+                          {(() => {
+                            const completion = getGroupCompletion([
+                              "ecg-scoring-checklist", "ecg-abcde", "syncope-medications", "lab-tests", 
+                              "initial-evaluation", "tilt-test", "risk-score", "subclavian-steal", 
+                              "carotid-massage", "orthostatic-intolerance", "autonomic-testing"
+                            ]);
+                            return (
+                              <div className="flex items-center gap-3 shrink-0">
+                                <span className={cn("text-xs font-bold", completion === 100 ? "text-green-500" : "text-primary")}>
+                                  {completion}%
+                                </span>
+                                <Progress value={completion} className="w-16 h-1.5" />
+                              </div>
+                            );
+                          })()}
                         </div>
                       </AccordionTrigger>
                       <AccordionContent className="px-6 pt-6 pb-4 space-y-8">
