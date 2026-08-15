@@ -258,6 +258,19 @@ export const ecgChecklistItems: EcgChecklistItem[] = [
     score: 3,
     urgentOverride: true,
     action: "Urgent ACS protocol; cardiology/cath lab activation as appropriate."
+  },
+  {
+    id: "bradycardia_tachycardia",
+    label: "BradycardiaTachycardia",
+    category: "conduction",
+    criteria: [
+      "Alternating periods of bradycardia and tachycardia",
+      "Sinus arrest or exit block",
+      "Paroxysmal supraventricular tachycardia or atrial fibrillation followed by prolonged sinus pauses"
+    ],
+    score: 3,
+    urgentOverrideConditions: ["Symptomatic pauses", "Syncope during arrhythmia transitions"],
+    action: "Urgent cardiology/electrophysiology assessment; consider pacing and/or antiarrhythmic therapy."
   }
 ];
 
