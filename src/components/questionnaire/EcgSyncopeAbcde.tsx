@@ -510,7 +510,16 @@ const EcgSyncopeAbcde = ({ data, onUpdate }: EcgSyncopeAbcdeProps) => {
               </div>
 
 
-              <div className="flex gap-2 justify-end">
+              <div className="flex flex-wrap gap-2 justify-end">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() =>
+                    document.getElementById("ecg-scoring-checklist")?.scrollIntoView({ behavior: "smooth" })
+                  }
+                >
+                  <Activity className="h-3.5 w-3.5" /> Open scoring checklist
+                </Button>
                 <Button variant="outline" size="sm" onClick={copyJson}>
                   <Copy className="h-3.5 w-3.5" /> Copy JSON
                 </Button>
