@@ -7,6 +7,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { AlertTriangle } from "lucide-react";
+import ChecklistLink from "@/components/ChecklistLink";
 
 interface BackgroundSectionProps {
   data: any;
@@ -49,7 +50,10 @@ const BackgroundSection = ({ data, onUpdate }: BackgroundSectionProps) => {
         </div>
 
         <div>
-          <Label className="text-base font-medium mb-3 block">Previous Cardiac Disease</Label>
+          <div className="flex items-center justify-between mb-3">
+            <Label className="text-base font-medium">Previous Cardiac Disease</Label>
+            <ChecklistLink label="Assess Cardiac Risk" className="text-sunset-orange hover:text-sunset-red" />
+          </div>
           <div className="flex items-center space-x-2">
             <Checkbox
               id="cardiac-disease"

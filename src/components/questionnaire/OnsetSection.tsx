@@ -1,6 +1,7 @@
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
+import ChecklistLink from "@/components/ChecklistLink";
 
 interface OnsetSectionProps {
   data: any;
@@ -20,8 +21,10 @@ const OnsetSection = ({ data, onUpdate }: OnsetSectionProps) => {
       </div>
 
       <div className="space-y-4">
-        <div>
-          <Label className="text-base font-medium mb-3 block">Symptoms at Onset</Label>
+        <div className="flex items-center justify-between">
+          <Label className="text-base font-medium mb-1 block">Symptoms at Onset</Label>
+          <ChecklistLink label="Check ECG Flags" className="text-sunset-orange hover:text-sunset-red" />
+        </div>
           <div className="space-y-3">
             {[
               { id: "nausea", label: "Nausea" },
