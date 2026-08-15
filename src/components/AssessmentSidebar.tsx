@@ -150,7 +150,7 @@ const sections = [
 const STORAGE_KEY = "assessment-sidebar-open-groups";
 
 export function AssessmentSidebar() {
-  const { state } = useSidebar();
+  const { state, isMobile, toggleSidebar } = useSidebar();
   const collapsed = state === "collapsed";
   const [activeSection, setActiveSection] = useState<string>("");
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {
@@ -256,7 +256,7 @@ export function AssessmentSidebar() {
       <div className="p-2 space-y-2 border-b">
         <div className="flex items-center justify-between">
           <SidebarTrigger />
-          {!collapsed && useIsMobile() && (
+          {!collapsed && isMobile && (
             <Button 
               variant="ghost" 
               size="sm" 
