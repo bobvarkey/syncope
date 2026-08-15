@@ -3,7 +3,7 @@ import { Progress } from "@/components/ui/progress";
 import { useAssessmentProgress } from "@/contexts/AssessmentProgressContext";
 import { FileText, TestTube, Brain, CheckCircle2 } from "lucide-react";
 
-// Section groupings
+// Section groupings matching AssessmentSidebar and Index accordion structure
 const sectionGroups = {
   "Clinical History": [
     "circumstances",
@@ -13,26 +13,63 @@ const sectionGroups = {
     "background",
     "clinical-features",
   ],
-  "Clinical Investigations": [
-    "ecg-findings",
+  "Investigations": [
+    "ecg-scoring-checklist",
+    "ecg-abcde",
+    "syncope-medications",
+    "lab-tests",
     "initial-evaluation",
     "tilt-test",
     "risk-score",
     "subclavian-steal",
     "carotid-massage",
     "orthostatic-intolerance",
+    "autonomic-testing",
   ],
   "Differential Diagnosis": [
     "differential-diagnosis-section",
     "diagnostic-criteria",
     "ai-diagnosis",
   ],
+  "Interventions": [
+    "interventions",
+  ],
+  "Drop Attacks": [
+    "drop-attacks",
+  ],
 };
 
 const groupIcons = {
   "Clinical History": FileText,
-  "Clinical Investigations": TestTube,
+  "Investigations": TestTube,
   "Differential Diagnosis": Brain,
+  "Interventions": Shield,
+  "Drop Attacks": AlertTriangle,
+};
+
+const sectionTitles: Record<string, string> = {
+  "circumstances": "Circumstances",
+  "onset": "Onset",
+  "attack": "Attack",
+  "end": "End",
+  "background": "Background",
+  "clinical-features": "Clinical Features",
+  "ecg-scoring-checklist": "High-Risk ECG Checklist",
+  "ecg-abcde": "ECG ABCDE Screen",
+  "syncope-medications": "Medications & Syncope",
+  "lab-tests": "Laboratory Tests",
+  "initial-evaluation": "Initial Evaluation",
+  "tilt-test": "Tilt Test Protocol",
+  "risk-score": "Risk Score",
+  "subclavian-steal": "Subclavian Steal",
+  "carotid-massage": "Carotid Sinus Massage",
+  "orthostatic-intolerance": "Orthostatic Intolerance",
+  "autonomic-testing": "Autonomic Testing",
+  "differential-diagnosis-section": "Differential Diagnosis",
+  "diagnostic-criteria": "Diagnostic Criteria",
+  "ai-diagnosis": "AI Diagnosis Assistant",
+  "interventions": "Interventions & Management",
+  "drop-attacks": "Drop Attacks Workup",
 };
 
 export function AssessmentDashboard() {
