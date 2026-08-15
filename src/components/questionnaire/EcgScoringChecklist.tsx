@@ -1,23 +1,64 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { AlertTriangle, ShieldCheck, Activity, Info, Stethoscope, ArrowRightCircle } from "lucide-react";
-import { 
-  ecgChecklistItems, 
-  globalUrgentTriggers, 
-  computeChecklistScore 
+import { AlertTriangle, ShieldCheck, Activity, Info, Stethoscope, ArrowRightCircle, Link2 } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
+import {
+  ecgChecklistItems,
+  globalUrgentTriggers,
+  computeChecklistScore,
+  mapAbcdeSelectionToChecklist,
 } from "@/lib/ecgChecklistData";
 import { cn } from "@/lib/utils";
 
-const EcgScoringChecklist = () => {
+interface EcgScoringChecklistProps {
+  /** Selections coming from the ABCDE / WOBBLER mini-screen */
+  linkedAbcdeSelection?: Record<string, boolean>;
+}
+
+const EcgScoringChecklist = ({ linkedAbcdeSelection }: EcgScoringChecklistProps) => {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [urgentOverrideIds, setUrgentOverrideIds] = useState<Set<string>>(new Set());
   const [globalTriggerIds, setGlobalTriggerIds] = useState<Set<string>>(new Set());
+  const [autoSync, setAutoSync] = useState(true);
+
+  const linkedIds = useMemo(
+    () => mapAbcdeSelectionToChecklist(linkedAbcdeSelection || {}),
+    [linkedAbcdeSelection]
+  );
+  const linkedKey = linkedIds.slice().sort().join("|");
+
+  // Auto-import findings selected in the ABCDE screen
+  useEffect(() => {
+    if (!autoSync || linkedIds.length === 0) return;
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      let changed = false;
+      linkedIds.forEach((id) => {
+        if (!next.has(id)) {
+          next.add(id);
+          changed = true;
+        }
+      });
+      return changed ? next : prev;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [linkedKey, autoSync]);
+
+  const importLinked = () => {
+    if (linkedIds.length === 0) {
+      toast({ title: "Nothing to import", description: "No mapped patterns selected in the ABCDE screen yet." });
+      return;
+    }
+    setSelectedIds((prev) => new Set([...prev, ...linkedIds]));
+    toast({ title: `Imported ${linkedIds.length} finding(s)`, description: "Pulled from the ECG ABCDE / WOBBLER screen." });
+  };
 
   const toggleItem = (id: string) => {
     const next = new Set(selectedIds);
@@ -51,6 +92,7 @@ const EcgScoringChecklist = () => {
     computeChecklistScore(selectedIds, urgentOverrideIds, globalTriggerIds), 
     [selectedIds, urgentOverrideIds, globalTriggerIds]
   );
+
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
