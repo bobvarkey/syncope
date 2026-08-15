@@ -48,7 +48,7 @@ const AttackSection = ({ data, onUpdate }: AttackSectionProps) => {
         <div className="border rounded-lg p-4 bg-primary/5">
           <div className="flex items-center justify-between mb-3">
             <Label className="text-base font-medium">Skin Color Changes</Label>
-            <ChecklistLink label="Check Ischemia Flags" className="text-sunset-orange hover:text-sunset-red" />
+            <ChecklistLink label="View High-Risk Checklist" className="text-sunset-orange hover:text-sunset-red" />
           </div>
           <div className="space-y-3">
             {[
