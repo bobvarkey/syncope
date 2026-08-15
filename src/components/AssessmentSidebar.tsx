@@ -150,7 +150,7 @@ const sections = [
 const STORAGE_KEY = "assessment-sidebar-open-groups";
 
 export function AssessmentSidebar() {
-  const { state } = useSidebar();
+  const { state, isMobile, toggleSidebar } = useSidebar();
   const collapsed = state === "collapsed";
   const [activeSection, setActiveSection] = useState<string>("");
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {
@@ -253,8 +253,21 @@ export function AssessmentSidebar() {
         />
       )}
       <Sidebar className={cn("border-r relative z-40", collapsed ? "w-14" : "w-72")} collapsible="icon">
-      <div className="p-2 space-y-2">
-        <SidebarTrigger />
+      <div className="p-2 space-y-2 border-b">
+        <div className="flex items-center justify-between">
+          <SidebarTrigger />
+          {!collapsed && isMobile && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => toggleSidebar()}
+              className="text-muted-foreground hover:text-foreground md:hidden"
+            >
+              <X className="h-4 w-4 mr-1" />
+              Close
+            </Button>
+          )}
+        </div>
         {!collapsed && (
           <div className="relative">
             <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
