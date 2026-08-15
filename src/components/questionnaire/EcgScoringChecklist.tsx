@@ -88,6 +88,17 @@ const EcgScoringChecklist = ({ linkedAbcdeSelection }: EcgScoringChecklistProps)
         });
         return changed ? next : prev;
       });
+
+      // Auto-check urgent overrides if measurement is high enough
+      const qtcVal = measurements.qtcInterval ? parseInt(measurements.qtcInterval) : 0;
+      if (qtcVal >= 500) {
+        setUrgentOverrideIds(prev => {
+          if (prev.has("long_qtc")) return prev;
+          const next = new Set(prev);
+          next.add("long_qtc");
+          return next;
+        });
+      }
     }
   }, [measurements]);
 
