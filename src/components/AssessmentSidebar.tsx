@@ -307,7 +307,6 @@ export function AssessmentSidebar() {
         )}
         {filteredSections.map((section) => {
           const isOpen = q ? true : !!openGroups[section.id];
-          return (
             <SidebarGroup key={section.id} className={cn("mb-1", (section as any).prominent && "mb-2")}>
               <Collapsible open={isOpen} onOpenChange={() => toggleGroup(section.id)}>
                 <CollapsibleTrigger asChild>
@@ -318,8 +317,8 @@ export function AssessmentSidebar() {
                       section.gradient,
                       "dark:bg-background/40 dark:backdrop-blur-sm",
                       (section as any).prominent
-                        ? "border-[color:var(--ring-color)]/60 shadow-md ring-1 ring-[color:var(--ring-color)]/30 dark:ring-[color:var(--ring-color)]/50 py-3"
-                        : "border-transparent hover:border-[color:var(--ring-color)]/40 hover:shadow-sm dark:hover:border-[color:var(--ring-color)]/60"
+                        ? "border-[color:var(--ring-color)] shadow-md ring-2 ring-[color:var(--ring-color)]/40 dark:ring-[color:var(--ring-color)]/60 py-3"
+                        : "border-muted/50 hover:border-[color:var(--ring-color)]/60 hover:shadow-sm dark:hover:border-[color:var(--ring-color)]/80"
                     )}
                     style={{ ["--ring-color" as any]: section.ring }}
                   >
