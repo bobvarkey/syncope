@@ -309,3 +309,62 @@ export function mapAbcdeSelectionToChecklist(
     .map(([id]) => abcdeToChecklistMap[id])
     .filter(Boolean) as string[];
 }
+
+export interface EcgMeasurements {
+  prInterval?: number;
+  qrsDuration?: number;
+  qtcInterval?: number;
+  leadFindings?: string[];
+}
+
+export function analyzeMeasurements(measurements: EcgMeasurements): string[] {
+  const triggeredIds = new Set<string>();
+  const { prInterval, qrsDuration, qtcInterval, leadFindings } = measurements;
+
+  // PR Interval Logic
+  if (prInterval) {
+    if (prInterval > 200) {
+      triggeredIds.add("first_degree_av_block");
+    }
+    if (prInterval < 120 && qrsDuration && qrsDuration > 110) {
+      triggeredIds.add("wpw_preexcitation");
+    }
+  }
+
+  // QRS Duration Logic
+  if (qrsDuration) {
+    if (qrsDuration >= 120) {
+      // Typically bifascicular or general conduction delay in this context
+      triggeredIds.add("bifascicular_block");
+    }
+  }
+
+  // QTc Logic
+  if (qtcInterval) {
+    if (qtcInterval >= 480) {
+      triggeredIds.add("long_qtc");
+    } else if (qtcInterval <= 330) {
+      triggeredIds.add("short_qtc");
+    }
+  }
+
+  // Lead Findings Mapping
+  if (leadFindings) {
+    if (leadFindings.includes("coved_st_v1_v2")) triggeredIds.add("brugada_type_1");
+    if (leadFindings.includes("biphasic_t_v2_v3")) triggeredIds.add("wellens_pattern");
+    if (leadFindings.includes("deep_t_inversion_v2_v3")) triggeredIds.add("wellens_pattern");
+    if (leadFindings.includes("s1q3t3")) triggeredIds.add("pulmonary_embolism_rv_strain");
+    if (leadFindings.includes("epsilon_wave")) triggeredIds.add("epsilon_wave_arvc");
+  }
+
+  return Array.from(triggeredIds);
+}
+
+export const LEAD_FINDING_OPTIONS = [
+  { id: "coved_st_v1_v2", label: "Coved ST elevation (V1-V2)" },
+  { id: "biphasic_t_v2_v3", label: "Biphasic T-waves (V2-V3)" },
+  { id: "deep_t_inversion_v2_v3", label: "Deep T-inversion (V2-V3)" },
+  { id: "s1q3t3", label: "S1Q3T3 Pattern" },
+  { id: "epsilon_wave", label: "Epsilon wave (V1-V3)" },
+  { id: "dagger_q_waves", label: "Dagger Q-waves (Inferior/Lateral)" },
+];

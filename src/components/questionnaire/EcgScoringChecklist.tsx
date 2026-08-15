@@ -7,13 +7,16 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { AlertTriangle, ShieldCheck, Activity, Info, Stethoscope, ArrowRightCircle, Link2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { AlertTriangle, ShieldCheck, Activity, Info, Stethoscope, ArrowRightCircle, Link2, Calculator } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import {
   ecgChecklistItems,
   globalUrgentTriggers,
   computeChecklistScore,
   mapAbcdeSelectionToChecklist,
+  analyzeMeasurements,
+  LEAD_FINDING_OPTIONS,
 } from "@/lib/ecgChecklistData";
 import { cn } from "@/lib/utils";
 
@@ -27,6 +30,15 @@ const EcgScoringChecklist = ({ linkedAbcdeSelection }: EcgScoringChecklistProps)
   const [urgentOverrideIds, setUrgentOverrideIds] = useState<Set<string>>(new Set());
   const [globalTriggerIds, setGlobalTriggerIds] = useState<Set<string>>(new Set());
   const [autoSync, setAutoSync] = useState(true);
+  
+  const [measurements, setMeasurements] = useState({
+    prInterval: "",
+    qrsDuration: "",
+    qtcInterval: "",
+    leadFindings: [] as string[]
+  });
+
+  const [measurementDerivedIds, setMeasurementDerivedIds] = useState<Set<string>>(new Set());
 
   const linkedIds = useMemo(
     () => mapAbcdeSelectionToChecklist(linkedAbcdeSelection || {}),
@@ -50,6 +62,48 @@ const EcgScoringChecklist = ({ linkedAbcdeSelection }: EcgScoringChecklistProps)
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [linkedKey, autoSync]);
+
+  // Handle measurement-based auto-selection
+  useEffect(() => {
+    const derived = analyzeMeasurements({
+      prInterval: measurements.prInterval ? parseInt(measurements.prInterval) : undefined,
+      qrsDuration: measurements.qrsDuration ? parseInt(measurements.qrsDuration) : undefined,
+      qtcInterval: measurements.qtcInterval ? parseInt(measurements.qtcInterval) : undefined,
+      leadFindings: measurements.leadFindings
+    });
+    
+    const derivedSet = new Set(derived);
+    setMeasurementDerivedIds(derivedSet);
+
+    // Auto-check items triggered by measurements
+    if (derived.length > 0) {
+      setSelectedIds(prev => {
+        const next = new Set(prev);
+        let changed = false;
+        derived.forEach(id => {
+          if (!next.has(id)) {
+            next.add(id);
+            changed = true;
+          }
+        });
+        return changed ? next : prev;
+      });
+    }
+  }, [measurements]);
+
+  const handleMeasurementChange = (field: string, value: string) => {
+    setMeasurements(prev => ({ ...prev, [field]: value }));
+  };
+
+  const toggleLeadFinding = (id: string) => {
+    setMeasurements(prev => {
+      const next = [...prev.leadFindings];
+      const index = next.indexOf(id);
+      if (index > -1) next.splice(index, 1);
+      else next.push(id);
+      return { ...prev, leadFindings: next };
+    });
+  };
 
   const importLinked = () => {
     if (linkedIds.length === 0) {
@@ -145,6 +199,69 @@ const EcgScoringChecklist = ({ linkedAbcdeSelection }: EcgScoringChecklistProps)
               </Button>
             </div>
           </section>
+          
+          {/* Quantitative Measurements Form */}
+          <section className="rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-4">
+            <div className="flex items-center gap-2 text-primary">
+              <Calculator className="h-5 w-5" />
+              <h3 className="text-sm font-bold uppercase tracking-wider">ECG Measurements (QTc, PR, QRS)</h3>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="pr-interval" className="text-[11px] font-bold uppercase text-muted-foreground">PR Interval (ms)</Label>
+                <Input 
+                  id="pr-interval"
+                  type="number"
+                  placeholder="e.g. 160"
+                  value={measurements.prInterval}
+                  onChange={(e) => handleMeasurementChange("prInterval", e.target.value)}
+                  className="h-9 bg-background/50 text-sm border-primary/20 focus-visible:ring-sunset-orange"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="qrs-duration" className="text-[11px] font-bold uppercase text-muted-foreground">QRS Duration (ms)</Label>
+                <Input 
+                  id="qrs-duration"
+                  type="number"
+                  placeholder="e.g. 90"
+                  value={measurements.qrsDuration}
+                  onChange={(e) => handleMeasurementChange("qrsDuration", e.target.value)}
+                  className="h-9 bg-background/50 text-sm border-primary/20 focus-visible:ring-sunset-orange"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="qtc-interval" className="text-[11px] font-bold uppercase text-muted-foreground">QTc Interval (ms)</Label>
+                <Input 
+                  id="qtc-interval"
+                  type="number"
+                  placeholder="e.g. 420"
+                  value={measurements.qtcInterval}
+                  onChange={(e) => handleMeasurementChange("qtcInterval", e.target.value)}
+                  className="h-9 bg-background/50 text-sm border-primary/20 focus-visible:ring-sunset-orange"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2 pt-2 border-t border-primary/10">
+              <Label className="text-[11px] font-bold uppercase text-muted-foreground">Specific Lead Findings</Label>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {LEAD_FINDING_OPTIONS.map((opt) => (
+                  <div key={opt.id} className="flex items-center gap-2">
+                    <Checkbox 
+                      id={`lead-${opt.id}`}
+                      checked={measurements.leadFindings.includes(opt.id)}
+                      onCheckedChange={() => toggleLeadFinding(opt.id)}
+                      className="scale-75"
+                    />
+                    <Label htmlFor={`lead-${opt.id}`} className="text-[10px] font-medium leading-tight cursor-pointer">
+                      {opt.label}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
 
           {/* Global Urgent Triggers Section */}
           <section className="rounded-xl border border-destructive/20 bg-destructive/5 p-4 space-y-3">
@@ -193,13 +310,18 @@ const EcgScoringChecklist = ({ linkedAbcdeSelection }: EcgScoringChecklistProps)
                     <AccordionTrigger className="flex-1 py-1 hover:no-underline">
                       <div className="flex flex-col items-start text-left gap-1">
                         <span className="text-sm font-semibold">{item.label}</span>
-                        <div className="flex gap-2">
+                        <div className="flex flex-wrap gap-2">
                           <Badge variant="secondary" className="text-[9px] h-4 py-0 uppercase tracking-tighter opacity-70">
                             {item.category.replace('_', ' ')}
                           </Badge>
                           <Badge variant="outline" className="text-[9px] h-4 py-0 border-primary/20">
                             +{item.score} pts
                           </Badge>
+                          {measurementDerivedIds.has(item.id) && (
+                            <Badge variant="default" className="text-[9px] h-4 py-0 bg-sunset-orange/20 text-sunset-orange hover:bg-sunset-orange/20 border-none">
+                              Auto-filled
+                            </Badge>
+                          )}
                         </div>
                       </div>
                     </AccordionTrigger>
