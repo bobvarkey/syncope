@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useAssessmentProgress } from "@/contexts/AssessmentProgressContext";
-import { FileText, TestTube, Brain, CheckCircle2 } from "lucide-react";
+import { FileText, TestTube, Brain, CheckCircle2, Shield, AlertTriangle, ChevronRight } from "lucide-react";
 
 // Section groupings matching AssessmentSidebar and Index accordion structure
 const sectionGroups = {
