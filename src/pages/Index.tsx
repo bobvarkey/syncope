@@ -18,7 +18,6 @@ import AttackSection from "@/components/questionnaire/AttackSection";
 import EndSection from "@/components/questionnaire/EndSection";
 import BackgroundSection from "@/components/questionnaire/BackgroundSection";
 import ClinicalFeaturesSection from "@/components/questionnaire/ClinicalFeaturesSection";
-import ECGFindingsSection from "@/components/questionnaire/ECGFindingsSection";
 import DiagnosticCriteriaSection from "@/components/questionnaire/DiagnosticCriteriaSection";
 import InitialEvaluationSection from "@/components/questionnaire/InitialEvaluationSection";
 import TiltTestProtocolSection from "@/components/questionnaire/TiltTestProtocolSection";
