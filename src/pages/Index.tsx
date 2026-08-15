@@ -110,7 +110,7 @@ const IndexContent = () => {
         <div className="min-h-dvh flex w-full overflow-x-hidden">
           <AssessmentSidebar />
         
-        <div className="flex-1 bg-background">
+        <div className="flex-1 bg-background flex flex-col items-center w-full">
           <header className="sticky top-0 z-40 border-b border-border/50 bg-background/60 backdrop-blur-xl supports-[backdrop-filter]:bg-background/40 shadow-soft">
             <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-sunset" aria-hidden />
             <div
