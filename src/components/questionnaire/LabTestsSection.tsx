@@ -4,6 +4,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Info } from "lucide-react";
+import ChecklistLink from "@/components/ChecklistLink";
 
 interface LabTestsSectionProps {
   data: any;
@@ -157,9 +158,17 @@ const LabTestsSection = ({ data, onUpdate }: LabTestsSectionProps) => {
       <div className="space-y-6">
         {labTests.map((category) => (
           <div key={category.category} className="border rounded-lg p-6 bg-card">
-            <h4 className="text-lg font-semibold text-foreground mb-4">
-              {category.category}
-            </h4>
+            <div className="flex items-center justify-between mb-4">
+              <h4 className="text-lg font-semibold text-foreground">
+                {category.category}
+              </h4>
+              {["Electrolytes & Metabolic", "Cardiac Biomarkers"].includes(category.category) && (
+                <ChecklistLink 
+                  label="Check Related ECG Risks" 
+                  className="text-sunset-orange hover:text-sunset-red" 
+                />
+              )}
+            </div>
             
             <div className="space-y-4">
               {category.tests.map((test) => (
