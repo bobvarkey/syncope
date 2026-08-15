@@ -60,7 +60,7 @@ const RiskScoreSection = ({ data, onUpdate }: RiskScoreSectionProps) => {
             Predicts 30-day serious adverse events
           </p>
         </div>
-        <ChecklistLink variant="outline" label="Sync ECG Findings" className="border-primary/20 text-primary" />
+        <ChecklistLink variant="outline" label="View High-Risk Checklist" className="border-primary/20 text-primary" />
       </div>
 
       <Alert>

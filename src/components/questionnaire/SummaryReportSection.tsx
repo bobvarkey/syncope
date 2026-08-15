@@ -14,7 +14,9 @@ const SummaryReportSection = ({ formData }: SummaryReportSectionProps) => {
     const risks = [];
     if (formData.background?.cardiacHistory) risks.push("Cardiac history present");
     if (formData.background?.neurologicalHistory) risks.push("Neurological history present");
-    if (formData.ecgFindings?.abnormalFindings) risks.push("Abnormal ECG findings");
+    // Removed legacy ECG abnormal check - now handled via high-risk checklist scoring
+    if (formData.ecgScoringChecklist?.isUrgent) risks.push("URGENT: High-risk ECG features detected");
+    else if ((formData.ecgScoringChecklist?.score || 0) > 0) risks.push("Abnormal high-risk ECG findings");
     if (formData.riskScore?.highRisk) risks.push("High Canadian Syncope Risk Score");
     return risks;
   };
@@ -95,11 +97,13 @@ const SummaryReportSection = ({ formData }: SummaryReportSectionProps) => {
     }
 
     // Check for cardiac concerns
-    if (formData.ecgFindings?.abnormalFindings || formData.background?.cardiacHistory) {
+    if (formData.ecgScoringChecklist?.score > 0 || formData.background?.cardiacHistory) {
       impressions.push({
         condition: "Cardiac Etiology - Further Evaluation Needed",
-        confidence: "Moderate",
-        evidence: "Abnormal ECG findings and/or cardiac history present"
+        confidence: formData.ecgScoringChecklist?.isUrgent ? "High" : "Moderate",
+        evidence: formData.ecgScoringChecklist?.isUrgent 
+          ? "Urgent high-risk ECG features identified" 
+          : "Abnormal ECG findings and/or cardiac history present"
       });
     }
 
@@ -142,8 +146,10 @@ const SummaryReportSection = ({ formData }: SummaryReportSectionProps) => {
       recommendations.push("Consider pharmacotherapy if lifestyle measures insufficient");
     }
 
-    if (formData.ecgFindings?.abnormalFindings) {
-      recommendations.push("Cardiology referral for comprehensive cardiac evaluation");
+    if ((formData.ecgScoringChecklist?.score || 0) > 0) {
+      recommendations.push(formData.ecgScoringChecklist?.isUrgent 
+        ? "URGENT cardiology referral for comprehensive cardiac evaluation" 
+        : "Cardiology referral for comprehensive cardiac evaluation");
     }
 
     if (formData.subclavianSteal?.testPerformed && formData.subclavianSteal?.positiveTest) {

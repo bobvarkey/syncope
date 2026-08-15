@@ -52,7 +52,7 @@ const BackgroundSection = ({ data, onUpdate }: BackgroundSectionProps) => {
         <div>
           <div className="flex items-center justify-between mb-3">
             <Label className="text-base font-medium">Previous Cardiac Disease</Label>
-            <ChecklistLink label="Assess Cardiac Risk" className="text-sunset-orange hover:text-sunset-red" />
+            <ChecklistLink label="View High-Risk Checklist" className="text-sunset-orange hover:text-sunset-red" />
           </div>
           <div className="flex items-center space-x-2">
             <Checkbox

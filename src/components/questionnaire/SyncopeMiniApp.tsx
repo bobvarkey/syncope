@@ -9,6 +9,7 @@ import {
   Printer,
   ChevronDown,
 } from "lucide-react";
+import ChecklistLink from "../ChecklistLink";
 
 type Input = {
   trueSyncope: boolean;
@@ -245,21 +246,21 @@ export default function SyncopeMiniApp() {
         </Panel>
 
         <Panel title="ECG checklist" icon={<HeartPulse size={18} />} className="lg:col-span-3">
-          <div className="space-y-2">
-            {[
-              ["ecg.abnormal", "Abnormal ECG"],
-              ["ecg.ischemia", "Ischemic changes"],
-              ["ecg.bradycardia", "Bradycardia"],
-              ["ecg.tachycardia", "Tachycardia"],
-              ["ecg.qtProlonged", "QT prolongation"],
-              ["ecg.preexcitation", "Pre-excitation"],
-              ["ecg.brugadaPattern", "Brugada pattern"],
-              ["ecg.wellens", "Wellens' syndrome (V2–V3 T-wave changes)"],
-              ["ecg.afib", "Atrial fibrillation"],
-              ["ecg.avBlock", "AV block"],
-            ].map(([k, l]) => (
-              <Check key={k} label={l as string} checked={get(i, k as string)} onChange={(v) => set(k as string, v)} />
-            ))}
+          <div className="space-y-4">
+            <div className="rounded-2xl bg-rose-50 p-4 border border-rose-100">
+              <p className="text-sm font-medium text-rose-800 mb-3">
+                ECG findings should be assessed using the dedicated checklist for high-risk criteria.
+              </p>
+              <ChecklistLink 
+                label="Open High-Risk ECG Checklist" 
+                variant="default"
+                className="w-full bg-rose-600 hover:bg-rose-700 text-white rounded-xl py-2 px-4 shadow-sm" 
+              />
+            </div>
+            
+            <div className="text-xs text-slate-500 italic px-2">
+              Note: The basic ECG checkboxes have been moved to the primary High-Risk Checklist to ensure standardized clinical assessment.
+            </div>
           </div>
         </Panel>
 

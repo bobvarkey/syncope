@@ -164,7 +164,7 @@ const LabTestsSection = ({ data, onUpdate }: LabTestsSectionProps) => {
               </h4>
               {["Electrolytes & Metabolic", "Cardiac Biomarkers"].includes(category.category) && (
                 <ChecklistLink 
-                  label="Check Related ECG Risks" 
+                  label="View High-Risk Checklist" 
                   className="text-sunset-orange hover:text-sunset-red" 
                 />
               )}
