@@ -204,6 +204,11 @@ export function AssessmentSidebar() {
               setOpenGroups((prev) =>
                 prev[section.id] ? prev : { ...prev, [section.id]: true }
               );
+              // Also update URL hash to trigger accordion expansion on Index page
+              if (window.location.hash !== `#${subsection.id}`) {
+                window.history.replaceState(null, '', `#${subsection.id}`);
+                window.dispatchEvent(new Event('hashchange'));
+              }
               return;
             }
           }

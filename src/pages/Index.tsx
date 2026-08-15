@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { FileText, Printer, Download, FileDown } from "lucide-react";
+import { FileText, Printer, Download, FileDown, History, TestTube, Brain, Shield, AlertTriangle } from "lucide-react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AssessmentSidebar } from "@/components/AssessmentSidebar";
 import { AssessmentProgressProvider } from "@/contexts/AssessmentProgressContext";
@@ -47,9 +47,16 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 const IndexContent = () => {
   const { language, t } = useLanguage();
+  const [openAccordionGroups, setOpenAccordionGroups] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     patientInfo: {},
     circumstances: {},
@@ -75,6 +82,49 @@ const IndexContent = () => {
     ecgAbcde: {},
     ecgScoring: {},
   });
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.replace('#', '');
+      if (!hash) return;
+
+      const groupMapping: Record<string, string> = {
+        'circumstances': 'clinical-history',
+        'onset': 'clinical-history',
+        'attack': 'clinical-history',
+        'end': 'clinical-history',
+        'background': 'clinical-history',
+        'clinical-features': 'clinical-history',
+        'ecg-scoring-checklist': 'investigations',
+        'ecg-abcde': 'investigations',
+        'syncope-medications': 'investigations',
+        'lab-tests': 'investigations',
+        'initial-evaluation': 'investigations',
+        'tilt-test': 'investigations',
+        'risk-score': 'investigations',
+        'subclavian-steal': 'investigations',
+        'carotid-massage': 'investigations',
+        'orthostatic-intolerance': 'investigations',
+        'autonomic-testing': 'investigations',
+        'differential-diagnosis-section': 'differential-diagnosis',
+        'diagnostic-criteria': 'differential-diagnosis',
+        'ai-diagnosis': 'differential-diagnosis',
+        'interventions': 'management',
+        'drop-attacks': 'drop-attacks-group'
+      };
+
+      const groupId = groupMapping[hash];
+      if (groupId) {
+        setOpenAccordionGroups(prev => 
+          prev.includes(groupId) ? prev : [...prev, groupId]
+        );
+      }
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    handleHashChange(); // Initial check
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
 
   const updateSection = (section: string, data: any) => {
     setFormData(prev => ({
@@ -204,274 +254,328 @@ const IndexContent = () => {
                     Complete all sections to evaluate the episode of loss of consciousness
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-8">
+                <CardContent className="space-y-6">
                   <PatientInfoSection
                     data={formData.patientInfo}
                     onUpdate={(data) => updateSection('patientInfo', data)}
                   />
                   
-                  <div className="bg-muted/30 -mx-6 -mt-6 px-6 py-6 mb-8">
-                    <h2 className="text-2xl font-semibold text-foreground mb-2">Clinical History</h2>
-                    <p className="text-sm text-muted-foreground">Patient history and episode characteristics</p>
-                  </div>
-                  
-                  <div id="circumstances">
-                    <SectionWithProgress sectionId="circumstances" data={formData.circumstances}>
-                      <CircumstancesSection 
-                        data={formData.circumstances} 
-                        onUpdate={(data) => updateSection('circumstances', data)} 
-                      />
-                    </SectionWithProgress>
-                  </div>
-                  
-                  <Separator className="my-8" />
-                  
-                  <div id="onset">
-                    <SectionWithProgress sectionId="onset" data={formData.onset}>
-                      <OnsetSection 
-                        data={formData.onset} 
-                        onUpdate={(data) => updateSection('onset', data)} 
-                      />
-                    </SectionWithProgress>
-                  </div>
-                  
-                  <Separator className="my-8" />
-                  
-                  <div id="attack">
-                    <SectionWithProgress sectionId="attack" data={formData.attack}>
-                      <AttackSection 
-                        data={formData.attack} 
-                        onUpdate={(data) => updateSection('attack', data)} 
-                      />
-                    </SectionWithProgress>
-                  </div>
-                  
-                  <Separator className="my-8" />
-                  
-                  <div id="end">
-                    <SectionWithProgress sectionId="end" data={formData.end}>
-                      <EndSection 
-                        data={formData.end} 
-                        onUpdate={(data) => updateSection('end', data)} 
-                      />
-                    </SectionWithProgress>
-                  </div>
-                  
-                  <Separator className="my-8" />
-                  
-                  <div id="background">
-                    <SectionWithProgress sectionId="background" data={formData.background}>
-                      <BackgroundSection 
-                        data={formData.background} 
-                        onUpdate={(data) => updateSection('background', data)} 
-                      />
-                    </SectionWithProgress>
-                  </div>
-                  
-                  <Separator className="my-8" />
-                  
-                  <div id="clinical-features">
-                    <SectionWithProgress sectionId="clinical-features" data={formData.clinicalFeatures}>
-                      <ClinicalFeaturesSection 
-                        data={formData.clinicalFeatures} 
-                        onUpdate={(data) => updateSection('clinicalFeatures', data)} 
-                      />
-                    </SectionWithProgress>
-                  </div>
-                  
-                  <Separator className="my-8" />
-                  
-                  <div className="bg-primary/5 -mx-6 px-6 py-6 my-8">
-                    <h2 className="text-2xl font-semibold text-foreground mb-2">Clinical Investigations</h2>
-                    <p className="text-sm text-muted-foreground">Diagnostic tests, examinations, and objective findings</p>
-                  </div>
-                  
-                  <div id="ecg-scoring-checklist">
-                    <EcgScoringChecklist
-                      linkedAbcdeSelection={(formData.ecgAbcde as any)?.selectedPatterns}
-                      data={formData.ecgScoring}
-                      onUpdate={(data) => updateSection('ecgScoring', data)}
-                    />
-                  </div>
+                  <Accordion 
+                    type="multiple" 
+                    value={openAccordionGroups} 
+                    onValueChange={setOpenAccordionGroups}
+                    className="space-y-4"
+                  >
+                    {/* Clinical History Group */}
+                    <AccordionItem value="clinical-history" className="border rounded-xl overflow-hidden shadow-sm">
+                      <AccordionTrigger className="px-6 py-4 bg-muted/30 hover:no-underline hover:bg-muted/50 transition-all">
+                        <div className="flex items-center gap-3 text-left">
+                          <div className="p-2 rounded-lg bg-orange-500/10">
+                            <History className="h-5 w-5 text-[hsl(16_100%_60%)]" />
+                          </div>
+                          <div>
+                            <h2 className="text-xl font-bold text-foreground leading-tight">Clinical History</h2>
+                            <p className="text-xs text-muted-foreground font-normal">Patient history and episode characteristics</p>
+                          </div>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent className="px-6 pt-6 pb-4 space-y-8">
+                        <div id="circumstances">
+                          <SectionWithProgress sectionId="circumstances" data={formData.circumstances}>
+                            <CircumstancesSection 
+                              data={formData.circumstances} 
+                              onUpdate={(data) => updateSection('circumstances', data)} 
+                            />
+                          </SectionWithProgress>
+                        </div>
+                        
+                        <Separator />
+                        
+                        <div id="onset">
+                          <SectionWithProgress sectionId="onset" data={formData.onset}>
+                            <OnsetSection 
+                              data={formData.onset} 
+                              onUpdate={(data) => updateSection('onset', data)} 
+                            />
+                          </SectionWithProgress>
+                        </div>
+                        
+                        <Separator />
+                        
+                        <div id="attack">
+                          <SectionWithProgress sectionId="attack" data={formData.attack}>
+                            <AttackSection 
+                              data={formData.attack} 
+                              onUpdate={(data) => updateSection('attack', data)} 
+                            />
+                          </SectionWithProgress>
+                        </div>
+                        
+                        <Separator />
+                        
+                        <div id="end">
+                          <SectionWithProgress sectionId="end" data={formData.end}>
+                            <EndSection 
+                              data={formData.end} 
+                              onUpdate={(data) => updateSection('end', data)} 
+                            />
+                          </SectionWithProgress>
+                        </div>
+                        
+                        <Separator />
+                        
+                        <div id="background">
+                          <SectionWithProgress sectionId="background" data={formData.background}>
+                            <BackgroundSection 
+                              data={formData.background} 
+                              onUpdate={(data) => updateSection('background', data)} 
+                            />
+                          </SectionWithProgress>
+                        </div>
+                        
+                        <Separator />
+                        
+                        <div id="clinical-features">
+                          <SectionWithProgress sectionId="clinical-features" data={formData.clinicalFeatures}>
+                            <ClinicalFeaturesSection 
+                              data={formData.clinicalFeatures} 
+                              onUpdate={(data) => updateSection('clinicalFeatures', data)} 
+                            />
+                          </SectionWithProgress>
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
 
-                  <Separator className="my-8" />
-                  
-                  <div id="ecg-abcde">
-                    <EcgSyncopeAbcde
-                      data={formData.ecgAbcde}
-                      onUpdate={(data) => updateSection('ecgAbcde', data)}
-                    />
-                  </div>
+                    {/* Investigations Group */}
+                    <AccordionItem value="investigations" className="border rounded-xl overflow-hidden shadow-sm">
+                      <AccordionTrigger className="px-6 py-4 bg-muted/30 hover:no-underline hover:bg-muted/50 transition-all">
+                        <div className="flex items-center gap-3 text-left">
+                          <div className="p-2 rounded-lg bg-yellow-500/10">
+                            <TestTube className="h-5 w-5 text-[hsl(28_100%_58%)]" />
+                          </div>
+                          <div>
+                            <h2 className="text-xl font-bold text-foreground leading-tight">Clinical Investigations</h2>
+                            <p className="text-xs text-muted-foreground font-normal">Diagnostic tests, examinations, and objective findings</p>
+                          </div>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent className="px-6 pt-6 pb-4 space-y-8">
+                        <div id="ecg-scoring-checklist">
+                          <EcgScoringChecklist
+                            linkedAbcdeSelection={(formData.ecgAbcde as any)?.selectedPatterns}
+                            data={formData.ecgScoring}
+                            onUpdate={(data) => updateSection('ecgScoring', data)}
+                          />
+                        </div>
 
-                  <Separator className="my-8" />
+                        <Separator />
+                        
+                        <div id="ecg-abcde">
+                          <EcgSyncopeAbcde
+                            data={formData.ecgAbcde}
+                            onUpdate={(data) => updateSection('ecgAbcde', data)}
+                          />
+                        </div>
 
-                  <div id="syncope-medications">
-                    <SectionWithProgress sectionId="syncope-medications" data={formData.syncopeMedications}>
-                      <SyncopeMedicationsSection
-                        data={formData.syncopeMedications}
-                        onUpdate={(data) => updateSection('syncopeMedications', data)}
-                      />
-                    </SectionWithProgress>
-                  </div>
+                        <Separator />
 
-                  <Separator className="my-8" />
+                        <div id="syncope-medications">
+                          <SectionWithProgress sectionId="syncope-medications" data={formData.syncopeMedications}>
+                            <SyncopeMedicationsSection
+                              data={formData.syncopeMedications}
+                              onUpdate={(data) => updateSection('syncopeMedications', data)}
+                            />
+                          </SectionWithProgress>
+                        </div>
 
-                  <div id="anti-arrhythmics">
-                    <AntiArrhythmicsSection />
-                  </div>
+                        <Separator />
 
-                  <Separator className="my-8" />
-                  
-                  <div id="lab-tests">
-                    <SectionWithProgress sectionId="lab-tests" data={formData.labTests}>
-                      <LabTestsSection 
-                        data={formData.labTests} 
-                        onUpdate={(data) => updateSection('labTests', data)} 
-                      />
-                    </SectionWithProgress>
-                  </div>
-                  
-                  <Separator className="my-8" />
-                  
-                  <div id="initial-evaluation">
-                    <SectionWithProgress sectionId="initial-evaluation" data={formData.initialEvaluation}>
-                      <InitialEvaluationSection 
-                        data={formData.initialEvaluation} 
-                        onUpdate={(data) => updateSection('initialEvaluation', data)} 
-                      />
-                    </SectionWithProgress>
-                  </div>
-                  
-                  <Separator className="my-8" />
-                  
-                  <div id="tilt-test">
-                    <SectionWithProgress sectionId="tilt-test" data={formData.tiltTestProtocol}>
-                      <TiltTestProtocolSection 
-                        data={formData.tiltTestProtocol} 
-                        onUpdate={(data) => updateSection('tiltTestProtocol', data)} 
-                      />
-                    </SectionWithProgress>
-                  </div>
-                  
-                  <Separator className="my-8" />
-                  
-                  <div id="risk-score">
-                    <SectionWithProgress sectionId="risk-score" data={formData.riskScore}>
-                      <RiskScoreSection 
-                        data={formData.riskScore} 
-                        onUpdate={(data) => updateSection('riskScore', data)} 
-                      />
-                    </SectionWithProgress>
-                  </div>
-                  
-                  <Separator className="my-8" />
-                  
-                  <div id="subclavian-steal">
-                    <SectionWithProgress sectionId="subclavian-steal" data={formData.subclavianSteal}>
-                      <SubclavianStealSection 
-                        data={formData.subclavianSteal} 
-                        onUpdate={(data) => updateSection('subclavianSteal', data)} 
-                      />
-                    </SectionWithProgress>
-                  </div>
-                  
-                  <Separator className="my-8" />
-                  
-                  <div id="carotid-massage">
-                    <SectionWithProgress sectionId="carotid-massage" data={formData.carotidSinusMassage}>
-                      <CarotidSinusMassageSection 
-                        data={formData.carotidSinusMassage} 
-                        onUpdate={(data) => updateSection('carotidSinusMassage', data)} 
-                      />
-                    </SectionWithProgress>
-                  </div>
-                  
-                  <Separator className="my-8" />
-                  
-                  <div id="orthostatic-intolerance">
-                    <SectionWithProgress sectionId="orthostatic-intolerance" data={formData.orthostaticIntolerance}>
-                      <OrthostaticIntoleranceSection 
-                        data={formData.orthostaticIntolerance} 
-                        onUpdate={(data) => updateSection('orthostaticIntolerance', data)} 
-                      />
-                    </SectionWithProgress>
-                  </div>
-                  
-                  <Separator className="my-8" />
-                  
-                  <div id="autonomic-testing">
-                    <SectionWithProgress sectionId="autonomic-testing" data={formData.autonomicTesting}>
-                      <AutonomicTestingSection 
-                        data={formData.autonomicTesting} 
-                        onUpdate={(data) => updateSection('autonomicTesting', data)} 
-                      />
-                    </SectionWithProgress>
-                  </div>
-                  
-                  <Separator className="my-8" />
-                  
-                  <div className="bg-accent/30 -mx-6 px-6 py-6 my-8 border-t-2 border-primary">
-                    <h2 className="text-2xl font-semibold text-foreground mb-2">Differential Diagnosis</h2>
-                    <p className="text-sm text-muted-foreground">Clinical reasoning, diagnostic criteria, and AI-assisted analysis</p>
-                  </div>
-                  
-                  <div id="differential-diagnosis-section">
-                    <SectionWithProgress sectionId="differential-diagnosis-section" data={formData.differentialDiagnosis}>
-                      <DifferentialDiagnosisSection 
-                        data={formData.differentialDiagnosis} 
-                        onUpdate={(data) => updateSection('differentialDiagnosis', data)} 
-                      />
-                    </SectionWithProgress>
-                  </div>
-                  
-                  <Separator className="my-8" />
-                  
-                  <div id="diagnostic-criteria">
-                    <SectionWithProgress sectionId="diagnostic-criteria" data={formData.diagnosticCriteria}>
-                      <DiagnosticCriteriaSection 
-                        data={formData.diagnosticCriteria} 
-                        onUpdate={(data) => updateSection('diagnosticCriteria', data)} 
-                      />
-                    </SectionWithProgress>
-                  </div>
-                  
-                  <Separator className="my-8" />
-                  
-                  <div id="ai-diagnosis">
-                    <AIDiagnosisSection />
-                  </div>
-                  
-                  <Separator className="my-8" />
-                  
-                  <div className="bg-accent/30 -mx-6 px-6 py-6 my-8 border-t-2 border-primary">
-                    <h2 className="text-2xl font-semibold text-foreground mb-2">Interventions & Management</h2>
-                    <p className="text-sm text-muted-foreground">Treatment plan including non-pharmacological, pharmacological, and device therapies</p>
-                  </div>
-                  
-                  <div id="interventions">
-                    <SectionWithProgress sectionId="interventions" data={formData.interventions}>
-                      <InterventionsSection 
-                        data={formData.interventions} 
-                        onUpdate={(data) => updateSection('interventions', data)} 
-                      />
-                    </SectionWithProgress>
-                  </div>
-                  
-                  <Separator className="my-8" />
-                  
-                  <div className="bg-accent/30 -mx-6 px-6 py-6 my-8 border-t-2 border-destructive/50">
-                    <h2 className="text-2xl font-semibold text-foreground mb-2">Drop Attacks Workup</h2>
-                    <p className="text-sm text-muted-foreground">Evaluation of sudden falls with or without loss of consciousness</p>
-                  </div>
-                  
-                  <div id="drop-attacks">
-                    <SectionWithProgress sectionId="drop-attacks" data={formData.dropAttacks}>
-                      <DropAttacksSection 
-                        data={formData.dropAttacks} 
-                        onUpdate={(data) => updateSection('dropAttacks', data)} 
-                      />
-                    </SectionWithProgress>
-                  </div>
+                        <div id="anti-arrhythmics">
+                          <AntiArrhythmicsSection />
+                        </div>
+
+                        <Separator />
+                        
+                        <div id="lab-tests">
+                          <SectionWithProgress sectionId="lab-tests" data={formData.labTests}>
+                            <LabTestsSection 
+                              data={formData.labTests} 
+                              onUpdate={(data) => updateSection('labTests', data)} 
+                            />
+                          </SectionWithProgress>
+                        </div>
+                        
+                        <Separator />
+                        
+                        <div id="initial-evaluation">
+                          <SectionWithProgress sectionId="initial-evaluation" data={formData.initialEvaluation}>
+                            <InitialEvaluationSection 
+                              data={formData.initialEvaluation} 
+                              onUpdate={(data) => updateSection('initialEvaluation', data)} 
+                            />
+                          </SectionWithProgress>
+                        </div>
+                        
+                        <Separator />
+                        
+                        <div id="tilt-test">
+                          <SectionWithProgress sectionId="tilt-test" data={formData.tiltTestProtocol}>
+                            <TiltTestProtocolSection 
+                              data={formData.tiltTestProtocol} 
+                              onUpdate={(data) => updateSection('tiltTestProtocol', data)} 
+                            />
+                          </SectionWithProgress>
+                        </div>
+                        
+                        <Separator />
+                        
+                        <div id="risk-score">
+                          <SectionWithProgress sectionId="risk-score" data={formData.riskScore}>
+                            <RiskScoreSection 
+                              data={formData.riskScore} 
+                              onUpdate={(data) => updateSection('riskScore', data)} 
+                            />
+                          </SectionWithProgress>
+                        </div>
+                        
+                        <Separator />
+                        
+                        <div id="subclavian-steal">
+                          <SectionWithProgress sectionId="subclavian-steal" data={formData.subclavianSteal}>
+                            <SubclavianStealSection 
+                              data={formData.subclavianSteal} 
+                              onUpdate={(data) => updateSection('subclavianSteal', data)} 
+                            />
+                          </SectionWithProgress>
+                        </div>
+                        
+                        <Separator />
+                        
+                        <div id="carotid-massage">
+                          <SectionWithProgress sectionId="carotid-massage" data={formData.carotidSinusMassage}>
+                            <CarotidSinusMassageSection 
+                              data={formData.carotidSinusMassage} 
+                              onUpdate={(data) => updateSection('carotidSinusMassage', data)} 
+                            />
+                          </SectionWithProgress>
+                        </div>
+                        
+                        <Separator />
+                        
+                        <div id="orthostatic-intolerance">
+                          <SectionWithProgress sectionId="orthostatic-intolerance" data={formData.orthostaticIntolerance}>
+                            <OrthostaticIntoleranceSection 
+                              data={formData.orthostaticIntolerance} 
+                              onUpdate={(data) => updateSection('orthostaticIntolerance', data)} 
+                            />
+                          </SectionWithProgress>
+                        </div>
+                        
+                        <Separator />
+                        
+                        <div id="autonomic-testing">
+                          <SectionWithProgress sectionId="autonomic-testing" data={formData.autonomicTesting}>
+                            <AutonomicTestingSection 
+                              data={formData.autonomicTesting} 
+                              onUpdate={(data) => updateSection('autonomicTesting', data)} 
+                            />
+                          </SectionWithProgress>
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+
+                    {/* Differential Diagnosis Group */}
+                    <AccordionItem value="differential-diagnosis" className="border rounded-xl overflow-hidden shadow-sm">
+                      <AccordionTrigger className="px-6 py-4 bg-muted/30 hover:no-underline hover:bg-muted/50 transition-all">
+                        <div className="flex items-center gap-3 text-left">
+                          <div className="p-2 rounded-lg bg-purple-500/10">
+                            <Brain className="h-5 w-5 text-[hsl(280_75%_60%)]" />
+                          </div>
+                          <div>
+                            <h2 className="text-xl font-bold text-foreground leading-tight">Differential Diagnosis</h2>
+                            <p className="text-xs text-muted-foreground font-normal">Clinical reasoning, diagnostic criteria, and AI-assisted analysis</p>
+                          </div>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent className="px-6 pt-6 pb-4 space-y-8">
+                        <div id="differential-diagnosis-section">
+                          <SectionWithProgress sectionId="differential-diagnosis-section" data={formData.differentialDiagnosis}>
+                            <DifferentialDiagnosisSection 
+                              data={formData.differentialDiagnosis} 
+                              onUpdate={(data) => updateSection('differentialDiagnosis', data)} 
+                            />
+                          </SectionWithProgress>
+                        </div>
+                        
+                        <Separator />
+                        
+                        <div id="diagnostic-criteria">
+                          <SectionWithProgress sectionId="diagnostic-criteria" data={formData.diagnosticCriteria}>
+                            <DiagnosticCriteriaSection 
+                              data={formData.diagnosticCriteria} 
+                              onUpdate={(data) => updateSection('diagnosticCriteria', data)} 
+                            />
+                          </SectionWithProgress>
+                        </div>
+                        
+                        <Separator />
+                        
+                        <div id="ai-diagnosis">
+                          <AIDiagnosisSection />
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+
+                    {/* Management Group */}
+                    <AccordionItem value="management" className="border rounded-xl overflow-hidden shadow-sm">
+                      <AccordionTrigger className="px-6 py-4 bg-muted/30 hover:no-underline hover:bg-muted/50 transition-all">
+                        <div className="flex items-center gap-3 text-left">
+                          <div className="p-2 rounded-lg bg-green-500/10">
+                            <Shield className="h-5 w-5 text-[hsl(160_70%_45%)]" />
+                          </div>
+                          <div>
+                            <h2 className="text-xl font-bold text-foreground leading-tight">Interventions & Management</h2>
+                            <p className="text-xs text-muted-foreground font-normal">Treatment plan including non-pharmacological, pharmacological, and device therapies</p>
+                          </div>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent className="px-6 pt-6 pb-4 space-y-8">
+                        <div id="interventions">
+                          <SectionWithProgress sectionId="interventions" data={formData.interventions}>
+                            <InterventionsSection 
+                              data={formData.interventions} 
+                              onUpdate={(data) => updateSection('interventions', data)} 
+                            />
+                          </SectionWithProgress>
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+
+                    {/* Drop Attacks Group */}
+                    <AccordionItem value="drop-attacks-group" className="border rounded-xl overflow-hidden shadow-sm">
+                      <AccordionTrigger className="px-6 py-4 bg-muted/30 hover:no-underline hover:bg-muted/50 transition-all">
+                        <div className="flex items-center gap-3 text-left">
+                          <div className="p-2 rounded-lg bg-red-500/10">
+                            <AlertTriangle className="h-5 w-5 text-[hsl(0_85%_60%)]" />
+                          </div>
+                          <div>
+                            <h2 className="text-xl font-bold text-foreground leading-tight">Drop Attacks Workup</h2>
+                            <p className="text-xs text-muted-foreground font-normal">Evaluation of sudden falls with or without loss of consciousness</p>
+                          </div>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent className="px-6 pt-6 pb-4 space-y-8">
+                        <div id="drop-attacks">
+                          <SectionWithProgress sectionId="drop-attacks" data={formData.dropAttacks}>
+                            <DropAttacksSection 
+                              data={formData.dropAttacks} 
+                              onUpdate={(data) => updateSection('dropAttacks', data)} 
+                            />
+                          </SectionWithProgress>
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
                 </CardContent>
               </Card>
 
