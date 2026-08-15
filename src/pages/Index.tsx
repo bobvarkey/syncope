@@ -254,7 +254,6 @@ const IndexContent = () => {
                     Complete all sections to evaluate the episode of loss of consciousness
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-8">
                 <CardContent className="space-y-6">
                   <PatientInfoSection
                     data={formData.patientInfo}
