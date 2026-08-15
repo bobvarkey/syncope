@@ -166,7 +166,7 @@ const QTcCalculator = ({ onResultUpdate }: QTcCalculatorProps) => {
             <Calculator className="h-5 w-5 text-blue-600" />
             QTc Interval Calculator
           </div>
-          <ChecklistLink label="Check QT Checklist" className="text-blue-600 hover:text-blue-800" />
+          <ChecklistLink label="View High-Risk Checklist" className="text-blue-600 hover:text-blue-800" />
         </CardTitle>
         <CardDescription>
           Calculate corrected QT interval using Bazett, Fridericia, and Framingham formulas
