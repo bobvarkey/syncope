@@ -74,6 +74,7 @@ const IndexContent = () => {
     dropAttacks: {},
     syncopeMedications: {},
     ecgAbcde: {},
+    ecgScoring: {},
   });
 
   const updateSection = (section: string, data: any) => {
@@ -289,22 +290,13 @@ const IndexContent = () => {
                   <div id="ecg-scoring-checklist">
                     <EcgScoringChecklist
                       linkedAbcdeSelection={(formData.ecgAbcde as any)?.selectedPatterns}
+                      data={formData.ecgScoring}
+                      onUpdate={(data) => updateSection('ecgScoring', data)}
                     />
                   </div>
 
                   <Separator className="my-8" />
                   
-                  <div id="ecg-findings">
-                    <SectionWithProgress sectionId="ecg-findings" data={formData.ecgFindings}>
-                      <ECGFindingsSection 
-                        data={formData.ecgFindings} 
-                        onUpdate={(data) => updateSection('ecgFindings', data)} 
-                      />
-                    </SectionWithProgress>
-                  </div>
-
-                  <Separator className="my-8" />
-
                   <div id="ecg-abcde">
                     <EcgSyncopeAbcde
                       data={formData.ecgAbcde}

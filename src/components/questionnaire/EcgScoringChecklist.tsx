@@ -396,6 +396,38 @@ const EcgScoringChecklist = ({ linkedAbcdeSelection, data, onUpdate }: EcgScorin
               ))}
             </Accordion>
 
+            <section className="space-y-6">
+              <QTcCalculator 
+                onResultUpdate={(results) => onUpdate({ qtcResults: results })}
+              />
+
+              <div className="space-y-3">
+                <Label htmlFor="ecg-details" className="text-sm font-bold uppercase tracking-wider text-primary flex items-center gap-2">
+                  <FileText className="h-4 w-4" /> Detailed Findings & Morphology
+                </Label>
+                <Textarea
+                  id="ecg-details"
+                  placeholder="Document specific measurements, intervals, and morphology details..."
+                  value={data.ecgDetails || ""}
+                  onChange={(e) => onUpdate({ ecgDetails: e.target.value })}
+                  className="min-h-[120px] bg-background/50 border-primary/20 focus-visible:ring-sunset-orange"
+                />
+              </div>
+
+              <div className="space-y-3">
+                <Label htmlFor="ecg-notes" className="text-sm font-bold uppercase tracking-wider text-primary flex items-center gap-2">
+                  <Stethoscope className="h-4 w-4" /> Clinical ECG Interpretation
+                </Label>
+                <Textarea
+                  id="ecg-notes"
+                  placeholder="Clinical significance and recommended follow-up..."
+                  value={data.notes || ""}
+                  onChange={(e) => onUpdate({ notes: e.target.value })}
+                  className="min-h-[100px] bg-background/50 border-primary/20 focus-visible:ring-sunset-orange"
+                />
+              </div>
+            </section>
+
             {/* Result Display Card */}
             <div className="space-y-4">
               <Card className={cn(
