@@ -7,6 +7,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Calculator, AlertTriangle, Info, TrendingUp } from "lucide-react";
+import ChecklistLink from "@/components/ChecklistLink";
 
 interface QTcCalculatorProps {
   onResultUpdate?: (results: any) => void;
@@ -160,9 +161,12 @@ const QTcCalculator = ({ onResultUpdate }: QTcCalculatorProps) => {
   return (
     <Card className="border-blue-500 shadow-md">
       <CardHeader className="bg-blue-50 dark:bg-blue-950/20">
-        <CardTitle className="flex items-center gap-2">
-          <Calculator className="h-5 w-5 text-blue-600" />
-          QTc Interval Calculator
+        <CardTitle className="flex items-center justify-between w-full">
+          <div className="flex items-center gap-2">
+            <Calculator className="h-5 w-5 text-blue-600" />
+            QTc Interval Calculator
+          </div>
+          <ChecklistLink label="Check QT Checklist" className="text-blue-600 hover:text-blue-800" />
         </CardTitle>
         <CardDescription>
           Calculate corrected QT interval using Bazett, Fridericia, and Framingham formulas

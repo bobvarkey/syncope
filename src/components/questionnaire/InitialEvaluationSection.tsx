@@ -4,6 +4,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Info } from "lucide-react";
+import ChecklistLink from "@/components/ChecklistLink";
 
 interface InitialEvaluationSectionProps {
   data: any;
@@ -64,12 +65,20 @@ const InitialEvaluationSection = ({ data, onUpdate }: InitialEvaluationSectionPr
                 checked={data[test.id] || false}
                 onCheckedChange={(checked) => onUpdate({ [test.id]: checked })}
               />
-              <Label 
-                htmlFor={test.id} 
-                className="font-medium cursor-pointer flex-1"
-              >
-                {test.label}
-              </Label>
+              <div className="flex-1 flex items-center justify-between">
+                <Label 
+                  htmlFor={test.id} 
+                  className="font-medium cursor-pointer"
+                >
+                  {test.label}
+                </Label>
+                {test.id === "ecg-12-lead" && (
+                  <ChecklistLink 
+                    label="View High-Risk Checklist" 
+                    className="text-sunset-orange hover:text-sunset-red" 
+                  />
+                )}
+              </div>
             </div>
           ))}
         </div>

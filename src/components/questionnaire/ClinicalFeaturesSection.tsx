@@ -1,6 +1,7 @@
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
+import ChecklistLink from "@/components/ChecklistLink";
 
 interface ClinicalFeaturesSectionProps {
   data: any;
@@ -75,7 +76,13 @@ const ClinicalFeaturesSection = ({ data, onUpdate }: ClinicalFeaturesSectionProp
 
         {/* Cardiac syncope */}
         <div className="border-l-4 border-destructive pl-4">
-          <h4 className="font-semibold text-foreground mb-3">Cardiac Syncope</h4>
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="font-semibold text-foreground">Cardiac Syncope</h4>
+            <ChecklistLink 
+              label="Assess High-Risk ECG" 
+              className="text-destructive hover:text-red-700" 
+            />
+          </div>
           <div className="space-y-3">
             {[
               { id: "structural-heart", label: "Presence of definite structural heart disease" },

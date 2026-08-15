@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertCircle, AlertTriangle, CheckCircle2, Info } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import ChecklistLink from "@/components/ChecklistLink";
 
 interface RiskScoreSectionProps {
   data: any;
@@ -50,13 +51,16 @@ const RiskScoreSection = ({ data, onUpdate }: RiskScoreSectionProps) => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h3 className="text-xl font-semibold text-foreground mb-4">
-          Canadian Syncope Risk Score
-        </h3>
-        <p className="text-sm text-muted-foreground mb-6">
-          Predicts 30-day serious adverse events after emergency department visit for syncope
-        </p>
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h3 className="text-xl font-semibold text-foreground">
+            Canadian Syncope Risk Score
+          </h3>
+          <p className="text-sm text-muted-foreground">
+            Predicts 30-day serious adverse events
+          </p>
+        </div>
+        <ChecklistLink variant="outline" label="Sync ECG Findings" className="border-primary/20 text-primary" />
       </div>
 
       <Alert>

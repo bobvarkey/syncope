@@ -3,6 +3,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Input } from "@/components/ui/input";
+import ChecklistLink from "@/components/ChecklistLink";
 
 interface AttackSectionProps {
   data: any;
@@ -44,8 +45,11 @@ const AttackSection = ({ data, onUpdate }: AttackSectionProps) => {
           </RadioGroup>
         </div>
 
-        <div>
-          <Label className="text-base font-medium mb-3 block">Skin Color Changes</Label>
+        <div className="border rounded-lg p-4 bg-primary/5">
+          <div className="flex items-center justify-between mb-3">
+            <Label className="text-base font-medium">Skin Color Changes</Label>
+            <ChecklistLink label="Check Ischemia Flags" className="text-sunset-orange hover:text-sunset-red" />
+          </div>
           <div className="space-y-3">
             {[
               { id: "pallor", label: "Pallor (pale)" },
