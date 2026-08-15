@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
-import { FileText, Printer, Download, FileDown, History, TestTube, Brain, Shield, AlertTriangle } from "lucide-react";
+import { FileText, Printer, Download, FileDown, History, TestTube, Brain, Shield, AlertTriangle, Pill } from "lucide-react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AssessmentSidebar } from "@/components/AssessmentSidebar";
 import { AssessmentProgressProvider, useAssessmentProgress } from "@/contexts/AssessmentProgressContext";
@@ -439,9 +439,6 @@ const IndexContent = () => {
 
                         <Separator />
 
-                        <div id="anti-arrhythmics">
-                          <AntiArrhythmicsSection />
-                        </div>
 
                         <Separator />
                         
@@ -667,17 +664,43 @@ const IndexContent = () => {
                 </CardContent>
               </Card>
 
-              <Card className="mb-6 border-primary/50 shadow-lg">
-                <CardHeader className="bg-primary/5">
-                  <CardTitle className="text-2xl">Assessment Summary</CardTitle>
-                  <CardDescription>
-                    Comprehensive analysis and diagnostic impressions based on completed data
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="pt-6">
-                  <SummaryReportSection formData={formData} />
-                </CardContent>
-              </Card>
+              <Accordion type="single" collapsible className="w-full space-y-4 mb-6 print:hidden">
+                <AccordionItem value="pharmacology" className="border rounded-xl overflow-hidden shadow-sm">
+                  <AccordionTrigger className="px-6 py-4 bg-muted/30 hover:no-underline hover:bg-muted/50 transition-all">
+                    <div className="flex items-center gap-3 text-left">
+                      <div className="p-2 rounded-lg bg-purple-500/10">
+                        <Pill className="h-5 w-5 text-[hsl(280_75%_60%)]" />
+                      </div>
+                      <div>
+                        <h2 className="text-xl font-bold text-foreground leading-tight">Pharmacology References</h2>
+                        <p className="text-xs text-muted-foreground font-normal">Drug classes, mechanisms, and interactions</p>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-6 pt-6 pb-4 space-y-8">
+                    <div id="anti-arrhythmics-pharmacology">
+                      <AntiArrhythmicsSection />
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="summary-report" className="border rounded-xl overflow-hidden shadow-sm border-primary/30">
+                  <AccordionTrigger className="px-6 py-4 bg-primary/5 hover:no-underline hover:bg-primary/10 transition-all">
+                    <div className="flex items-center gap-3 text-left">
+                      <div className="p-2 rounded-lg bg-primary/10">
+                        <FileText className="h-5 w-5 text-primary" strokeWidth={2.5} />
+                      </div>
+                      <div>
+                        <h2 className="text-xl font-bold text-foreground leading-tight">Assessment Summary</h2>
+                        <p className="text-xs text-muted-foreground font-normal">Final diagnostic analysis and clinical report</p>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-6 pt-6 pb-4">
+                    <SummaryReportSection formData={formData} />
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
 
               <div className="flex flex-wrap gap-4 justify-center print:hidden">
                 <Button onClick={handlePrint} variant="outline" size="lg">
