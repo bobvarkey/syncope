@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { CalendarIcon, CheckCircle2, Info } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { ReferencePopup } from "@/components/ReferencePopup";
 
 interface TiltTestProtocolSectionProps {
   data: any;
@@ -41,21 +42,21 @@ const TiltTestProtocolSection = ({ data, onUpdate }: TiltTestProtocolSectionProp
         </AlertDescription>
       </Alert>
 
-      <Alert className="border-blue-300 bg-blue-50 dark:bg-blue-950/20">
-        <Info className="h-4 w-4 text-blue-600" />
-        <AlertTitle>Reference Guidelines</AlertTitle>
-        <AlertDescription>
-          For comprehensive protocol details and evidence-based recommendations, see:{" "}
-          <a
-            href="https://academic.oup.com/europace/article/6/6/467/506166?login=false"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-semibold text-blue-600 hover:text-blue-800 underline"
-          >
-            ESC Guidelines on Management of Syncope (Europace)
-          </a>
-        </AlertDescription>
-      </Alert>
+      <div className="flex justify-end">
+        <ReferencePopup triggerLabel="Reference Guidelines">
+          <p>
+            For comprehensive protocol details and evidence-based recommendations, see:{" "}
+            <a
+              href="https://academic.oup.com/europace/article/6/6/467/506166?login=false"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-primary hover:underline"
+            >
+              ESC Guidelines on Management of Syncope (Europace)
+            </a>
+          </p>
+        </ReferencePopup>
+      </div>
 
       {/* Test Performance */}
       <div className="border rounded-lg p-6 bg-card">
