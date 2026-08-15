@@ -4,6 +4,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Info } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface InitialEvaluationSectionProps {
   data: any;
