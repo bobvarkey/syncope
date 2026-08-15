@@ -7,7 +7,9 @@ export type EcgChecklistCategory =
   | "structural" 
   | "arrhythmogenic_cardiomyopathy" 
   | "repolarization" 
-  | "thromboembolic";
+  | "thromboembolic"
+  | "device"
+  | "bradycardia";
 
 export interface EcgChecklistItem {
   id: string;
@@ -215,6 +217,47 @@ export const ecgChecklistItems: EcgChecklistItem[] = [
     score: 2,
     urgentOverrideConditions: ["Syncope with hypotension, hypoxemia, dyspnea, chest pain, or RV-strain ECG pattern"],
     action: "ECG is not diagnostic; assess for pulmonary embolism using clinical probability, D-dimer when appropriate, imaging, and echocardiography in unstable patients."
+  },
+  {
+    id: "pacemaker_malfunction",
+    label: "Pacemaker malfunction",
+    category: "device",
+    criteria: [
+      "Failure to pace",
+      "Failure to sense",
+      "Cardiac pauses related to device failure",
+      "Lead fracture or displacement evidence"
+    ],
+    score: 3,
+    urgentOverride: true,
+    action: "Urgent cardiology/pacing review; monitor rhythm; consider emergency pacing if unstable."
+  },
+  {
+    id: "severe_sinus_bradycardia",
+    label: "Severe sinus bradycardia",
+    category: "bradycardia",
+    criteria: [
+      "Sinus rate <40 bpm",
+      "Sinus pauses ≥3 seconds",
+      "Sinoatrial block"
+    ],
+    score: 2,
+    urgentOverrideConditions: ["Symptomatic bradycardia", "Syncope during bradycardia"],
+    action: "Assess for reversible causes (drugs, electrolytes, ischemia); urgent cardiac evaluation."
+  },
+  {
+    id: "acute_ischemia_stemi",
+    label: "Acute Ischemia / STEMI pattern",
+    category: "ischemia",
+    criteria: [
+      "ST-segment elevation in two or more contiguous leads",
+      "New LBBB",
+      "Hyperacute T waves",
+      "ST depression suggesting reciprocal change or NSTEMI"
+    ],
+    score: 3,
+    urgentOverride: true,
+    action: "Urgent ACS protocol; cardiology/cath lab activation as appropriate."
   }
 ];
 
@@ -299,6 +342,8 @@ export const abcdeToChecklistMap: Record<string, string> = {
   "rv-strain": "pulmonary_embolism_rv_strain",
   "bifascicular": "bifascicular_block",
   "lvh-hocm": "lvh_pressure_overload",
+  "sinus-brady": "severe_sinus_bradycardia",
+  "complete-hb": "av_block_high_grade",
 };
 
 export function mapAbcdeSelectionToChecklist(
