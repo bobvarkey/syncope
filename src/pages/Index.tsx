@@ -110,11 +110,11 @@ const IndexContent = () => {
         <div className="min-h-dvh flex w-full overflow-x-hidden">
           <AssessmentSidebar />
         
-        <div className="flex-1 bg-background">
-          <header className="sticky top-0 z-40 border-b border-border/50 bg-background/60 backdrop-blur-xl supports-[backdrop-filter]:bg-background/40 shadow-soft">
+        <div className="flex-1 bg-background flex flex-col items-center w-full">
+          <header className="sticky top-0 z-40 w-full border-b border-border/50 bg-background/60 backdrop-blur-xl supports-[backdrop-filter]:bg-background/40 shadow-soft">
             <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-sunset" aria-hidden />
             <div
-              className="flex items-center gap-2 sm:gap-4 px-3 sm:px-6 py-2.5 sm:py-3"
+              className="max-w-7xl mx-auto flex items-center gap-2 sm:gap-4 px-3 sm:px-6 py-2.5 sm:py-3 w-full"
               style={{ paddingTop: "max(0.625rem, env(safe-area-inset-top))" }}
             >
               <SidebarTrigger className="lg:hidden shrink-0" />
@@ -148,8 +148,8 @@ const IndexContent = () => {
             </div>
           </header>
 
-          <div className="py-5 sm:py-8 px-3 sm:px-6 lg:px-8" style={{ paddingBottom: "max(1.25rem, env(safe-area-inset-bottom))" }}>
-            <div className="max-w-4xl mx-auto">
+          <div className="w-full py-5 sm:py-8 px-3 sm:px-6 lg:px-8" style={{ paddingBottom: "max(1.25rem, env(safe-area-inset-bottom))" }}>
+            <div className="max-w-7xl mx-auto w-full">
               <section
                 aria-label="SyncDx introduction"
                 className="mb-5 sm:mb-8 rounded-2xl overflow-hidden border shadow-soft bg-card"
