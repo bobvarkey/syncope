@@ -405,8 +405,6 @@ const OrthostaticIntoleranceSection = ({ data, onUpdate }: OrthostaticIntoleranc
               </p>
             </ReferencePopup>
           </div>
-            </AlertDescription>
-          </Alert>
 
           <div className="space-y-3">
             <h4 className="font-medium">Clinical Notes</h4>
