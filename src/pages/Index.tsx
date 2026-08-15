@@ -55,6 +55,7 @@ import {
 } from "@/components/ui/accordion";
 
 const IndexContent = () => {
+  const { language, t } = useLanguage();
   const { sectionProgress, getCompletionPercentage } = useAssessmentProgress();
   
   const getGroupCompletion = (sections: string[]) => {
