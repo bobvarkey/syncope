@@ -307,6 +307,7 @@ export function AssessmentSidebar() {
         )}
         {filteredSections.map((section) => {
           const isOpen = q ? true : !!openGroups[section.id];
+          return (
             <SidebarGroup key={section.id} className={cn("mb-1", (section as any).prominent && "mb-2")}>
               <Collapsible open={isOpen} onOpenChange={() => toggleGroup(section.id)}>
                 <CollapsibleTrigger asChild>
