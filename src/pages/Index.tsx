@@ -439,9 +439,6 @@ const IndexContent = () => {
 
                         <Separator />
 
-                        <div id="anti-arrhythmics">
-                          <AntiArrhythmicsSection />
-                        </div>
 
                         <Separator />
                         
