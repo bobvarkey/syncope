@@ -3,10 +3,12 @@ import { Link } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Progress } from "@/components/ui/progress";
+import { cn } from "@/lib/utils";
 import { FileText, Printer, Download, FileDown, History, TestTube, Brain, Shield, AlertTriangle } from "lucide-react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AssessmentSidebar } from "@/components/AssessmentSidebar";
-import { AssessmentProgressProvider } from "@/contexts/AssessmentProgressContext";
+import { AssessmentProgressProvider, useAssessmentProgress } from "@/contexts/AssessmentProgressContext";
 import { LanguageProvider, useLanguage } from "@/contexts/LanguageContext";
 import { SectionWithProgress } from "@/components/SectionWithProgress";
 import { AssessmentDashboard } from "@/components/AssessmentDashboard";
@@ -56,6 +58,23 @@ import {
 
 const IndexContent = () => {
   const { language, t } = useLanguage();
+  const { sectionProgress, getCompletionPercentage } = useAssessmentProgress();
+  
+  const getGroupCompletion = (sections: string[]) => {
+    let totalCompleted = 0;
+    let totalFields = 0;
+
+    sections.forEach((sectionId) => {
+      const progress = sectionProgress[sectionId];
+      if (progress) {
+        totalCompleted += progress.completed;
+        totalFields += progress.total;
+      }
+    });
+
+    if (totalFields === 0) return 0;
+    return Math.round((totalCompleted / totalFields) * 100);
+  };
   const [openAccordionGroups, setOpenAccordionGroups] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     patientInfo: {},
@@ -269,14 +288,27 @@ const IndexContent = () => {
                     {/* Clinical History Group */}
                     <AccordionItem value="clinical-history" className="border rounded-xl overflow-hidden shadow-sm">
                       <AccordionTrigger className="px-6 py-4 bg-muted/30 hover:no-underline hover:bg-muted/50 transition-all">
-                        <div className="flex items-center gap-3 text-left">
-                          <div className="p-2 rounded-lg bg-orange-500/10">
-                            <History className="h-5 w-5 text-[hsl(16_100%_60%)]" />
+                        <div className="flex-1 flex items-center justify-between pr-4">
+                          <div className="flex items-center gap-3 text-left">
+                            <div className="p-2 rounded-lg bg-orange-500/10">
+                              <History className="h-5 w-5 text-[hsl(16_100%_60%)]" />
+                            </div>
+                            <div>
+                              <h2 className="text-xl font-bold text-foreground leading-tight">Clinical History</h2>
+                              <p className="text-xs text-muted-foreground font-normal">Patient history and episode characteristics</p>
+                            </div>
                           </div>
-                          <div>
-                            <h2 className="text-xl font-bold text-foreground leading-tight">Clinical History</h2>
-                            <p className="text-xs text-muted-foreground font-normal">Patient history and episode characteristics</p>
-                          </div>
+                          {(() => {
+                            const completion = getGroupCompletion(["circumstances", "onset", "attack", "end", "background", "clinical-features"]);
+                            return (
+                              <div className="flex items-center gap-3 shrink-0">
+                                <span className={cn("text-xs font-bold", completion === 100 ? "text-green-500" : "text-primary")}>
+                                  {completion}%
+                                </span>
+                                <Progress value={completion} className="w-16 h-1.5" />
+                              </div>
+                            );
+                          })()}
                         </div>
                       </AccordionTrigger>
                       <AccordionContent className="px-6 pt-6 pb-4 space-y-8">
@@ -349,14 +381,31 @@ const IndexContent = () => {
                     {/* Investigations Group */}
                     <AccordionItem value="investigations" className="border rounded-xl overflow-hidden shadow-sm">
                       <AccordionTrigger className="px-6 py-4 bg-muted/30 hover:no-underline hover:bg-muted/50 transition-all">
-                        <div className="flex items-center gap-3 text-left">
-                          <div className="p-2 rounded-lg bg-yellow-500/10">
-                            <TestTube className="h-5 w-5 text-[hsl(28_100%_58%)]" />
+                        <div className="flex-1 flex items-center justify-between pr-4">
+                          <div className="flex items-center gap-3 text-left">
+                            <div className="p-2 rounded-lg bg-yellow-500/10">
+                              <TestTube className="h-5 w-5 text-[hsl(28_100%_58%)]" />
+                            </div>
+                            <div>
+                              <h2 className="text-xl font-bold text-foreground leading-tight">Clinical Investigations</h2>
+                              <p className="text-xs text-muted-foreground font-normal">Diagnostic tests, examinations, and objective findings</p>
+                            </div>
                           </div>
-                          <div>
-                            <h2 className="text-xl font-bold text-foreground leading-tight">Clinical Investigations</h2>
-                            <p className="text-xs text-muted-foreground font-normal">Diagnostic tests, examinations, and objective findings</p>
-                          </div>
+                          {(() => {
+                            const completion = getGroupCompletion([
+                              "ecg-scoring-checklist", "ecg-abcde", "syncope-medications", "lab-tests", 
+                              "initial-evaluation", "tilt-test", "risk-score", "subclavian-steal", 
+                              "carotid-massage", "orthostatic-intolerance", "autonomic-testing"
+                            ]);
+                            return (
+                              <div className="flex items-center gap-3 shrink-0">
+                                <span className={cn("text-xs font-bold", completion === 100 ? "text-green-500" : "text-primary")}>
+                                  {completion}%
+                                </span>
+                                <Progress value={completion} className="w-16 h-1.5" />
+                              </div>
+                            );
+                          })()}
                         </div>
                       </AccordionTrigger>
                       <AccordionContent className="px-6 pt-6 pb-4 space-y-8">
@@ -487,14 +536,27 @@ const IndexContent = () => {
                     {/* Differential Diagnosis Group */}
                     <AccordionItem value="differential-diagnosis" className="border rounded-xl overflow-hidden shadow-sm">
                       <AccordionTrigger className="px-6 py-4 bg-muted/30 hover:no-underline hover:bg-muted/50 transition-all">
-                        <div className="flex items-center gap-3 text-left">
-                          <div className="p-2 rounded-lg bg-purple-500/10">
-                            <Brain className="h-5 w-5 text-[hsl(280_75%_60%)]" />
+                        <div className="flex-1 flex items-center justify-between pr-4">
+                          <div className="flex items-center gap-3 text-left">
+                            <div className="p-2 rounded-lg bg-purple-500/10">
+                              <Brain className="h-5 w-5 text-[hsl(280_75%_60%)]" />
+                            </div>
+                            <div>
+                              <h2 className="text-xl font-bold text-foreground leading-tight">Differential Diagnosis</h2>
+                              <p className="text-xs text-muted-foreground font-normal">Clinical reasoning, diagnostic criteria, and AI-assisted analysis</p>
+                            </div>
                           </div>
-                          <div>
-                            <h2 className="text-xl font-bold text-foreground leading-tight">Differential Diagnosis</h2>
-                            <p className="text-xs text-muted-foreground font-normal">Clinical reasoning, diagnostic criteria, and AI-assisted analysis</p>
-                          </div>
+                          {(() => {
+                            const completion = getGroupCompletion(["differential-diagnosis-section", "diagnostic-criteria", "ai-diagnosis"]);
+                            return (
+                              <div className="flex items-center gap-3 shrink-0">
+                                <span className={cn("text-xs font-bold", completion === 100 ? "text-green-500" : "text-primary")}>
+                                  {completion}%
+                                </span>
+                                <Progress value={completion} className="w-16 h-1.5" />
+                              </div>
+                            );
+                          })()}
                         </div>
                       </AccordionTrigger>
                       <AccordionContent className="px-6 pt-6 pb-4 space-y-8">
@@ -529,14 +591,27 @@ const IndexContent = () => {
                     {/* Management Group */}
                     <AccordionItem value="management" className="border rounded-xl overflow-hidden shadow-sm">
                       <AccordionTrigger className="px-6 py-4 bg-muted/30 hover:no-underline hover:bg-muted/50 transition-all">
-                        <div className="flex items-center gap-3 text-left">
-                          <div className="p-2 rounded-lg bg-green-500/10">
-                            <Shield className="h-5 w-5 text-[hsl(160_70%_45%)]" />
+                        <div className="flex-1 flex items-center justify-between pr-4">
+                          <div className="flex items-center gap-3 text-left">
+                            <div className="p-2 rounded-lg bg-green-500/10">
+                              <Shield className="h-5 w-5 text-[hsl(160_70%_45%)]" />
+                            </div>
+                            <div>
+                              <h2 className="text-xl font-bold text-foreground leading-tight">Interventions & Management</h2>
+                              <p className="text-xs text-muted-foreground font-normal">Treatment plan including non-pharmacological, pharmacological, and device therapies</p>
+                            </div>
                           </div>
-                          <div>
-                            <h2 className="text-xl font-bold text-foreground leading-tight">Interventions & Management</h2>
-                            <p className="text-xs text-muted-foreground font-normal">Treatment plan including non-pharmacological, pharmacological, and device therapies</p>
-                          </div>
+                          {(() => {
+                            const completion = getGroupCompletion(["interventions"]);
+                            return (
+                              <div className="flex items-center gap-3 shrink-0">
+                                <span className={cn("text-xs font-bold", completion === 100 ? "text-green-500" : "text-primary")}>
+                                  {completion}%
+                                </span>
+                                <Progress value={completion} className="w-16 h-1.5" />
+                              </div>
+                            );
+                          })()}
                         </div>
                       </AccordionTrigger>
                       <AccordionContent className="px-6 pt-6 pb-4 space-y-8">
@@ -554,14 +629,27 @@ const IndexContent = () => {
                     {/* Drop Attacks Group */}
                     <AccordionItem value="drop-attacks-group" className="border rounded-xl overflow-hidden shadow-sm">
                       <AccordionTrigger className="px-6 py-4 bg-muted/30 hover:no-underline hover:bg-muted/50 transition-all">
-                        <div className="flex items-center gap-3 text-left">
-                          <div className="p-2 rounded-lg bg-red-500/10">
-                            <AlertTriangle className="h-5 w-5 text-[hsl(0_85%_60%)]" />
+                        <div className="flex-1 flex items-center justify-between pr-4">
+                          <div className="flex items-center gap-3 text-left">
+                            <div className="p-2 rounded-lg bg-red-500/10">
+                              <AlertTriangle className="h-5 w-5 text-[hsl(0_85%_60%)]" />
+                            </div>
+                            <div>
+                              <h2 className="text-xl font-bold text-foreground leading-tight">Drop Attacks Workup</h2>
+                              <p className="text-xs text-muted-foreground font-normal">Evaluation of sudden falls with or without loss of consciousness</p>
+                            </div>
                           </div>
-                          <div>
-                            <h2 className="text-xl font-bold text-foreground leading-tight">Drop Attacks Workup</h2>
-                            <p className="text-xs text-muted-foreground font-normal">Evaluation of sudden falls with or without loss of consciousness</p>
-                          </div>
+                          {(() => {
+                            const completion = getGroupCompletion(["drop-attacks"]);
+                            return (
+                              <div className="flex items-center gap-3 shrink-0">
+                                <span className={cn("text-xs font-bold", completion === 100 ? "text-green-500" : "text-primary")}>
+                                  {completion}%
+                                </span>
+                                <Progress value={completion} className="w-16 h-1.5" />
+                              </div>
+                            );
+                          })()}
                         </div>
                       </AccordionTrigger>
                       <AccordionContent className="px-6 pt-6 pb-4 space-y-8">

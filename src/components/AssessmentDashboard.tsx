@@ -1,9 +1,10 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useAssessmentProgress } from "@/contexts/AssessmentProgressContext";
-import { FileText, TestTube, Brain, CheckCircle2 } from "lucide-react";
+import { FileText, TestTube, Brain, CheckCircle2, Shield, AlertTriangle, ChevronRight } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-// Section groupings
+// Section groupings matching AssessmentSidebar and Index accordion structure
 const sectionGroups = {
   "Clinical History": [
     "circumstances",
@@ -13,26 +14,63 @@ const sectionGroups = {
     "background",
     "clinical-features",
   ],
-  "Clinical Investigations": [
-    "ecg-findings",
+  "Investigations": [
+    "ecg-scoring-checklist",
+    "ecg-abcde",
+    "syncope-medications",
+    "lab-tests",
     "initial-evaluation",
     "tilt-test",
     "risk-score",
     "subclavian-steal",
     "carotid-massage",
     "orthostatic-intolerance",
+    "autonomic-testing",
   ],
   "Differential Diagnosis": [
     "differential-diagnosis-section",
     "diagnostic-criteria",
     "ai-diagnosis",
   ],
+  "Interventions": [
+    "interventions",
+  ],
+  "Drop Attacks": [
+    "drop-attacks",
+  ],
 };
 
 const groupIcons = {
   "Clinical History": FileText,
-  "Clinical Investigations": TestTube,
+  "Investigations": TestTube,
   "Differential Diagnosis": Brain,
+  "Interventions": Shield,
+  "Drop Attacks": AlertTriangle,
+};
+
+const sectionTitles: Record<string, string> = {
+  "circumstances": "Circumstances",
+  "onset": "Onset",
+  "attack": "Attack",
+  "end": "End",
+  "background": "Background",
+  "clinical-features": "Clinical Features",
+  "ecg-scoring-checklist": "High-Risk ECG Checklist",
+  "ecg-abcde": "ECG ABCDE Screen",
+  "syncope-medications": "Medications & Syncope",
+  "lab-tests": "Laboratory Tests",
+  "initial-evaluation": "Initial Evaluation",
+  "tilt-test": "Tilt Test Protocol",
+  "risk-score": "Risk Score",
+  "subclavian-steal": "Subclavian Steal",
+  "carotid-massage": "Carotid Sinus Massage",
+  "orthostatic-intolerance": "Orthostatic Intolerance",
+  "autonomic-testing": "Autonomic Testing",
+  "differential-diagnosis-section": "Differential Diagnosis",
+  "diagnostic-criteria": "Diagnostic Criteria",
+  "ai-diagnosis": "AI Diagnosis Assistant",
+  "interventions": "Interventions & Management",
+  "drop-attacks": "Drop Attacks Workup",
 };
 
 export function AssessmentDashboard() {
@@ -80,56 +118,90 @@ export function AssessmentDashboard() {
             <div className="flex items-center justify-center gap-3 mb-3">
               <CheckCircle2 className="h-6 w-6 text-primary" />
               <h3 className="text-2xl font-bold text-foreground">
-                Overall Assessment Progress
+                Overall Clinical Assessment Progress
               </h3>
             </div>
             <div className="flex items-center justify-center gap-4 mb-3">
-              <span className="text-5xl font-bold text-primary">
+              <span className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-sunset drop-shadow-sm">
                 {overallCompletion}%
               </span>
             </div>
-            <Progress value={overallCompletion} className="h-3 max-w-md mx-auto" />
-            <p className="text-sm text-muted-foreground mt-2">
-              Complete all sections for comprehensive assessment
+            <Progress value={overallCompletion} className="h-4 max-w-xl mx-auto rounded-full overflow-hidden bg-muted">
+               <div 
+                className="h-full bg-gradient-sunset transition-all duration-500 ease-out" 
+                style={{ width: `${overallCompletion}%` }} 
+              />
+            </Progress>
+            <p className="text-sm text-muted-foreground mt-3 font-medium">
+              Complete {Object.keys(sectionTitles).length} sections for a comprehensive evaluation
             </p>
           </div>
 
-          {/* Section Group Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t">
+          {/* Section Group Stats & Checklist */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-6 border-t">
             {Object.entries(sectionGroups).map(([groupName, sections]) => {
               const Icon = groupIcons[groupName as keyof typeof groupIcons];
               const completion = getGroupCompletion(sections);
               
               return (
-                <div
+                <Card 
                   key={groupName}
-                  className="p-4 rounded-lg border bg-card hover:bg-accent/5 transition-colors"
+                  className="overflow-hidden border-muted transition-all hover:shadow-md bg-muted/5"
                 >
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="p-2 rounded-lg bg-primary/10">
-                      <Icon className="h-5 w-5 text-primary" />
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-foreground text-sm">
+                  <div className="p-4 border-b bg-muted/20 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-primary/10">
+                        <Icon className="h-5 w-5 text-primary" />
+                      </div>
+                      <h4 className="font-bold text-foreground">
                         {groupName}
                       </h4>
-                      <p className="text-xs text-muted-foreground">
-                        {sections.length} subsections
-                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-bold text-primary">{completion}%</span>
+                      <Progress value={completion} className="w-20 h-2" />
                     </div>
                   </div>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-2xl font-bold text-primary">
-                        {completion}%
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        {completion === 100 ? "Complete" : "In Progress"}
-                      </span>
-                    </div>
-                    <Progress value={completion} className="h-2" />
-                  </div>
-                </div>
+                  <CardContent className="p-0">
+                    <ul className="divide-y divide-muted/50">
+                      {sections.map(sectionId => {
+                        const sectionCompletion = Math.round((sectionProgress[sectionId]?.completed / sectionProgress[sectionId]?.total) * 100) || 0;
+                        const isComplete = sectionCompletion === 100;
+                        const title = sectionTitles[sectionId] || sectionId;
+                        
+                        return (
+                          <li key={sectionId}>
+                            <button
+                              onClick={() => document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth' })}
+                              className="w-full flex items-center justify-between p-3.5 hover:bg-muted/30 transition-colors text-left group"
+                            >
+                              <div className="flex items-center gap-3 min-w-0">
+                                <div className={cn(
+                                  "shrink-0 w-5 h-5 rounded-full flex items-center justify-center border-2 transition-colors",
+                                  isComplete ? "bg-green-500 border-green-500 text-white" : "border-muted-foreground/30 group-hover:border-primary/50"
+                                )}>
+                                  {isComplete && <CheckCircle2 className="h-3.5 w-3.5" />}
+                                </div>
+                                <span className={cn(
+                                  "text-sm font-medium truncate",
+                                  isComplete ? "text-foreground/70 line-through" : "text-foreground"
+                                )}>
+                                  {title}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2 shrink-0">
+                                {sectionCompletion > 0 && !isComplete && (
+                                  <span className="text-[10px] font-bold text-primary/70">{sectionCompletion}%</span>
+                                )}
+                                <ChevronRight className="h-4 w-4 text-muted-foreground/50 group-hover:text-primary transition-colors" />
+                              </div>
+                            </button>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </CardContent>
+                </Card>
               );
             })}
           </div>
