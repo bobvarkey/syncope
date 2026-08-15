@@ -6,7 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import { FileText, Printer, Download, FileDown, History, TestTube, Brain, Shield, AlertTriangle } from "lucide-react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AssessmentSidebar } from "@/components/AssessmentSidebar";
-import { AssessmentProgressProvider } from "@/contexts/AssessmentProgressContext";
+import { AssessmentProgressProvider, useAssessmentProgress } from "@/contexts/AssessmentProgressContext";
 import { LanguageProvider, useLanguage } from "@/contexts/LanguageContext";
 import { SectionWithProgress } from "@/components/SectionWithProgress";
 import { AssessmentDashboard } from "@/components/AssessmentDashboard";
