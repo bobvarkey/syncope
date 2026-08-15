@@ -55,7 +55,23 @@ import {
 } from "@/components/ui/accordion";
 
 const IndexContent = () => {
-  const { language, t } = useLanguage();
+  const { sectionProgress, getCompletionPercentage } = useAssessmentProgress();
+  
+  const getGroupCompletion = (sections: string[]) => {
+    let totalCompleted = 0;
+    let totalFields = 0;
+
+    sections.forEach((sectionId) => {
+      const progress = sectionProgress[sectionId];
+      if (progress) {
+        totalCompleted += progress.completed;
+        totalFields += progress.total;
+      }
+    });
+
+    if (totalFields === 0) return 0;
+    return Math.round((totalCompleted / totalFields) * 100);
+  };
   const [openAccordionGroups, setOpenAccordionGroups] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     patientInfo: {},
