@@ -261,7 +261,7 @@ export const ecgChecklistItems: EcgChecklistItem[] = [
   },
   {
     id: "bradycardia_tachycardia",
-    label: "BradycardiaTachycardia",
+    label: "Bradycardia / Tachycardia",
     category: "conduction",
     criteria: [
       "Alternating periods of bradycardia and tachycardia",
@@ -357,6 +357,7 @@ export const abcdeToChecklistMap: Record<string, string> = {
   "lvh-hocm": "lvh_pressure_overload",
   "sinus-brady": "severe_sinus_bradycardia",
   "complete-hb": "av_block_high_grade",
+  "tachy-brady": "bradycardia_tachycardia",
 };
 
 export function mapAbcdeSelectionToChecklist(
