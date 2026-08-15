@@ -37,6 +37,7 @@ import SyncopeMedicationsSection from "@/components/questionnaire/SyncopeMedicat
 import EcgSyncopeAbcde from "@/components/questionnaire/EcgSyncopeAbcde";
 import SyncopeMiniApp from "@/components/questionnaire/SyncopeMiniApp";
 import HuttMiniApp from "@/components/questionnaire/HuttMiniApp";
+import EcgScoringChecklist from "@/components/questionnaire/EcgScoringChecklist";
 import AntiArrhythmicsSection from "@/components/questionnaire/AntiArrhythmicsSection";
 import { exportToPDF, exportToWord } from "@/utils/exportUtils";
 import QuickSearch from "@/components/QuickSearch";
@@ -292,6 +293,12 @@ const IndexContent = () => {
                         onUpdate={(data) => updateSection('ecgFindings', data)} 
                       />
                     </SectionWithProgress>
+                  </div>
+
+                  <Separator className="my-8" />
+
+                  <div id="ecg-scoring-checklist">
+                    <EcgScoringChecklist />
                   </div>
 
                   <Separator className="my-8" />

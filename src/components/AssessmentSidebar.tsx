@@ -87,6 +87,7 @@ const sections = [
     ring: "hsl(28_100%_58%)",
     subsections: [
       { id: "ecg-findings", title: "ECG Findings", icon: Activity, color: "text-[hsl(340_85%_60%)]" },
+      { id: "ecg-scoring-checklist", title: "ECG Scoring Checklist", icon: CheckSquare, color: "text-[hsl(28_100%_58%)]" },
       { id: "ecg-abcde", title: "ECG ABCDE Screen", icon: Activity, color: "text-[hsl(16_100%_60%)]" },
       { id: "syncope-medications", title: "Medications & Syncope", icon: Pill, color: "text-[hsl(280_75%_60%)]" },
       { id: "lab-tests", title: "Laboratory Tests", icon: TestTube, color: "text-[hsl(190_80%_50%)]" },
