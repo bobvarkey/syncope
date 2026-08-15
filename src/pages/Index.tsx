@@ -286,6 +286,14 @@ const IndexContent = () => {
                     <p className="text-sm text-muted-foreground">Diagnostic tests, examinations, and objective findings</p>
                   </div>
                   
+                  <div id="ecg-scoring-checklist">
+                    <EcgScoringChecklist
+                      linkedAbcdeSelection={(formData.ecgAbcde as any)?.selectedPatterns}
+                    />
+                  </div>
+
+                  <Separator className="my-8" />
+                  
                   <div id="ecg-findings">
                     <SectionWithProgress sectionId="ecg-findings" data={formData.ecgFindings}>
                       <ECGFindingsSection 
@@ -293,14 +301,6 @@ const IndexContent = () => {
                         onUpdate={(data) => updateSection('ecgFindings', data)} 
                       />
                     </SectionWithProgress>
-                  </div>
-
-                  <Separator className="my-8" />
-
-                  <div id="ecg-scoring-checklist">
-                    <EcgScoringChecklist
-                      linkedAbcdeSelection={(formData.ecgAbcde as any)?.selectedPatterns}
-                    />
                   </div>
 
                   <Separator className="my-8" />
