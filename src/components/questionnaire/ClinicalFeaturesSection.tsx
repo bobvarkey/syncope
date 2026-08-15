@@ -75,7 +75,17 @@ const ClinicalFeaturesSection = ({ data, onUpdate }: ClinicalFeaturesSectionProp
 
         {/* Cardiac syncope */}
         <div className="border-l-4 border-destructive pl-4">
-          <h4 className="font-semibold text-foreground mb-3">Cardiac Syncope</h4>
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="font-semibold text-foreground">Cardiac Syncope</h4>
+            <Button
+              variant="link"
+              size="sm"
+              className="h-auto p-0 text-xs text-destructive hover:text-red-700"
+              onClick={() => document.getElementById("ecg-scoring-checklist")?.scrollIntoView({ behavior: "smooth" })}
+            >
+              Assess High-Risk ECG
+            </Button>
+          </div>
           <div className="space-y-3">
             {[
               { id: "structural-heart", label: "Presence of definite structural heart disease" },

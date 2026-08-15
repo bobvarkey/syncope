@@ -64,12 +64,24 @@ const InitialEvaluationSection = ({ data, onUpdate }: InitialEvaluationSectionPr
                 checked={data[test.id] || false}
                 onCheckedChange={(checked) => onUpdate({ [test.id]: checked })}
               />
-              <Label 
-                htmlFor={test.id} 
-                className="font-medium cursor-pointer flex-1"
-              >
-                {test.label}
-              </Label>
+              <div className="flex-1 flex items-center justify-between">
+                <Label 
+                  htmlFor={test.id} 
+                  className="font-medium cursor-pointer"
+                >
+                  {test.label}
+                </Label>
+                {test.id === "ecg-12-lead" && (
+                  <Button
+                    variant="link"
+                    size="sm"
+                    className="h-auto p-0 text-xs text-sunset-orange hover:text-sunset-red"
+                    onClick={() => document.getElementById("ecg-scoring-checklist")?.scrollIntoView({ behavior: "smooth" })}
+                  >
+                    View High-Risk Checklist
+                  </Button>
+                )}
+              </div>
             </div>
           ))}
         </div>
