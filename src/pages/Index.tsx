@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Progress } from "@/components/ui/progress";
+import { cn } from "@/lib/utils";
 import { FileText, Printer, Download, FileDown, History, TestTube, Brain, Shield, AlertTriangle } from "lucide-react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AssessmentSidebar } from "@/components/AssessmentSidebar";
