@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 import { Info } from "lucide-react";
+import { ReferencePopup } from "@/components/ReferencePopup";
 
 interface OrthostaticIntoleranceSectionProps {
   data: any;
@@ -388,21 +389,22 @@ const OrthostaticIntoleranceSection = ({ data, onUpdate }: OrthostaticIntoleranc
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <Alert>
-            <Info className="h-4 w-4" />
-            <AlertDescription>
-              <strong>OT-10 Questionnaire Reference:</strong> The Orthostatic Tremor Severity Scale (OT-10) is a validated assessment tool. 
-              Permission is required to use this scale and can be obtained from the International Parkinson and Movement Disorder Society.{' '}
-              <a 
-                href="https://www.movementdisorders.org/MDS-Files1/PDFs/Rating-Scales/OT-10.pdf" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-primary hover:underline"
-              >
-                View OT-10 Scale (PDF)
-              </a>
-            </AlertDescription>
-          </Alert>
+          <div className="flex justify-end">
+            <ReferencePopup triggerLabel="OT-10 Scale Reference">
+              <p>
+                The Orthostatic Tremor Severity Scale (OT-10) is a validated assessment tool. 
+                Permission is required to use this scale and can be obtained from the International Parkinson and Movement Disorder Society.{" "}
+                <a 
+                  href="https://www.movementdisorders.org/MDS-Files1/PDFs/Rating-Scales/OT-10.pdf" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="font-semibold text-primary hover:underline"
+                >
+                  View OT-10 Scale (PDF)
+                </a>
+              </p>
+            </ReferencePopup>
+          </div>
 
           <div className="space-y-3">
             <h4 className="font-medium">Clinical Notes</h4>
