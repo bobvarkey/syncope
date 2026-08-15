@@ -8,8 +8,10 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
-import { AlertTriangle, ShieldCheck, Activity, Info, Stethoscope, ArrowRightCircle, Link2, Calculator } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { AlertTriangle, ShieldCheck, Activity, Info, Stethoscope, ArrowRightCircle, Link2, Calculator, FileText } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import QTcCalculator from "./QTcCalculator";
 import {
   ecgChecklistItems,
   globalUrgentTriggers,
@@ -23,22 +25,34 @@ import { cn } from "@/lib/utils";
 interface EcgScoringChecklistProps {
   /** Selections coming from the ABCDE / WOBBLER mini-screen */
   linkedAbcdeSelection?: Record<string, boolean>;
+  data: any;
+  onUpdate: (data: any) => void;
 }
 
-const EcgScoringChecklist = ({ linkedAbcdeSelection }: EcgScoringChecklistProps) => {
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [urgentOverrideIds, setUrgentOverrideIds] = useState<Set<string>>(new Set());
-  const [globalTriggerIds, setGlobalTriggerIds] = useState<Set<string>>(new Set());
-  const [autoSync, setAutoSync] = useState(true);
+const EcgScoringChecklist = ({ linkedAbcdeSelection, data, onUpdate }: EcgScoringChecklistProps) => {
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set(data.selectedChecklistIds || []));
+  const [urgentOverrideIds, setUrgentOverrideIds] = useState<Set<string>>(new Set(data.urgentOverrideIds || []));
+  const [globalTriggerIds, setGlobalTriggerIds] = useState<Set<string>>(new Set(data.globalTriggerIds || []));
+  const [autoSync, setAutoSync] = useState(data.autoSync ?? true);
   
   const [measurements, setMeasurements] = useState({
-    prInterval: "",
-    qrsDuration: "",
-    qtcInterval: "",
-    leadFindings: [] as string[]
+    prInterval: data.prInterval || "",
+    qrsDuration: data.qrsDuration || "",
+    qtcInterval: data.qtcInterval || "",
+    leadFindings: data.leadFindings || [] as string[]
   });
 
   const [measurementDerivedIds, setMeasurementDerivedIds] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    onUpdate({
+      selectedChecklistIds: Array.from(selectedIds),
+      urgentOverrideIds: Array.from(urgentOverrideIds),
+      globalTriggerIds: Array.from(globalTriggerIds),
+      autoSync,
+      ...measurements
+    });
+  }, [selectedIds, urgentOverrideIds, globalTriggerIds, autoSync, measurements]);
 
   const linkedIds = useMemo(
     () => mapAbcdeSelectionToChecklist(linkedAbcdeSelection || {}),
@@ -381,6 +395,38 @@ const EcgScoringChecklist = ({ linkedAbcdeSelection }: EcgScoringChecklistProps)
                 </AccordionItem>
               ))}
             </Accordion>
+
+            <section className="space-y-6">
+              <QTcCalculator 
+                onResultUpdate={(results) => onUpdate({ qtcResults: results })}
+              />
+
+              <div className="space-y-3">
+                <Label htmlFor="ecg-details" className="text-sm font-bold uppercase tracking-wider text-primary flex items-center gap-2">
+                  <FileText className="h-4 w-4" /> Detailed Findings & Morphology
+                </Label>
+                <Textarea
+                  id="ecg-details"
+                  placeholder="Document specific measurements, intervals, and morphology details..."
+                  value={data.ecgDetails || ""}
+                  onChange={(e) => onUpdate({ ecgDetails: e.target.value })}
+                  className="min-h-[120px] bg-background/50 border-primary/20 focus-visible:ring-sunset-orange"
+                />
+              </div>
+
+              <div className="space-y-3">
+                <Label htmlFor="ecg-notes" className="text-sm font-bold uppercase tracking-wider text-primary flex items-center gap-2">
+                  <Stethoscope className="h-4 w-4" /> Clinical ECG Interpretation
+                </Label>
+                <Textarea
+                  id="ecg-notes"
+                  placeholder="Clinical significance and recommended follow-up..."
+                  value={data.notes || ""}
+                  onChange={(e) => onUpdate({ notes: e.target.value })}
+                  className="min-h-[100px] bg-background/50 border-primary/20 focus-visible:ring-sunset-orange"
+                />
+              </div>
+            </section>
 
             {/* Result Display Card */}
             <div className="space-y-4">

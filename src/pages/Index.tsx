@@ -18,7 +18,6 @@ import AttackSection from "@/components/questionnaire/AttackSection";
 import EndSection from "@/components/questionnaire/EndSection";
 import BackgroundSection from "@/components/questionnaire/BackgroundSection";
 import ClinicalFeaturesSection from "@/components/questionnaire/ClinicalFeaturesSection";
-import ECGFindingsSection from "@/components/questionnaire/ECGFindingsSection";
 import DiagnosticCriteriaSection from "@/components/questionnaire/DiagnosticCriteriaSection";
 import InitialEvaluationSection from "@/components/questionnaire/InitialEvaluationSection";
 import TiltTestProtocolSection from "@/components/questionnaire/TiltTestProtocolSection";
@@ -74,6 +73,7 @@ const IndexContent = () => {
     dropAttacks: {},
     syncopeMedications: {},
     ecgAbcde: {},
+    ecgScoring: {},
   });
 
   const updateSection = (section: string, data: any) => {
@@ -289,22 +289,13 @@ const IndexContent = () => {
                   <div id="ecg-scoring-checklist">
                     <EcgScoringChecklist
                       linkedAbcdeSelection={(formData.ecgAbcde as any)?.selectedPatterns}
+                      data={formData.ecgScoring}
+                      onUpdate={(data) => updateSection('ecgScoring', data)}
                     />
                   </div>
 
                   <Separator className="my-8" />
                   
-                  <div id="ecg-findings">
-                    <SectionWithProgress sectionId="ecg-findings" data={formData.ecgFindings}>
-                      <ECGFindingsSection 
-                        data={formData.ecgFindings} 
-                        onUpdate={(data) => updateSection('ecgFindings', data)} 
-                      />
-                    </SectionWithProgress>
-                  </div>
-
-                  <Separator className="my-8" />
-
                   <div id="ecg-abcde">
                     <EcgSyncopeAbcde
                       data={formData.ecgAbcde}
