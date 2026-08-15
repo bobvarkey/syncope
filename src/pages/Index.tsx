@@ -148,7 +148,7 @@ const IndexContent = () => {
             </div>
           </header>
 
-          <div className="py-5 sm:py-8 px-3 sm:px-6 lg:px-8" style={{ paddingBottom: "max(1.25rem, env(safe-area-inset-bottom))" }}>
+          <div className="w-full py-5 sm:py-8 px-3 sm:px-6 lg:px-8" style={{ paddingBottom: "max(1.25rem, env(safe-area-inset-bottom))" }}>
             <div className="max-w-4xl mx-auto">
               <section
                 aria-label="SyncDx introduction"
