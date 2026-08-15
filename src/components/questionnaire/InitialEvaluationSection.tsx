@@ -4,7 +4,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Info } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import ChecklistLink from "@/components/ChecklistLink";
 
 interface InitialEvaluationSectionProps {
   data: any;
@@ -73,14 +73,10 @@ const InitialEvaluationSection = ({ data, onUpdate }: InitialEvaluationSectionPr
                   {test.label}
                 </Label>
                 {test.id === "ecg-12-lead" && (
-                  <Button
-                    variant="link"
-                    size="sm"
-                    className="h-auto p-0 text-xs text-sunset-orange hover:text-sunset-red"
-                    onClick={() => document.getElementById("ecg-scoring-checklist")?.scrollIntoView({ behavior: "smooth" })}
-                  >
-                    View High-Risk Checklist
-                  </Button>
+                  <ChecklistLink 
+                    label="View High-Risk Checklist" 
+                    className="text-sunset-orange hover:text-sunset-red" 
+                  />
                 )}
               </div>
             </div>

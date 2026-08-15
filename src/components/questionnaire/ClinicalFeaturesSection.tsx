@@ -1,7 +1,7 @@
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
+import ChecklistLink from "@/components/ChecklistLink";
 
 interface ClinicalFeaturesSectionProps {
   data: any;
@@ -78,14 +78,10 @@ const ClinicalFeaturesSection = ({ data, onUpdate }: ClinicalFeaturesSectionProp
         <div className="border-l-4 border-destructive pl-4">
           <div className="flex items-center justify-between mb-3">
             <h4 className="font-semibold text-foreground">Cardiac Syncope</h4>
-            <Button
-              variant="link"
-              size="sm"
-              className="h-auto p-0 text-xs text-destructive hover:text-red-700"
-              onClick={() => document.getElementById("ecg-scoring-checklist")?.scrollIntoView({ behavior: "smooth" })}
-            >
-              Assess High-Risk ECG
-            </Button>
+            <ChecklistLink 
+              label="Assess High-Risk ECG" 
+              className="text-destructive hover:text-red-700" 
+            />
           </div>
           <div className="space-y-3">
             {[
