@@ -286,3 +286,26 @@ export function computeChecklistScore(
     interpretation
   };
 }
+
+/** Maps ABCDE/WOBBLER mini-screen pattern ids → checklist item ids */
+export const abcdeToChecklistMap: Record<string, string> = {
+  "av-block": "av_block_high_grade",
+  "brugada": "brugada_type_1",
+  "delta-wpw": "wpw_preexcitation",
+  "epsilon-arvc": "epsilon_wave_arvc",
+  "wellens": "wellens_pattern",
+  "long-qt": "long_qtc",
+  "short-qt": "short_qtc",
+  "rv-strain": "pulmonary_embolism_rv_strain",
+  "bifascicular": "bifascicular_block",
+  "lvh-hocm": "lvh_pressure_overload",
+};
+
+export function mapAbcdeSelectionToChecklist(
+  selected: Record<string, boolean> = {}
+): string[] {
+  return Object.entries(selected)
+    .filter(([, v]) => v)
+    .map(([id]) => abcdeToChecklistMap[id])
+    .filter(Boolean) as string[];
+}

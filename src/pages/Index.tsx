@@ -298,7 +298,9 @@ const IndexContent = () => {
                   <Separator className="my-8" />
 
                   <div id="ecg-scoring-checklist">
-                    <EcgScoringChecklist />
+                    <EcgScoringChecklist
+                      linkedAbcdeSelection={(formData.ecgAbcde as any)?.selectedPatterns}
+                    />
                   </div>
 
                   <Separator className="my-8" />
