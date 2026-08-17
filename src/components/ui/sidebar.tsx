@@ -227,10 +227,10 @@ const SidebarTrigger = React.forwardRef<React.ElementRef<typeof Button>, React.C
         variant="ghost"
         size="icon"
         className={cn(
-          "h-10 w-10 z-[60] border-2 shadow-md transition-all duration-300",
+          "h-12 w-12 z-[60] border-2 shadow-lg transition-all duration-300",
           "bg-gradient-to-br from-orange-500 via-rose-500 to-purple-600",
-          "hover:scale-110 hover:shadow-lg active:scale-95",
-          "text-white border-white/20",
+          "hover:scale-110 hover:shadow-xl active:scale-95",
+          "text-white border-white/40",
           className
         )}
         onClick={(event) => {
@@ -239,7 +239,7 @@ const SidebarTrigger = React.forwardRef<React.ElementRef<typeof Button>, React.C
         }}
         {...props}
       >
-        <PanelLeft className="h-6 w-6" strokeWidth={2.5} />
+        <PanelLeft className="h-7 w-7" strokeWidth={3} />
         <span className="sr-only">Toggle Sidebar</span>
       </Button>
     );

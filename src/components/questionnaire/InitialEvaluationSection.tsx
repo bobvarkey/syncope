@@ -73,10 +73,7 @@ const InitialEvaluationSection = ({ data, onUpdate }: InitialEvaluationSectionPr
                   {test.label}
                 </Label>
                 {test.id === "ecg-12-lead" && (
-                  <ChecklistLink 
-                    label="View High-Risk Checklist" 
-                    className="text-sunset-orange hover:text-sunset-red" 
-                  />
+                  null
                 )}
               </div>
             </div>
