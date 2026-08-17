@@ -752,13 +752,7 @@ const IndexContent = () => {
 };
 
 const Index = () => {
-  return (
-    <LanguageProvider>
-      <AssessmentProgressProvider>
-        <IndexContent />
-      </AssessmentProgressProvider>
-    </LanguageProvider>
-  );
+  return <IndexContent />;
 };
 
 export default Index;
