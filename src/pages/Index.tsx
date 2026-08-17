@@ -76,31 +76,45 @@ const IndexContent = () => {
     return Math.round((totalCompleted / totalFields) * 100);
   };
   const [openAccordionGroups, setOpenAccordionGroups] = useState<string[]>([]);
-  const [formData, setFormData] = useState({
-    patientInfo: {},
-    circumstances: {},
-    onset: {},
-    attack: {},
-    end: {},
-    background: {},
-    clinicalFeatures: {},
-    ecgFindings: {},
-    labTests: {},
-    initialEvaluation: {},
-    tiltTestProtocol: {},
-    riskScore: {},
-    differentialDiagnosis: {},
-    subclavianSteal: {},
-    carotidSinusMassage: {},
-    orthostaticIntolerance: {},
-    autonomicTesting: {},
-    diagnosticCriteria: {},
-    interventions: {},
-    dropAttacks: {},
-    syncopeMedications: {},
-    ecgAbcde: {},
-    ecgScoring: {},
+  const [formData, setFormData] = useState(() => {
+    const saved = localStorage.getItem("syncdx-form-data");
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error("Failed to parse saved assessment data", e);
+      }
+    }
+    return {
+      patientInfo: {},
+      circumstances: {},
+      onset: {},
+      attack: {},
+      end: {},
+      background: {},
+      clinicalFeatures: {},
+      ecgFindings: {},
+      labTests: {},
+      initialEvaluation: {},
+      tiltTestProtocol: {},
+      riskScore: {},
+      differentialDiagnosis: {},
+      subclavianSteal: {},
+      carotidSinusMassage: {},
+      orthostaticIntolerance: {},
+      autonomicTesting: {},
+      diagnosticCriteria: {},
+      interventions: {},
+      dropAttacks: {},
+      syncopeMedications: {},
+      ecgAbcde: {},
+      ecgScoring: {},
+    };
   });
+
+  useEffect(() => {
+    localStorage.setItem("syncdx-form-data", JSON.stringify(formData));
+  }, [formData]);
 
   useEffect(() => {
     const handleHashChange = () => {
@@ -164,6 +178,39 @@ const IndexContent = () => {
     link.href = url;
     link.download = `syncope-assessment-${new Date().toISOString().split('T')[0]}.json`;
     link.click();
+  };
+
+  const handleReset = () => {
+    if (window.confirm("Are you sure you want to reset the assessment? All current progress will be lost.")) {
+      const emptyData = {
+        patientInfo: {},
+        circumstances: {},
+        onset: {},
+        attack: {},
+        end: {},
+        background: {},
+        clinicalFeatures: {},
+        ecgFindings: {},
+        labTests: {},
+        initialEvaluation: {},
+        tiltTestProtocol: {},
+        riskScore: {},
+        differentialDiagnosis: {},
+        subclavianSteal: {},
+        carotidSinusMassage: {},
+        orthostaticIntolerance: {},
+        autonomicTesting: {},
+        diagnosticCriteria: {},
+        interventions: {},
+        dropAttacks: {},
+        syncopeMedications: {},
+        ecgAbcde: {},
+        ecgScoring: {},
+      };
+      setFormData(emptyData);
+      localStorage.removeItem("syncdx-form-data");
+      window.location.reload(); // Reset all states
+    }
   };
 
   const handleExportPDF = () => {
@@ -705,6 +752,10 @@ const IndexContent = () => {
               </Accordion>
 
               <div className="flex flex-wrap gap-4 justify-center print:hidden">
+                <Button onClick={handleReset} variant="ghost" size="lg" className="text-destructive hover:bg-destructive/10">
+                  <History className="w-4 h-4 mr-2" />
+                  Reset Assessment
+                </Button>
                 <Button onClick={handlePrint} variant="outline" size="lg">
                   <Printer className="w-4 h-4 mr-2" />
                   {t('button.print')}
