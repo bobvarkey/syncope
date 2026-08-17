@@ -179,6 +179,9 @@ const IndexContent = () => {
       <SidebarProvider>
         <div className="min-h-dvh flex w-full overflow-x-hidden">
           <AssessmentSidebar />
+          <div className="fixed top-6 left-6 z-[60] lg:hidden">
+            <SidebarTrigger />
+          </div>
         
         <div className="flex-1 bg-background flex flex-col items-center w-full">
           <header className="sticky top-0 z-40 w-full border-b border-border/50 bg-background/60 backdrop-blur-xl supports-[backdrop-filter]:bg-background/40 shadow-soft">
@@ -187,7 +190,7 @@ const IndexContent = () => {
               className="max-w-7xl mx-auto flex items-center gap-2 sm:gap-4 px-3 sm:px-6 py-2.5 sm:py-3 w-full"
               style={{ paddingTop: "max(0.625rem, env(safe-area-inset-top))" }}
             >
-              <SidebarTrigger className="lg:hidden shrink-0" />
+              {/* Removed SidebarTrigger from header to avoid overlap and use the floating one */}
               <div className="flex items-center flex-1 min-w-0">
                 <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-sunset flex items-center justify-center shadow-glow mr-2.5 sm:mr-3 shrink-0">
                   <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
@@ -287,7 +290,7 @@ const IndexContent = () => {
                   >
                     {/* Clinical History Group */}
                     <AccordionItem value="clinical-history" className="border rounded-xl overflow-hidden shadow-sm">
-                      <AccordionTrigger className="px-6 py-4 bg-muted/30 hover:no-underline hover:bg-muted/50 transition-all">
+                      <AccordionTrigger className="px-6 py-4 bg-muted/30 hover:no-underline hover:bg-muted/50 transition-all [&[data-state=open]]:bg-muted/10">
                         <div className="flex-1 flex items-center justify-between pr-4">
                           <div className="flex items-center gap-3 text-left">
                             <div className="p-2 rounded-lg bg-orange-500/10">
@@ -380,7 +383,7 @@ const IndexContent = () => {
 
                     {/* Investigations Group */}
                     <AccordionItem value="investigations" className="border rounded-xl overflow-hidden shadow-sm">
-                      <AccordionTrigger className="px-6 py-4 bg-muted/30 hover:no-underline hover:bg-muted/50 transition-all">
+                      <AccordionTrigger className="px-6 py-4 bg-muted/30 hover:no-underline hover:bg-muted/50 transition-all [&[data-state=open]]:bg-muted/10">
                         <div className="flex-1 flex items-center justify-between pr-4">
                           <div className="flex items-center gap-3 text-left">
                             <div className="p-2 rounded-lg bg-yellow-500/10">
@@ -532,7 +535,7 @@ const IndexContent = () => {
 
                     {/* Differential Diagnosis Group */}
                     <AccordionItem value="differential-diagnosis" className="border rounded-xl overflow-hidden shadow-sm">
-                      <AccordionTrigger className="px-6 py-4 bg-muted/30 hover:no-underline hover:bg-muted/50 transition-all">
+                      <AccordionTrigger className="px-6 py-4 bg-muted/30 hover:no-underline hover:bg-muted/50 transition-all [&[data-state=open]]:bg-muted/10">
                         <div className="flex-1 flex items-center justify-between pr-4">
                           <div className="flex items-center gap-3 text-left">
                             <div className="p-2 rounded-lg bg-purple-500/10">
@@ -587,7 +590,7 @@ const IndexContent = () => {
 
                     {/* Management Group */}
                     <AccordionItem value="management" className="border rounded-xl overflow-hidden shadow-sm">
-                      <AccordionTrigger className="px-6 py-4 bg-muted/30 hover:no-underline hover:bg-muted/50 transition-all">
+                      <AccordionTrigger className="px-6 py-4 bg-muted/30 hover:no-underline hover:bg-muted/50 transition-all [&[data-state=open]]:bg-muted/10">
                         <div className="flex-1 flex items-center justify-between pr-4">
                           <div className="flex items-center gap-3 text-left">
                             <div className="p-2 rounded-lg bg-green-500/10">
@@ -625,7 +628,7 @@ const IndexContent = () => {
 
                     {/* Drop Attacks Group */}
                     <AccordionItem value="drop-attacks-group" className="border rounded-xl overflow-hidden shadow-sm">
-                      <AccordionTrigger className="px-6 py-4 bg-muted/30 hover:no-underline hover:bg-muted/50 transition-all">
+                      <AccordionTrigger className="px-6 py-4 bg-muted/30 hover:no-underline hover:bg-muted/50 transition-all [&[data-state=open]]:bg-muted/10">
                         <div className="flex-1 flex items-center justify-between pr-4">
                           <div className="flex items-center gap-3 text-left">
                             <div className="p-2 rounded-lg bg-red-500/10">

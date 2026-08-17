@@ -1025,7 +1025,7 @@ function ProtocolReference({
           </ul>
         </section>
 
-        <div className="mt-4">
+        <div className="mt-4 flex justify-end">
           <ReferencePopup triggerLabel="References & source citations">
             <ul className="space-y-2.5 list-disc pl-4 marker:text-primary/50">
               <li>

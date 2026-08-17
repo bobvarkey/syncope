@@ -23,7 +23,6 @@ const EndSection = ({ data, onUpdate }: EndSectionProps) => {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <Label className="text-base font-medium mb-1 block">Post-Episode Symptoms</Label>
-          <ChecklistLink label="View High-Risk Checklist" className="text-sunset-orange hover:text-sunset-red" />
         </div>
         <div className="space-y-3">
           {[

@@ -78,10 +78,6 @@ const ClinicalFeaturesSection = ({ data, onUpdate }: ClinicalFeaturesSectionProp
         <div className="border-l-4 border-destructive pl-4">
           <div className="flex items-center justify-between mb-3">
             <h4 className="font-semibold text-foreground">Cardiac Syncope</h4>
-            <ChecklistLink 
-              label="View High-Risk Checklist" 
-              className="text-destructive hover:text-red-700" 
-            />
           </div>
           <div className="space-y-3">
             {[

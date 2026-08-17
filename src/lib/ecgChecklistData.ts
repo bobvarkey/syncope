@@ -261,7 +261,7 @@ export const ecgChecklistItems: EcgChecklistItem[] = [
   },
   {
     id: "bradycardia_tachycardia",
-    label: "Bradycardia / Tachycardia",
+    label: "Bradycardia / Tachycardia (Tachy-Brady syndrome)",
     category: "conduction",
     criteria: [
       "Alternating periods of bradycardia and tachycardia",
@@ -269,7 +269,7 @@ export const ecgChecklistItems: EcgChecklistItem[] = [
       "Paroxysmal supraventricular tachycardia or atrial fibrillation followed by prolonged sinus pauses"
     ],
     score: 3,
-    urgentOverrideConditions: ["Symptomatic pauses", "Syncope during arrhythmia transitions"],
+    urgentOverride: true,
     action: "Urgent cardiology/electrophysiology assessment; consider pacing and/or antiarrhythmic therapy."
   }
 ];
