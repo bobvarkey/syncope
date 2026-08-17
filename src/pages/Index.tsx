@@ -76,31 +76,45 @@ const IndexContent = () => {
     return Math.round((totalCompleted / totalFields) * 100);
   };
   const [openAccordionGroups, setOpenAccordionGroups] = useState<string[]>([]);
-  const [formData, setFormData] = useState({
-    patientInfo: {},
-    circumstances: {},
-    onset: {},
-    attack: {},
-    end: {},
-    background: {},
-    clinicalFeatures: {},
-    ecgFindings: {},
-    labTests: {},
-    initialEvaluation: {},
-    tiltTestProtocol: {},
-    riskScore: {},
-    differentialDiagnosis: {},
-    subclavianSteal: {},
-    carotidSinusMassage: {},
-    orthostaticIntolerance: {},
-    autonomicTesting: {},
-    diagnosticCriteria: {},
-    interventions: {},
-    dropAttacks: {},
-    syncopeMedications: {},
-    ecgAbcde: {},
-    ecgScoring: {},
+  const [formData, setFormData] = useState(() => {
+    const saved = localStorage.getItem("syncdx-form-data");
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error("Failed to parse saved assessment data", e);
+      }
+    }
+    return {
+      patientInfo: {},
+      circumstances: {},
+      onset: {},
+      attack: {},
+      end: {},
+      background: {},
+      clinicalFeatures: {},
+      ecgFindings: {},
+      labTests: {},
+      initialEvaluation: {},
+      tiltTestProtocol: {},
+      riskScore: {},
+      differentialDiagnosis: {},
+      subclavianSteal: {},
+      carotidSinusMassage: {},
+      orthostaticIntolerance: {},
+      autonomicTesting: {},
+      diagnosticCriteria: {},
+      interventions: {},
+      dropAttacks: {},
+      syncopeMedications: {},
+      ecgAbcde: {},
+      ecgScoring: {},
+    };
   });
+
+  useEffect(() => {
+    localStorage.setItem("syncdx-form-data", JSON.stringify(formData));
+  }, [formData]);
 
   useEffect(() => {
     const handleHashChange = () => {
