@@ -752,6 +752,10 @@ const IndexContent = () => {
               </Accordion>
 
               <div className="flex flex-wrap gap-4 justify-center print:hidden">
+                <Button onClick={handleReset} variant="ghost" size="lg" className="text-destructive hover:bg-destructive/10">
+                  <History className="w-4 h-4 mr-2" />
+                  Reset Assessment
+                </Button>
                 <Button onClick={handlePrint} variant="outline" size="lg">
                   <Printer className="w-4 h-4 mr-2" />
                   {t('button.print')}
