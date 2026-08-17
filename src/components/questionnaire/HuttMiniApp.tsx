@@ -1026,7 +1026,45 @@ function ProtocolReference({
         </section>
 
         <div className="mt-4 flex justify-end">
-          <ReferencePopup triggerLabel="References & source citations" />
+          <ReferencePopup triggerLabel="References & source citations">
+            <ul className="space-y-2.5 list-disc pl-4 marker:text-primary/50">
+              <li>
+                Brignole M et al. <b>2018 ESC Guidelines for the diagnosis and management of syncope.</b> Eur Heart J 2018;39:1883–1948 — 
+                tilt indications, protocol duration, stop rules.{" "}
+                <a href="https://academic.oup.com/eurheartj/article/39/21/1883/4939241" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Full text</a>
+              </li>
+              <li>
+                Fitzpatrick AP, Theodorakis G, Vardas P, Sutton R. <b>Methodology of head-up tilt testing in patients with unexplained syncope.</b>
+                J Am Coll Cardiol 1991;17:125–130 — original <b>Westminster</b> passive 60°/45-min protocol.{" "}
+                <a href="https://www.jacc.org/doi/10.1016/0735-1097(91)90714-K" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">JACC</a>
+              </li>
+              <li>
+                Bartoletti A, Alboni P, Ammirati F, Brignole M et al. <b>"The Italian Protocol": a simplified head-up tilt testing potentiated with
+                oral nitroglycerin</b> to assess patients with unexplained syncope. Europace 2000;2:339–342 — GTN 300–400 µg SL after 20 min passive.{" "}
+                <a href="https://academic.oup.com/europace/article/2/4/339/436795" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Europace</a>
+              </li>
+              <li>
+                Brignole M, Menozzi C, Del Rosso A et al. <b>New classification of haemodynamic patterns during head-up tilt testing (VASIS).</b>
+                Europace 2000;2:66–76 — VASIS 1 / 2A / 2B / 3 definitions.{" "}
+                <a href="https://academic.oup.com/europace/article/2/1/66/436722" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Europace</a>
+              </li>
+              <li>
+                Kenny RA, Ingram A, Bayliss J, Sutton R. <b>Head-up tilt: a useful test for investigating unexplained syncope.</b> Lancet 1986;1:1352–1355 —
+                foundational tilt-table description.{" "}
+                <a href="https://www.thelancet.com/journals/lancet/article/PIIS0140-6736(86)91665-X/fulltext" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Lancet</a>
+              </li>
+              <li>
+                Sheldon RS, Grubb BP, Olshansky B et al. <b>2015 HRS Expert Consensus Statement on Postural Tachycardia Syndrome,
+                Inappropriate Sinus Tachycardia, and Vasovagal Syncope.</b> Heart Rhythm 2015;12:e41–e63 — POTS/reflex tilt criteria.{" "}
+                <a href="https://www.heartrhythmjournal.com/article/S1547-5271(15)00382-4/fulltext" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">HRS</a>
+              </li>
+              <li>
+                Freeman R, Wieling W, Axelrod FB et al. <b>Consensus statement on the definition of orthostatic hypotension, neurally mediated
+                syncope and the postural tachycardia syndrome.</b> Clin Auton Res 2011;21:69–72 — OH ≥ 20/10 mmHg, POTS ≥ 30 bpm thresholds.{" "}
+                <a href="https://link.springer.com/article/10.1007/s10286-011-0121-5" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Springer</a>
+              </li>
+            </ul>
+          </ReferencePopup>
         </div>
       </div>
     </details>
