@@ -175,7 +175,8 @@ const IndexContent = () => {
   };
 
   return (
-    <SidebarProvider>
+    <AssessmentProgressProvider>
+      <SidebarProvider>
       <div className="min-h-dvh flex w-full overflow-x-hidden">
         <AssessmentSidebar />
         <div className="fixed top-6 left-6 z-[60] lg:hidden">
@@ -747,16 +748,15 @@ const IndexContent = () => {
           </div>
         </div>
       </div>
-    </SidebarProvider>
+      </SidebarProvider>
+    </AssessmentProgressProvider>
   );
 };
 
 const Index = () => {
   return (
     <LanguageProvider>
-      <AssessmentProgressProvider>
-        <IndexContent />
-      </AssessmentProgressProvider>
+      <IndexContent />
     </LanguageProvider>
   );
 };
