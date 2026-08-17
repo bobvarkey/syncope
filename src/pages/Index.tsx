@@ -180,6 +180,39 @@ const IndexContent = () => {
     link.click();
   };
 
+  const handleReset = () => {
+    if (window.confirm("Are you sure you want to reset the assessment? All current progress will be lost.")) {
+      const emptyData = {
+        patientInfo: {},
+        circumstances: {},
+        onset: {},
+        attack: {},
+        end: {},
+        background: {},
+        clinicalFeatures: {},
+        ecgFindings: {},
+        labTests: {},
+        initialEvaluation: {},
+        tiltTestProtocol: {},
+        riskScore: {},
+        differentialDiagnosis: {},
+        subclavianSteal: {},
+        carotidSinusMassage: {},
+        orthostaticIntolerance: {},
+        autonomicTesting: {},
+        diagnosticCriteria: {},
+        interventions: {},
+        dropAttacks: {},
+        syncopeMedications: {},
+        ecgAbcde: {},
+        ecgScoring: {},
+      };
+      setFormData(emptyData);
+      localStorage.removeItem("syncdx-form-data");
+      window.location.reload(); // Reset all states
+    }
+  };
+
   const handleExportPDF = () => {
     exportToPDF(formData, language);
   };
