@@ -56,6 +56,63 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
+
+const AssessmentProgressHeader = () => {
+  const { sectionProgress } = useAssessmentProgress();
+  
+  const getOverallCompletion = () => {
+    let totalCompleted = 0;
+    let totalFields = 0;
+    Object.values(sectionProgress).forEach((progress) => {
+      totalCompleted += progress.completed;
+      totalFields += progress.total;
+    });
+    if (totalFields === 0) return 0;
+    return Math.round((totalCompleted / totalFields) * 100);
+  };
+
+  const overallCompletion = getOverallCompletion();
+  const [activeSectionTitle, setActiveSectionTitle] = useState("Introduction");
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const sections = document.querySelectorAll('section[id], div[id]');
+      let currentSection = "Introduction";
+      const scrollPosition = window.scrollY + 200;
+
+      sections.forEach((section) => {
+        const rect = section.getBoundingClientRect();
+        const top = rect.top + window.scrollY;
+        if (scrollPosition >= top) {
+          const title = section.querySelector('h1, h2, h3')?.textContent;
+          if (title && title.length < 50) currentSection = title;
+        }
+      });
+      setActiveSectionTitle(currentSection);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  return (
+    <div className="w-full max-w-7xl mx-auto py-1 space-y-1">
+      <div className="flex items-center justify-between text-[10px] sm:text-xs font-bold">
+        <span className="text-muted-foreground truncate max-w-[60%]">
+          Active: <span className="text-primary">{activeSectionTitle}</span>
+        </span>
+        <span className="text-primary">{overallCompletion}%</span>
+      </div>
+      <Progress value={overallCompletion} className="h-1 rounded-full bg-muted overflow-hidden">
+        <div 
+          className="h-full bg-gradient-sunset transition-all duration-500 ease-out" 
+          style={{ width: `${overallCompletion}%` }} 
+        />
+      </Progress>
+    </div>
+  );
+};
+
 const IndexContent = () => {
   const { language, t } = useLanguage();
   const { sectionProgress, getCompletionPercentage } = useAssessmentProgress();
