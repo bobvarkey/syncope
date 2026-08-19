@@ -265,6 +265,9 @@ const IndexContent = () => {
             <div className="md:hidden px-3 pb-2">
               <QuickSearch />
             </div>
+            <div className="absolute inset-x-0 bottom-0 px-3 sm:px-6">
+              <AssessmentProgressHeader />
+            </div>
           </header>
 
           <div className="w-full py-5 sm:py-8 px-3 sm:px-6 lg:px-8" style={{ paddingBottom: "max(1.25rem, env(safe-area-inset-bottom))" }}>
