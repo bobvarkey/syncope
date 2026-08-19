@@ -223,13 +223,13 @@ const IndexContent = () => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-dvh flex w-full overflow-x-hidden max-w-[100vw] relative touch-none md:touch-auto select-none overflow-y-auto">
+      <div className="h-dvh flex w-full overflow-hidden max-w-[100vw] relative touch-none md:touch-auto select-none">
         <AssessmentSidebar />
         <div className="fixed top-6 left-6 z-[60] lg:hidden">
           <SidebarTrigger />
         </div>
         
-        <div className="flex-1 bg-background flex flex-col items-center w-full min-w-0">
+        <div className="flex-1 bg-background flex flex-col items-center w-full min-w-0 overflow-y-auto overflow-x-hidden">
           <header className="sticky top-0 z-40 w-full border-b border-border/50 bg-background/60 backdrop-blur-xl supports-[backdrop-filter]:bg-background/40 shadow-soft overflow-x-hidden">
             <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-sunset" aria-hidden />
             <div
