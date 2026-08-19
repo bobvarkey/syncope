@@ -112,19 +112,21 @@
 
   body {
     @apply bg-background text-foreground;
-    overflow-x: hidden !important;
+    overflow: hidden !important;
+    height: 100dvh;
     width: 100vw;
-    position: relative;
+    position: fixed;
     touch-action: none;
     -webkit-overflow-scrolling: none;
-    overscroll-behavior-x: none;
+    overscroll-behavior: none;
   }
   
   html {
-    overflow-x: hidden !important;
+    overflow: hidden !important;
+    height: 100dvh;
     width: 100vw;
     touch-action: none;
-    overscroll-behavior-x: none;
+    overscroll-behavior: none;
   }
 }
 
