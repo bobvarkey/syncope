@@ -317,7 +317,7 @@ const IndexContent = () => {
             <div className="md:hidden px-3 pb-2">
               <QuickSearch />
             </div>
-            <div className="absolute inset-x-0 bottom-0 px-3 sm:px-6">
+            <div className="px-3 sm:px-6 pb-1">
               <AssessmentProgressHeader />
             </div>
           </header>
