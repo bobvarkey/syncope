@@ -103,12 +103,7 @@ const AssessmentProgressHeader = () => {
         </span>
         <span className="text-primary">{overallCompletion}%</span>
       </div>
-      <Progress value={overallCompletion} className="h-1 rounded-full bg-muted overflow-hidden">
-        <div 
-          className="h-full bg-gradient-sunset transition-all duration-500 ease-out" 
-          style={{ width: `${overallCompletion}%` }} 
-        />
-      </Progress>
+      <Progress value={overallCompletion} className="h-1 rounded-full bg-muted overflow-hidden" />
     </div>
   );
 };
