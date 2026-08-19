@@ -115,12 +115,16 @@
     overflow-x: hidden !important;
     width: 100vw;
     position: relative;
-    touch-action: pan-y;
+    touch-action: none;
+    -webkit-overflow-scrolling: none;
+    overscroll-behavior-x: none;
   }
   
   html {
     overflow-x: hidden !important;
     width: 100vw;
+    touch-action: none;
+    overscroll-behavior-x: none;
   }
 }
 
