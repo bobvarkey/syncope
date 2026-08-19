@@ -229,8 +229,8 @@ const IndexContent = () => {
           <SidebarTrigger />
         </div>
         
-        <div className="flex-1 bg-background flex flex-col items-center w-full">
-          <header className="sticky top-0 z-40 w-full border-b border-border/50 bg-background/60 backdrop-blur-xl supports-[backdrop-filter]:bg-background/40 shadow-soft">
+        <div className="flex-1 bg-background flex flex-col items-center w-full min-w-0">
+          <header className="sticky top-0 z-40 w-full border-b border-border/50 bg-background/60 backdrop-blur-xl supports-[backdrop-filter]:bg-background/40 shadow-soft overflow-x-hidden">
             <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-sunset" aria-hidden />
             <div
               className="max-w-7xl mx-auto flex items-center gap-2 sm:gap-4 px-3 sm:px-6 py-2.5 sm:py-3 w-full"
