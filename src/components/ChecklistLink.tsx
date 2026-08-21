@@ -14,11 +14,28 @@ const ChecklistLink = ({
   variant = "link" 
 }: ChecklistLinkProps) => {
   const scrollTo = () => {
-    document.getElementById("ecg-scoring-checklist")?.scrollIntoView({ 
-      behavior: "smooth",
-      block: "start" 
-    });
+    const targetId = "ecg-scoring-checklist";
+
+    // Ensure the parent accordion group opens (Index listens on hashchange)
+    if (window.location.hash === `#${targetId}`) {
+      window.dispatchEvent(new HashChangeEvent("hashchange"));
+    } else {
+      window.location.hash = targetId;
+    }
+
+    // The section may still be mounting/expanding — retry until it's on screen
+    let attempts = 0;
+    const tryScroll = () => {
+      const el = document.getElementById(targetId);
+      if (el && el.getBoundingClientRect().height > 0) {
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+        return;
+      }
+      if (attempts++ < 25) setTimeout(tryScroll, 80);
+    };
+    tryScroll();
   };
+
 
   return (
     <Button
