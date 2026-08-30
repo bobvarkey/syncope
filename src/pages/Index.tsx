@@ -38,6 +38,7 @@ import SyncopeMedicationsSection from "@/components/questionnaire/SyncopeMedicat
 import EcgSyncopeAbcde from "@/components/questionnaire/EcgSyncopeAbcde";
 import SyncopeMiniApp from "@/components/questionnaire/SyncopeMiniApp";
 import HuttMiniApp from "@/components/questionnaire/HuttMiniApp";
+import CanMiniApp from "@/components/questionnaire/CanMiniApp";
 import EcgScoringChecklist from "@/components/questionnaire/EcgScoringChecklist";
 import AntiArrhythmicsSection from "@/components/questionnaire/AntiArrhythmicsSection";
 import { exportToPDF, exportToWord } from "@/utils/exportUtils";
@@ -362,6 +363,10 @@ const IndexContent = () => {
 
               <div id="hutt-mini-app" className="mb-6 sm:mb-8 scroll-mt-20">
                 <HuttMiniApp />
+              </div>
+
+              <div id="can-mini-app" className="mb-6 sm:mb-8 scroll-mt-20">
+                <CanMiniApp />
               </div>
 
 
