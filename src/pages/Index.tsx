@@ -365,6 +365,10 @@ const IndexContent = () => {
                 <HuttMiniApp />
               </div>
 
+              <div id="can-mini-app" className="mb-6 sm:mb-8 scroll-mt-20">
+                <CanMiniApp />
+              </div>
+
 
 
               <AssessmentDashboard />
