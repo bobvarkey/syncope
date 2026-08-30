@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Activity, AlertTriangle, HeartPulse, RotateCcw, Stethoscope, Droplets } from "lucide-react";
+import { Activity, AlertTriangle, HeartPulse, RotateCcw, Stethoscope, Droplets, ChevronDown, Info } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,6 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+import { cn } from "@/lib/utils";
 
 type Num = number | "";
 
@@ -74,6 +77,40 @@ const deepBreathingLln = (age: number | null) => {
   return 5;
 };
 
+/** Standard generalized Sudoscan lower limit of normal (µS). */
+const SUDOSCAN_LLN_60_US = 60;
+
+/** Performance requirements / protocol for each test subtype, shown on tooltip hover. */
+const TEST_REQS: Record<string, string> = {
+  deepBreathing:
+    "Deep-breathing ΔHR: 6 breaths/min (5 s in, 5 s out) for ~1 min; supine or seated, continuous ECG; avoid talking/coughing/straining; use age- and sex-adjusted norms (LLN declines with age).",
+  eiRatio:
+    "E:I ratio: mean longest expiratory NN interval ÷ mean shortest inspiratory NN interval across ≥6 paced cycles at 6 breaths/min; sinus rhythm preferred; chronotropic/anticholinergic drugs confound the result.",
+  valsalva:
+    "Valsalva ratio: strain at ~40 mmHg for ~15 s (blow into manometer), usually ×2–3 trials; ratio = longest post-strain RR ÷ shortest strain RR; beat-to-beat BP (late phase II, phase IV overshoot) informs adrenergic scoring.",
+  ratio3015:
+    "30:15 ratio: after active standing, longest RR near the 30th beat ÷ shortest RR near the 15th beat; requires continuous ECG and prompt upright transition; use laboratory age-adjusted norms.",
+  orthostatic:
+    "Stand/tilt: supine rest ≥5 min (10–15 min preferred), then active stand or head-up tilt; record BP/HR at 1, 3, 5 min (continue to 10 min if POTS suspected). OH = sustained SBP fall ≥20 or DBP fall ≥10 mmHg within 3 min. Use fall precautions; supervised; terminate for syncope, presyncope, chest pain, or arrhythmia.",
+  sudomotor:
+    "Sudoscan ESC: electrochemical skin conductance of palms and soles in µS; standard generalized LLN = 60 µS. Not equivalent to QSART/thermoregulatory sweat testing. Interpret with device/age/sex-specific norms; poor contact, callus, edema, or skin disease limit validity.",
+};
+
+/** Tooltip-wrapped section heading. */
+const ReqTip = ({ id, title }: { id: string; title: string }) => (
+  <Tooltip>
+    <TooltipTrigger asChild>
+      <span className="inline-flex items-center gap-1 cursor-help">
+        {title}
+        <Info className="h-3.5 w-3.5 text-muted-foreground" />
+      </span>
+    </TooltipTrigger>
+    <TooltipContent className="max-w-sm text-xs leading-relaxed">
+      {TEST_REQS[id]}
+    </TooltipContent>
+  </Tooltip>
+);
+
 const CanMiniApp: React.FC = () => {
   const [s, setS] = useState<CanState>(() => {
     try {
@@ -84,6 +121,7 @@ const CanMiniApp: React.FC = () => {
     }
     return EMPTY;
   });
+  const [open, setOpen] = useState(true);
 
   useEffect(() => {
     try {
@@ -201,8 +239,13 @@ const CanMiniApp: React.FC = () => {
     const handLln = n(s.handLln);
     const footEsc = n(s.footEsc);
     const footLln = n(s.footLln);
-    const handPct = handEsc !== null && handLln !== null && handLln > 0 ? (100 * handEsc) / handLln : null;
-    const footPct = footEsc !== null && footLln !== null && footLln > 0 ? (100 * footEsc) / footLln : null;
+    // Default LLN to the standard generalized 60 µS when the field is left blank.
+    const effHandLln = handEsc !== null && handLln === null ? SUDOSCAN_LLN_60_US : handLln;
+    const effFootLln = footEsc !== null && footLln === null ? SUDOSCAN_LLN_60_US : footLln;
+    const handPct = handEsc !== null && effHandLln !== null && effHandLln > 0 ? (100 * handEsc) / effHandLln : null;
+    const footPct = footEsc !== null && effFootLln !== null && effFootLln > 0 ? (100 * footEsc) / effFootLln : null;
+    const handLlnUsedDefault = handEsc !== null && handLln === null;
+    const footLlnUsedDefault = footEsc !== null && footLln === null;
     let sudomotor: number | null = null;
     if (handPct !== null && footPct !== null) {
       const handAbn = handPct < 100;
@@ -233,8 +276,10 @@ const CanMiniApp: React.FC = () => {
       warnings.push("Non-sinus / paced rhythm or frequent ectopy: HRV and cardiovagal reflex indices may be uninterpretable.");
     if (testedCount > 0 && testedCount < 2)
       warnings.push("Fewer than two cardiovascular autonomic reflex tests entered; CAN staging requires ≥2 interpretable tests.");
-    if ((handEsc !== null && handLln === null) || (footEsc !== null && footLln === null))
-      warnings.push("Sudoscan device/laboratory lower limits of normal missing — sudomotor score is indeterminate.");
+    if (handLlnUsedDefault || footLlnUsedDefault)
+      warnings.push(
+        "Sudoscan LLN field left blank — standard generalized 60 µS default used for sudomotor scoring. Confirm against device/laboratory norms if available.",
+      );
     if (largeFallHtn)
       warnings.push("Substantial orthostatic fall on a hypertensive supine baseline (supine hypertension with OH).");
 
@@ -256,6 +301,8 @@ const CanMiniApp: React.FC = () => {
       hrSbpRatio,
       handPct,
       footPct,
+      handLlnUsedDefault,
+      footLlnUsedDefault,
       cardiovagal,
       adrenergic,
       sudomotor,
@@ -275,7 +322,7 @@ const CanMiniApp: React.FC = () => {
           ? "bg-[hsl(160_70%_45%/0.12)] text-[hsl(160_70%_32%)] border-[hsl(160_70%_45%/0.35)]"
           : "bg-muted text-muted-foreground border-border";
 
-  const Field = ({ id, label, unit, field }: { id: string; label: string; unit?: string; field: keyof CanState }) => (
+  const Field = ({ id, label, unit, field }: { id: string; label: React.ReactNode; unit?: string; field: keyof CanState }) => (
     <div className="space-y-1.5">
       <Label htmlFor={id} className="text-xs font-medium">
         {label} {unit && <span className="text-muted-foreground font-normal">({unit})</span>}
@@ -285,22 +332,31 @@ const CanMiniApp: React.FC = () => {
   );
 
   return (
+    <Collapsible open={open} onOpenChange={setOpen}>
     <Card className="border-2 border-[hsl(280_75%_60%/0.35)] shadow-sm">
       <CardHeader className="bg-gradient-to-r from-[hsl(280_75%_60%/0.14)] via-[hsl(340_85%_60%/0.10)] to-transparent">
-        <div className="flex items-start gap-3">
-          <div className="p-2 rounded-lg bg-[hsl(280_75%_60%/0.15)]">
-            <HeartPulse className="h-5 w-5 text-[hsl(280_75%_60%)]" />
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-start gap-3">
+            <div className="p-2 rounded-lg bg-[hsl(280_75%_60%/0.15)]">
+              <HeartPulse className="h-5 w-5 text-[hsl(280_75%_60%)]" />
+            </div>
+            <div>
+              <CardTitle className="text-lg sm:text-xl">CAN Mini App — Cardiac Autonomic Neuropathy &amp; mCASS</CardTitle>
+              <CardDescription>
+                Enter cardiovascular autonomic reflex tests, orthostatic hemodynamics and Sudoscan values to stage CAN and
+                derive a modified 10-point CASS (mCASS). Decision support only — not the validated Mayo CASS.
+              </CardDescription>
+            </div>
           </div>
-          <div>
-            <CardTitle className="text-lg sm:text-xl">CAN Mini App — Cardiac Autonomic Neuropathy &amp; mCASS</CardTitle>
-            <CardDescription>
-              Enter cardiovascular autonomic reflex tests, orthostatic hemodynamics and Sudoscan values to stage CAN and
-              derive a modified 10-point CASS (mCASS). Decision support only — not the validated Mayo CASS.
-            </CardDescription>
-          </div>
+          <CollapsibleTrigger asChild>
+            <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
+              <ChevronDown className={cn("h-4 w-4 transition-transform", open ? "rotate-180" : "rotate-0")} />
+            </Button>
+          </CollapsibleTrigger>
         </div>
       </CardHeader>
 
+      <CollapsibleContent>
       <CardContent className="space-y-6 pt-6">
         {/* Context */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -325,13 +381,14 @@ const CanMiniApp: React.FC = () => {
         {/* Cardiovagal */}
         <section className="space-y-3">
           <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-[hsl(160_70%_35%)]">
-            <Activity className="h-4 w-4" /> Cardiovagal reflex tests
+            <Activity className="h-4 w-4" />
+            <ReqTip id="deepBreathing" title="Cardiovagal reflex tests" />
           </h3>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <Field id="can-db" label="Deep-breathing ΔHR" unit="bpm" field="deepBreathingDeltaHr" />
-            <Field id="can-ei" label="E:I ratio" field="eiRatio" />
-            <Field id="can-vr" label="Valsalva ratio" field="valsalvaRatio" />
-            <Field id="can-3015" label="30:15 ratio" field="ratio3015" />
+            <Field id="can-db" label={<ReqTip id="deepBreathing" title="Deep-breathing ΔHR" />} unit="bpm" field="deepBreathingDeltaHr" />
+            <Field id="can-ei" label={<ReqTip id="eiRatio" title="E:I ratio" />} field="eiRatio" />
+            <Field id="can-vr" label={<ReqTip id="valsalva" title="Valsalva ratio" />} field="valsalvaRatio" />
+            <Field id="can-3015" label={<ReqTip id="ratio3015" title="30:15 ratio" />} field="ratio3015" />
           </div>
           {result.carts.length > 0 && (
             <div className="flex flex-wrap gap-2">
@@ -349,7 +406,8 @@ const CanMiniApp: React.FC = () => {
         {/* Orthostatic */}
         <section className="space-y-3">
           <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-[hsl(16_100%_50%)]">
-            <Stethoscope className="h-4 w-4" /> Orthostatic (stand / tilt)
+            <Stethoscope className="h-4 w-4" />
+            <ReqTip id="orthostatic" title="Orthostatic (stand / tilt)" />
           </h3>
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
             <Field id="can-ssbp" label="Supine SBP" unit="mmHg" field="supineSbp" />
@@ -405,7 +463,8 @@ const CanMiniApp: React.FC = () => {
         {/* Sudomotor */}
         <section className="space-y-3">
           <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-[hsl(200_80%_45%)]">
-            <Droplets className="h-4 w-4" /> Sudomotor (Sudoscan ESC)
+            <Droplets className="h-4 w-4" />
+            <ReqTip id="sudomotor" title="Sudomotor (Sudoscan ESC)" />
           </h3>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <Field id="can-hesc" label="Hand mean ESC" unit="µS" field="handEsc" />
@@ -413,16 +472,26 @@ const CanMiniApp: React.FC = () => {
             <Field id="can-fesc" label="Foot mean ESC" unit="µS" field="footEsc" />
             <Field id="can-flln" label="Foot LLN" unit="µS" field="footLln" />
           </div>
+          <p className="text-xs text-muted-foreground">
+            <Info className="inline h-3.5 w-3.5 mr-1 align-[-2px]" />
+            Standard generalized lower limit of normal for Sudoscan is <strong>60 µS</strong> (palms and soles). Where device- or
+            laboratory-specific norms are unavailable, 60 µS may be used as the default LLN; interpret with age/sex norms when possible.
+          </p>
+          {((result.handPct !== null && s.handLln === null) || (result.footPct !== null && s.footLln === null)) && (
+            <p className="text-[11px] text-muted-foreground">
+              Leave the LLN fields blank to use the 60 µS default automatically.
+            </p>
+          )}
           {(result.handPct !== null || result.footPct !== null) && (
             <div className="flex flex-wrap gap-2">
               {result.handPct !== null && (
                 <Badge variant="outline" className={toneClass(result.handPct < 100 ? "danger" : "ok")}>
-                  Hand {result.handPct.toFixed(0)}% of LLN
+                  Hand {result.handPct.toFixed(0)}% of LLN{result.handLlnUsedDefault ? " (60 µS default)" : ""}
                 </Badge>
               )}
               {result.footPct !== null && (
                 <Badge variant="outline" className={toneClass(result.footPct < 100 ? "danger" : "ok")}>
-                  Foot {result.footPct.toFixed(0)}% of LLN
+                  Foot {result.footPct.toFixed(0)}% of LLN{result.footLlnUsedDefault ? " (60 µS default)" : ""}
                 </Badge>
               )}
             </div>
@@ -493,7 +562,9 @@ const CanMiniApp: React.FC = () => {
           </Button>
         </section>
       </CardContent>
+      </CollapsibleContent>
     </Card>
+    </Collapsible>
   );
 };
 
