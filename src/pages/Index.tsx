@@ -40,6 +40,7 @@ import SyncopeMiniApp from "@/components/questionnaire/SyncopeMiniApp";
 import HuttMiniApp from "@/components/questionnaire/HuttMiniApp";
 import CanMiniApp from "@/components/questionnaire/CanMiniApp";
 import EcgScoringChecklist from "@/components/questionnaire/EcgScoringChecklist";
+import McassMiniApp from "@/components/questionnaire/McassMiniApp";
 import AntiArrhythmicsSection from "@/components/questionnaire/AntiArrhythmicsSection";
 import { exportToPDF, exportToWord } from "@/utils/exportUtils";
 import QuickSearch from "@/components/QuickSearch";
@@ -367,6 +368,10 @@ const IndexContent = () => {
 
               <div id="can-mini-app" className="mb-6 sm:mb-8 scroll-mt-20">
                 <CanMiniApp />
+              </div>
+
+              <div id="mcass-mini-app" className="mb-6 sm:mb-8 scroll-mt-20">
+                <McassMiniApp />
               </div>
 
 
