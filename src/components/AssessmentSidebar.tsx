@@ -61,6 +61,7 @@ const sections = [
     subsections: [
       { id: "hutt-mini-app", title: "Head-Up Tilt Table Test", icon: ArrowUpFromLine, color: "text-[hsl(340_85%_60%)]" },
       { id: "can-mini-app", title: "CAN / mCASS Mini App", icon: Heart, color: "text-[hsl(280_75%_60%)]" },
+      { id: "mcass-mini-app", title: "mCASS Autonomic Assessment", icon: Activity, color: "text-[hsl(190_80%_50%)]" },
     ],
   },
   {
