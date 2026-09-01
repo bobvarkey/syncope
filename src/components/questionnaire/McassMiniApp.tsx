@@ -1,18 +1,14 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Activity,
   AlertTriangle,
   ClipboardList,
   Download,
-  FileText,
   HeartPulse,
   Info,
   Printer,
   RotateCcw,
-  ShieldAlert,
   Stethoscope,
-  Thermometer,
-  Timer,
   Waves,
 } from "lucide-react";
 import jsPDF from "jspdf";
@@ -26,6 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   Select,
   SelectContent,
@@ -33,1550 +30,1100 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  AGE_GROUPS,
+  EI_NORMS,
+  HRDB_NORMS,
+  MCASS_SEVERITY,
+  PRT100_NORMS,
+  PRT50_NORMS,
+  QSART_SITES,
+  QsartSite,
+  Sex,
+  SUDOSCAN_GUIDE,
+  VALSALVA_RATIO_NORMS,
+  classifyAgainst,
+  classifyPrt,
+  getAgeGroup,
+  getQsartRange,
+  getRange,
+  sudoscanBand,
+} from "@/lib/autonomicNorms";
 
 /* ------------------------------------------------------------------ */
-/* Types                                                               */
+/* State                                                               */
 /* ------------------------------------------------------------------ */
 
-type SexAtBirth = "female" | "male" | "intersex" | "not_recorded";
+type Num = number | "";
 
-interface UprightReading {
-  time_minutes: number;
-  SBP_mmHg: number | "";
-  DBP_mmHg: number | "";
-  HR_bpm: number | "";
+interface Reading {
+  t: number; // minutes; 0 = supine
+  sbp: Num;
+  dbp: Num;
+  hr: Num;
   symptoms: string[];
-  symptom_notes: string;
 }
 
-interface McassState {
-  // Patient intake
-  patient_id: string;
-  assessment_date: string;
-  age_years: number | "";
-  sex_at_birth: SexAtBirth | "";
-  height_cm: number | "";
-  weight_kg: number | "";
-  test_indication: string[];
-  relevant_conditions: string[];
-  clinical_notes: string;
+interface State {
+  name: string;
+  age: Num;
+  sex: Sex | "";
+  date: string;
+  indication: string;
+  medications: string;
+  confounders: Record<string, boolean>;
 
-  // Pre-test preparation
-  last_food_hours: number | "";
-  caffeine_last_use_hours: number | "";
-  nicotine_last_use_hours: number | "";
-  alcohol_last_use_hours: number | "";
-  vigorous_exercise_last_24_hours: string;
-  medication_review_completed: boolean;
-  medication_hold_plan_prescriber_approved: string;
-  medications_affecting_autonomic_testing: string[];
-  medication_notes: string;
-  supine_rest_minutes: number | "";
-  room_temperature_celsius: number | "";
+  // cardiovagal
+  hrdb: Num;
+  ei: Num;
+  vr: Num;
+  ratio3015: Num;
+  ratio3015LLN: Num;
 
-  // Safety screen
-  fall_precautions_used: boolean;
-  supervised_standing_or_tilt: boolean;
-  active_chest_pain: boolean;
-  unstable_cardiopulmonary_status: boolean;
-  recent_syncope_with_injury_risk: boolean;
-  test_deferred_or_modified: boolean;
-  safety_notes: string;
+  // adrenergic
+  latePhaseII: string;
+  phaseIV: string;
+  prt100: Num;
+  prt50: Num;
 
-  // Symptoms
-  orthostatic_symptoms: string[];
-  sudomotor_symptoms: string[];
-  symptom_chronicity_months: number | "";
-  symptom_notes: string;
+  // orthostatic
+  readings: Reading[];
+  baselineHypertensive: boolean;
+  potsSymptomsReproduced: boolean;
+  competingCauses: string;
 
-  // Resting HRV
-  hrv_rhythm: string;
-  hrv_recording_duration_minutes: number | "";
-  hrv_artifact_percent: number | "";
-  mean_heart_rate_bpm: number | "";
-  mean_nn_interval_ms: number | "";
-  SDNN_ms: number | "";
-  SDSD_ms: number | "";
-  RMSSD_ms: number | "";
-  NN50_count: number | "";
-  pNN50_percent: number | "";
-  VLF_power_ms2: number | "";
-  LF_power_ms2: number | "";
-  HF_power_ms2: number | "";
-  LF_HF_ratio: number | "";
+  // sudomotor
+  sudoMode: "sudoscan" | "qsart";
+  sudoscan: { rHand: Num; lHand: Num; rFoot: Num; lFoot: Num };
+  qsart: Record<QsartSite, Num>;
 
-  // Deep breathing
-  db_breaths_per_minute: number | "";
-  db_inspiration_seconds: number | "";
-  db_expiration_seconds: number | "";
-  db_acceptable_cycles: number | "";
-  db_cycle_delta_hr_bpm: string;
-  db_mean_delta_hr_bpm: number | "";
-  db_EI_ratio: number | "";
-  db_age_sex_normative_result: string;
-  db_technical_quality: string;
-
-  // Valsalva
-  valsalva_performed: boolean;
-  valsalva_strain_pressure_mmHg: number | "";
-  valsalva_strain_duration_seconds: number | "";
-  valsalva_acceptable_trials: number | "";
-  valsalva_ratio: number | "";
-  valsalva_ratio_normative_result: string;
-  valsalva_beat_to_beat_bp_available: boolean;
-  valsalva_late_phase_II_recovery: string;
-  valsalva_phase_IV_overshoot: string;
-  valsalva_adrenergic_interpretation: string;
-  valsalva_notes: string;
-
-  // Standing / tilt
-  standing_performed: boolean;
-  standing_method: string;
-  standing_continuous_ecg: boolean;
-  standing_continuous_beat_to_beat_bp: boolean;
-  standing_supine_SBP_mmHg: number | "";
-  standing_supine_DBP_mmHg: number | "";
-  standing_supine_HR_bpm: number | "";
-  standing_upright_readings: UprightReading[];
-  standing_thirty_fifteen_ratio: number | "";
-  standing_thirty_fifteen_normative_result: string;
-  standing_test_terminated_early: boolean;
-  standing_termination_reason: string;
-  standing_notes: string;
-
-  // Sustained handgrip
-  handgrip_performed: boolean;
-  handgrip_maximum_voluntary_contraction_kg: number | "";
-  handgrip_target_percent_MVC: number | "";
-  handgrip_duration_seconds: number | "";
-  handgrip_baseline_DBP_mmHg: number | "";
-  handgrip_peak_DBP_mmHg: number | "";
-  handgrip_delta_DBP_mmHg: number | "";
-  handgrip_interpretation: string;
-  handgrip_notes: string;
-
-  // Sudoscan
-  sudoscan_performed: boolean;
-  sudoscan_device_model: string;
-  sudoscan_device_software_version: string;
-  sudoscan_palmar_ESC_left_uS: number | "";
-  sudoscan_palmar_ESC_right_uS: number | "";
-  sudoscan_plantar_ESC_left_uS: number | "";
-  sudoscan_plantar_ESC_right_uS: number | "";
-  sudoscan_palmar_ESC_mean_uS: number | "";
-  sudoscan_plantar_ESC_mean_uS: number | "";
-  sudoscan_hand_lower_limit_normal_uS: number | "";
-  sudoscan_foot_lower_limit_normal_uS: number | "";
-  sudoscan_hand_status: string;
-  sudoscan_foot_status: string;
-  sudoscan_quality_flags: string[];
-  sudoscan_quality_notes: string;
-
-  // Clinician review / scoring
-  clinician_cardiovagal_score: number | "";
-  clinician_adrenergic_score: number | "";
-  clinician_sudomotor_score: number | "";
-  clinician_override_reason: string;
-  clinician_interpretive_summary: string;
+  notes: string;
 }
 
-const initialState: McassState = {
-  patient_id: "",
-  assessment_date: new Date().toISOString().split("T")[0],
-  age_years: "",
-  sex_at_birth: "",
-  height_cm: "",
-  weight_kg: "",
-  test_indication: [],
-  relevant_conditions: [],
-  clinical_notes: "",
+const CONFOUNDERS: { key: string; label: string }[] = [
+  { key: "beta_blocker", label: "Beta-blocker" },
+  { key: "non_dhp_ccb", label: "Non-dihydropyridine CCB" },
+  { key: "ivabradine", label: "Ivabradine" },
+  { key: "digoxin", label: "Digoxin" },
+  { key: "atrial_fibrillation", label: "Atrial fibrillation" },
+  { key: "pacemaker", label: "Pacemaker" },
+  { key: "dehydration", label: "Dehydration" },
+  { key: "acute_illness", label: "Acute illness" },
+];
 
-  last_food_hours: "",
-  caffeine_last_use_hours: "",
-  nicotine_last_use_hours: "",
-  alcohol_last_use_hours: "",
-  vigorous_exercise_last_24_hours: "",
-  medication_review_completed: false,
-  medication_hold_plan_prescriber_approved: "",
-  medications_affecting_autonomic_testing: [],
-  medication_notes: "",
-  supine_rest_minutes: "",
-  room_temperature_celsius: "",
+const SYMPTOMS = [
+  "Light-headedness",
+  "Weakness",
+  "Faintness",
+  "Presyncope",
+  "Syncope",
+];
 
-  fall_precautions_used: false,
-  supervised_standing_or_tilt: false,
-  active_chest_pain: false,
-  unstable_cardiopulmonary_status: false,
-  recent_syncope_with_injury_risk: false,
-  test_deferred_or_modified: false,
-  safety_notes: "",
+const TIMEPOINTS = [0, 1, 3, 5, 10];
 
-  orthostatic_symptoms: [],
-  sudomotor_symptoms: [],
-  symptom_chronicity_months: "",
-  symptom_notes: "",
+const STORAGE_KEY = "syncdx-mcass-analyzer";
 
-  hrv_rhythm: "sinus",
-  hrv_recording_duration_minutes: "",
-  hrv_artifact_percent: "",
-  mean_heart_rate_bpm: "",
-  mean_nn_interval_ms: "",
-  SDNN_ms: "",
-  SDSD_ms: "",
-  RMSSD_ms: "",
-  NN50_count: "",
-  pNN50_percent: "",
-  VLF_power_ms2: "",
-  LF_power_ms2: "",
-  HF_power_ms2: "",
-  LF_HF_ratio: "",
+const initialState = (): State => ({
+  name: "",
+  age: "",
+  sex: "",
+  date: new Date().toISOString().slice(0, 10),
+  indication: "",
+  medications: "",
+  confounders: {},
+  hrdb: "",
+  ei: "",
+  vr: "",
+  ratio3015: "",
+  ratio3015LLN: "",
+  latePhaseII: "",
+  phaseIV: "",
+  prt100: "",
+  prt50: "",
+  readings: TIMEPOINTS.map((t) => ({ t, sbp: "", dbp: "", hr: "", symptoms: [] })),
+  baselineHypertensive: false,
+  potsSymptomsReproduced: false,
+  competingCauses: "",
+  sudoMode: "sudoscan",
+  sudoscan: { rHand: "", lHand: "", rFoot: "", lFoot: "" },
+  qsart: { forearm: "", proximal_leg: "", distal_leg: "", foot: "" },
+  notes: "",
+});
 
-  db_breaths_per_minute: "",
-  db_inspiration_seconds: "",
-  db_expiration_seconds: "",
-  db_acceptable_cycles: "",
-  db_cycle_delta_hr_bpm: "",
-  db_mean_delta_hr_bpm: "",
-  db_EI_ratio: "",
-  db_age_sex_normative_result: "",
-  db_technical_quality: "",
+const num = (v: string): Num => (v === "" ? "" : Number(v));
+const isNum = (v: Num): v is number => v !== "" && !Number.isNaN(Number(v));
 
-  valsalva_performed: false,
-  valsalva_strain_pressure_mmHg: "",
-  valsalva_strain_duration_seconds: "",
-  valsalva_acceptable_trials: "",
-  valsalva_ratio: "",
-  valsalva_ratio_normative_result: "",
-  valsalva_beat_to_beat_bp_available: false,
-  valsalva_late_phase_II_recovery: "",
-  valsalva_phase_IV_overshoot: "",
-  valsalva_adrenergic_interpretation: "",
-  valsalva_notes: "",
+/* ------------------------------------------------------------------ */
+/* Presentational helpers                                              */
+/* ------------------------------------------------------------------ */
 
-  standing_performed: false,
-  standing_method: "",
-  standing_continuous_ecg: false,
-  standing_continuous_beat_to_beat_bp: false,
-  standing_supine_SBP_mmHg: "",
-  standing_supine_DBP_mmHg: "",
-  standing_supine_HR_bpm: "",
-  standing_upright_readings: [],
-  standing_thirty_fifteen_ratio: "",
-  standing_thirty_fifteen_normative_result: "",
-  standing_test_terminated_early: false,
-  standing_termination_reason: "",
-  standing_notes: "",
-
-  handgrip_performed: false,
-  handgrip_maximum_voluntary_contraction_kg: "",
-  handgrip_target_percent_MVC: "",
-  handgrip_duration_seconds: "",
-  handgrip_baseline_DBP_mmHg: "",
-  handgrip_peak_DBP_mmHg: "",
-  handgrip_delta_DBP_mmHg: "",
-  handgrip_interpretation: "",
-  handgrip_notes: "",
-
-  sudoscan_performed: false,
-  sudoscan_device_model: "",
-  sudoscan_device_software_version: "",
-  sudoscan_palmar_ESC_left_uS: "",
-  sudoscan_palmar_ESC_right_uS: "",
-  sudoscan_plantar_ESC_left_uS: "",
-  sudoscan_plantar_ESC_right_uS: "",
-  sudoscan_palmar_ESC_mean_uS: "",
-  sudoscan_plantar_ESC_mean_uS: "",
-  sudoscan_hand_lower_limit_normal_uS: "",
-  sudoscan_foot_lower_limit_normal_uS: "",
-  sudoscan_hand_status: "",
-  sudoscan_foot_status: "",
-  sudoscan_quality_flags: [],
-  sudoscan_quality_notes: "",
-
-  clinician_cardiovagal_score: "",
-  clinician_adrenergic_score: "",
-  clinician_sudomotor_score: "",
-  clinician_override_reason: "",
-  clinician_interpretive_summary: "",
+const StatusBadge = ({ status }: { status: string }) => {
+  if (status === "unknown") return <Badge variant="outline">—</Badge>;
+  if (status === "normal") return <Badge className="bg-emerald-600 hover:bg-emerald-600">Normal</Badge>;
+  if (status === "high") return <Badge className="bg-amber-500 hover:bg-amber-500">Borderline / high</Badge>;
+  return <Badge variant="destructive">Abnormal (below LLN)</Badge>;
 };
 
-/* ------------------------------------------------------------------ */
-/* Static option lists (from spec)                                     */
-/* ------------------------------------------------------------------ */
-
-const TEST_INDICATIONS = [
-  "Orthostatic intolerance",
-  "Syncope or presyncope",
-  "Suspected neurogenic orthostatic hypotension",
-  "Suspected POTS",
-  "Diabetes CAN screening",
-  "Peripheral neuropathy",
-  "Small-fiber neuropathy",
-  "Parkinson disease or parkinsonism",
-  "Multiple system atrophy",
-  "Amyloidosis",
-  "Autoimmune autonomic ganglionopathy",
-  "Unexplained tachycardia",
-  "Abnormal sweating",
-  "Research protocol",
-  "Other",
-];
-
-const RELEVANT_CONDITIONS = [
-  "Diabetes mellitus",
-  "Prediabetes",
-  "Peripheral neuropathy",
-  "Small-fiber neuropathy",
-  "Parkinsonism",
-  "Multiple system atrophy",
-  "Amyloidosis",
-  "Autoimmune autonomic ganglionopathy",
-  "Spinal cord disorder",
-  "Heart failure",
-  "Coronary artery disease",
-  "Arrhythmia",
-  "Chronic kidney disease",
-  "Thyroid disease",
-  "Pulmonary disease",
-  "Other",
-  "None known",
-];
-
-const MEDICATIONS_AFFECTING = [
-  "Beta blocker",
-  "Alpha agonist",
-  "Alpha blocker",
-  "Sympathomimetic",
-  "Anticholinergic",
-  "Cholinergic agent",
-  "Diuretic",
-  "Fludrocortisone",
-  "Midodrine",
-  "Ivabradine",
-  "Digoxin",
-  "Non-dihydropyridine calcium-channel blocker",
-  "Antidepressant",
-  "Antihistamine",
-  "Over-the-counter cold medication",
-  "Antiarrhythmic",
-  "Dopaminergic medication",
-  "Other",
-  "None known",
-];
-
-const ORTHOSTATIC_SYMPTOMS = [
-  "Light-headedness",
-  "Weakness",
-  "Blurred vision",
-  "Presyncope",
-  "Syncope",
-  "Palpitations",
-  "Tremulousness",
-  "Dyspnea",
-  "Chest discomfort",
-  "Nausea",
-  "Headache",
-  "Fatigue",
-  "None",
-];
-
-const SUDOMOTOR_SYMPTOMS = [
-  "Reduced sweating",
-  "Excessive sweating",
-  "Heat intolerance",
-  "Distal dry skin",
-  "Night sweats",
-  "None",
-];
-
-const UPRIGHT_SYMPTOMS = [
-  "None",
-  "Light-headedness",
-  "Weakness",
-  "Blurred vision",
-  "Presyncope",
-  "Syncope",
-  "Palpitations",
-  "Tremulousness",
-  "Nausea",
-  "Headache",
-  "Dyspnea",
-  "Chest discomfort",
-  "Other",
-];
-
-const SUDOSCAN_QUALITY_FLAGS = [
-  "None",
-  "Poor contact",
-  "Callus",
-  "Skin disease",
-  "Edema",
-  "Peripheral vascular disease",
-  "Temperature issue",
-  "Amputation or missing site",
-  "Other",
-];
-
-const CHRONOTROPIC_MEDS = [
-  "Beta blocker",
-  "Ivabradine",
-  "Digoxin",
-  "Non-dihydropyridine calcium-channel blocker",
-  "Antiarrhythmic",
-];
-
-/* ------------------------------------------------------------------ */
-/* Derived calculations                                                */
-/* ------------------------------------------------------------------ */
-
-const num = (v: number | ""): number | null => (v === "" || v === null || isNaN(v as number) ? null : Number(v));
-
-function mean(arr: number[]): number | null {
-  if (arr.length === 0) return null;
-  return arr.reduce((a, b) => a + b, 0) / arr.length;
-}
-
-function parseDeltaHrList(s: string): number[] {
-  return s
-    .split(/[,\s]+/)
-    .map((x) => parseFloat(x))
-    .filter((x) => !isNaN(x));
-}
-
-interface Derived {
-  maxSystolicDrop: number | null;
-  maxDiastolicDrop: number | null;
-  maxHrIncrease: number | null;
-  threeMinSystolicDrop: number | null;
-  threeMinDiastolicDrop: number | null;
-  deltaHrDeltaSbp: number | null;
-  ohPresent: boolean | null;
-  ohDelayed: boolean | null;
-  hrCompensationInadequate: boolean | null;
-  neurogenicPattern: boolean | null;
-  potsSupported: boolean | null;
-  potsIndeterminate: boolean | null;
-  handPercentLLN: number | null;
-  footPercentLLN: number | null;
-  handBelow50: boolean;
-  footBelow50: boolean;
-  abnormalCardiovagalCount: number;
-  canStage: string;
-  severityCategory: string;
-  completeness: string;
-  qualityWarnings: string[];
-  pattern: string;
-}
-
-function computeDerived(s: McassState): Derived {
-  const warnings: string[] = [];
-
-  // Rhythm / HRV quality
-  if (s.hrv_rhythm && s.hrv_rhythm !== "sinus") {
-    warnings.push(
-      "Standard time- and frequency-domain HRV metrics may be uninterpretable or misleading in non-sinus rhythm, paced rhythm, or frequent ectopy."
-    );
-  }
-  const hrvDur = num(s.hrv_recording_duration_minutes);
-  if (hrvDur !== null && hrvDur < 5) {
-    warnings.push("Resting HRV duration is below 5 minutes; interpret short-term HRV measures cautiously.");
-  }
-  const artifact = num(s.hrv_artifact_percent);
-  if (artifact !== null && artifact > 5) {
-    warnings.push("Artifact burden is above a typical quality threshold. Review ECG data and preprocessing before interpretation.");
-  }
-  const cycles = num(s.db_acceptable_cycles);
-  if (cycles !== null && cycles < 6) {
-    warnings.push("Fewer than six acceptable deep-breathing cycles were recorded. Repeat testing or interpret cautiously.");
-  }
-  if (s.sudoscan_hand_status === "unknown no norms" || s.sudoscan_foot_status === "unknown no norms") {
-    warnings.push(
-      "Device-specific lower limits of normal are unavailable. Do not assign definitive sudomotor severity solely from broad screening cutoffs."
-    );
-  }
-  const chronoHit = s.medications_affecting_autonomic_testing.some((m) => CHRONOTROPIC_MEDS.includes(m));
-  if (chronoHit) {
-    warnings.push(
-      "Chronotropic medication exposure can confound deep-breathing HR response, standing HR response, POTS screening, and neurogenic-OH interpretation."
-    );
-  }
-  const sudoscanQualityIssue = s.sudoscan_quality_flags.some(
-    (f) =>
-      f !== "None" &&
-      ["Poor contact", "Callus", "Skin disease", "Edema", "Peripheral vascular disease", "Temperature issue", "Amputation or missing site"].includes(f)
-  );
-  if (sudoscanQualityIssue) {
-    warnings.push("Sudoscan quality issue detected. ESC interpretation and sudomotor scoring may be limited.");
-  }
-
-  // Standing derived
-  const supineSBP = num(s.standing_supine_SBP_mmHg);
-  const supineDBP = num(s.standing_supine_DBP_mmHg);
-  const supineHR = num(s.standing_supine_HR_bpm);
-  const readings = s.standing_upright_readings.filter(
-    (r) => r.SBP_mmHg !== "" && r.DBP_mmHg !== "" && r.HR_bpm !== ""
-  );
-
-  let maxSystolicDrop: number | null = null;
-  let maxDiastolicDrop: number | null = null;
-  let maxHrIncrease: number | null = null;
-  let threeMinSystolicDrop: number | null = null;
-  let threeMinDiastolicDrop: number | null = null;
-
-  if (supineSBP !== null && readings.length > 0) {
-    const sbps = readings.map((r) => Number(r.SBP_mmHg));
-    maxSystolicDrop = supineSBP - Math.min(...sbps);
-    const early = readings.filter((r) => r.time_minutes <= 3).map((r) => Number(r.SBP_mmHg));
-    if (early.length > 0) threeMinSystolicDrop = supineSBP - Math.min(...early);
-  }
-  if (supineDBP !== null && readings.length > 0) {
-    const dbps = readings.map((r) => Number(r.DBP_mmHg));
-    maxDiastolicDrop = supineDBP - Math.min(...dbps);
-    const early = readings.filter((r) => r.time_minutes <= 3).map((r) => Number(r.DBP_mmHg));
-    if (early.length > 0) threeMinDiastolicDrop = supineDBP - Math.min(...early);
-  }
-  if (supineHR !== null && readings.length > 0) {
-    const hrs = readings.map((r) => Number(r.HR_bpm));
-    maxHrIncrease = Math.max(...hrs) - supineHR;
-  }
-
-  let deltaHrDeltaSbp: number | null = null;
-  if (maxHrIncrease !== null && maxSystolicDrop !== null && maxSystolicDrop > 0) {
-    deltaHrDeltaSbp = maxHrIncrease / maxSystolicDrop;
-  }
-
-  // OH logic
-  let ohPresent: boolean | null = null;
-  let ohDelayed: boolean | null = null;
-  if (threeMinSystolicDrop !== null && threeMinDiastolicDrop !== null) {
-    const earlyOH = threeMinSystolicDrop >= 20 || threeMinDiastolicDrop >= 10;
-    const anyOH = (maxSystolicDrop !== null && maxSystolicDrop >= 20) || (maxDiastolicDrop !== null && maxDiastolicDrop >= 10);
-    ohPresent = earlyOH || anyOH;
-    ohDelayed = !earlyOH && anyOH;
-  }
-
-  // HR compensation
-  let hrCompensationInadequate: boolean | null = null;
-  if (maxHrIncrease !== null) hrCompensationInadequate = maxHrIncrease < 15;
-
-  // Neurogenic pattern
-  let neurogenicPattern: boolean | null = null;
-  if (ohPresent === true && maxHrIncrease !== null && !chronoHit) {
-    neurogenicPattern = maxHrIncrease < 15 || (deltaHrDeltaSbp !== null && deltaHrDeltaSbp < 0.5);
-  }
-
-  // POTS
-  const age = num(s.age_years);
-  let potsSupported: boolean | null = null;
-  let potsIndeterminate = false;
-  if (maxHrIncrease !== null && age !== null) {
-    const threshold = age >= 20 ? 30 : age >= 12 ? 40 : null;
-    if (threshold !== null) {
-      const ohExplains = ohPresent === true;
-      if (maxHrIncrease >= threshold && !ohExplains) potsSupported = true;
-      else if (ohExplains) potsIndeterminate = true;
-      else potsSupported = false;
-    }
-  }
-
-  // Sudoscan
-  const palmarMean = num(s.sudoscan_palmar_ESC_mean_uS);
-  const plantarMean = num(s.sudoscan_plantar_ESC_mean_uS);
-  const handLLN = num(s.sudoscan_hand_lower_limit_normal_uS);
-  const footLLN = num(s.sudoscan_foot_lower_limit_normal_uS);
-  let handPercentLLN: number | null = null;
-  let footPercentLLN: number | null = null;
-  if (palmarMean !== null && handLLN !== null && handLLN > 0) handPercentLLN = (100 * palmarMean) / handLLN;
-  if (plantarMean !== null && footLLN !== null && footLLN > 0) footPercentLLN = (100 * plantarMean) / footLLN;
-  const handBelow50 = handPercentLLN !== null && handPercentLLN < 50;
-  const footBelow50 = footPercentLLN !== null && footPercentLLN < 50;
-
-  // CAN stage
-  let abnormalCardiovagalCount = 0;
-  if (s.db_age_sex_normative_result === "abnormal") abnormalCardiovagalCount++;
-  if (s.valsalva_ratio_normative_result === "abnormal") abnormalCardiovagalCount++;
-  if (s.standing_thirty_fifteen_normative_result === "abnormal") abnormalCardiovagalCount++;
-
-  let canStage = "No evidence of CAN";
-  if (abnormalCardiovagalCount >= 1 && ohPresent === true) canStage = "Severe or advanced CAN";
-  else if (abnormalCardiovagalCount >= 2) canStage = "Definite or confirmed CAN";
-  else if (abnormalCardiovagalCount === 1) canStage = "Possible or early CAN";
-
-  // Severity category
-  const cv = num(s.clinician_cardiovagal_score);
-  const ad = num(s.clinician_adrenergic_score);
-  const su = num(s.clinician_sudomotor_score);
-  const total = cv !== null && ad !== null && su !== null ? cv + ad + su : null;
-
-  let severityCategory = "Not calculated";
-  if (total !== null) {
-    if (total === 0) severityCategory = "Normal";
-    else if (total <= 3) severityCategory = "Mild autonomic dysfunction";
-    else if (total <= 6) severityCategory = "Moderate autonomic dysfunction";
-    else severityCategory = "Severe autonomic dysfunction";
-  }
-
-  // Completeness
-  let completeness = "Not interpretable";
-  const cvComplete = cv !== null;
-  const adComplete = ad !== null;
-  const suComplete = su !== null;
-  if (cvComplete && adComplete && suComplete) completeness = "Complete mCASS";
-  else if (cvComplete || adComplete || suComplete) completeness = "Partial autonomic profile";
-
-  // Pattern
-  let pattern = "Not assessed";
-  if (cv !== null && ad !== null && su !== null) {
-    const nonzero = [cv > 0, ad > 0, su > 0].filter(Boolean).length;
-    if (nonzero >= 2) pattern = "Generalized autonomic dysfunction";
-    else if (cv > 0 && cv >= ad && cv >= su) pattern = "Cardiovagal-predominant";
-    else if (ad > 0 && ad >= cv && ad >= su) pattern = "Adrenergic-predominant";
-    else if (su > 0 && su >= cv && su >= ad) pattern = "Sudomotor-predominant";
-    else pattern = "No significant autonomic dysfunction";
-  }
-
-  return {
-    maxSystolicDrop,
-    maxDiastolicDrop,
-    maxHrIncrease,
-    threeMinSystolicDrop,
-    threeMinDiastolicDrop,
-    deltaHrDeltaSbp,
-    ohPresent,
-    ohDelayed,
-    hrCompensationInadequate,
-    neurogenicPattern,
-    potsSupported,
-    potsIndeterminate,
-    handPercentLLN,
-    footPercentLLN,
-    handBelow50,
-    footBelow50,
-    abnormalCardiovagalCount,
-    canStage,
-    severityCategory,
-    completeness,
-    qualityWarnings: warnings,
-    pattern,
-  };
-}
-
-/* ------------------------------------------------------------------ */
-/* Small UI helpers                                                    */
-/* ------------------------------------------------------------------ */
-
-function Field({ label, children, hint }: { label: string; children: React.ReactNode; hint?: string }) {
-  return (
-    <div className="space-y-1.5">
-      <Label className="text-sm font-medium">{label}</Label>
-      {children}
-      {hint && <p className="text-[11px] text-muted-foreground">{hint}</p>}
-    </div>
-  );
-}
-
-function MultiSelect({
-  options,
-  value,
-  onChange,
+const NormField = ({
   label,
-}: {
-  options: string[];
-  value: string[];
-  onChange: (v: string[]) => void;
-  label: string;
-}) {
-  const toggle = (opt: string) => {
-    if (opt === "None" || opt === "None known") {
-      onChange([opt]);
-      return;
-    }
-    const next = value.includes(opt) ? value.filter((x) => x !== opt) : [...value.filter((x) => x !== "None" && x !== "None known"), opt];
-    onChange(next);
-  };
-  return (
-    <div className="space-y-2">
-      <Label className="text-sm font-medium">{label}</Label>
-      <div className="flex flex-wrap gap-1.5">
-        {options.map((opt) => {
-          const active = value.includes(opt);
-          return (
-            <button
-              key={opt}
-              type="button"
-              onClick={() => toggle(opt)}
-              className={`rounded-full border px-3 py-1 text-xs transition-colors ${
-                active
-                  ? "bg-primary text-primary-foreground border-primary"
-                  : "bg-background text-muted-foreground border-border hover:bg-muted"
-              }`}
-            >
-              {opt}
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-function YesNoSelect({
+  unit,
   value,
   onChange,
-  options = ["yes", "no", "unknown"],
+  range,
+  status,
+  hint,
 }: {
-  value: string;
-  onChange: (v: string) => void;
-  options?: string[];
-}) {
-  return (
-    <Select value={value || undefined} onValueChange={onChange}>
-      <SelectTrigger className="w-full">
-        <SelectValue placeholder="Select…" />
-      </SelectTrigger>
-      <SelectContent>
-        {options.map((o) => (
-          <SelectItem key={o} value={o}>
-            {o}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
-  );
-}
-
-function BoolCheck({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
-  return (
-    <label className="flex items-start gap-2 text-sm cursor-pointer">
-      <Checkbox checked={checked} onCheckedChange={(v) => onChange(!!v)} className="mt-0.5" />
-      <span>{label}</span>
-    </label>
-  );
-}
+  label: string;
+  unit?: string;
+  value: Num;
+  onChange: (v: Num) => void;
+  range: { LLN: number; ULN: number } | null;
+  status: string;
+  hint?: string;
+}) => (
+  <div className="space-y-1.5">
+    <Label className="text-sm font-medium">
+      {label} {unit && <span className="text-muted-foreground font-normal">({unit})</span>}
+    </Label>
+    <Input
+      type="number"
+      step="0.01"
+      inputMode="decimal"
+      value={value === "" ? "" : value}
+      onChange={(e) => onChange(num(e.target.value))}
+      placeholder={range ? `LLN ${range.LLN}` : "—"}
+    />
+    <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
+      <span>
+        {range ? `Reference ${range.LLN} – ${range.ULN}` : hint || "Select age & sex for norms"}
+      </span>
+      <StatusBadge status={status} />
+    </div>
+  </div>
+);
 
 /* ------------------------------------------------------------------ */
-/* Main component                                                     */
+/* Component                                                           */
 /* ------------------------------------------------------------------ */
 
-export default function McassMiniApp() {
-  const [state, setState] = useState<McassState>(initialState);
-  const [activeTab, setActiveTab] = useState("intake");
+const McassMiniApp = () => {
+  const [s, setS] = useState<State>(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) return { ...initialState(), ...JSON.parse(raw) };
+    } catch {
+      /* ignore */
+    }
+    return initialState();
+  });
 
-  const set = <K extends keyof McassState>(key: K, value: McassState[K]) =>
-    setState((prev) => ({ ...prev, [key]: value }));
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
+    } catch {
+      /* ignore */
+    }
+  }, [s]);
 
-  const derived = useMemo(() => computeDerived(state), [state]);
+  const set = <K extends keyof State>(k: K, v: State[K]) => setS((p) => ({ ...p, [k]: v }));
 
-  const totalScore =
-    num(state.clinician_cardiovagal_score) !== null &&
-    num(state.clinician_adrenergic_score) !== null &&
-    num(state.clinician_sudomotor_score) !== null
-      ? (num(state.clinician_cardiovagal_score) as number) +
-        (num(state.clinician_adrenergic_score) as number) +
-        (num(state.clinician_sudomotor_score) as number)
-      : null;
+  const ageGroup = getAgeGroup(s.age);
+  const sex = s.sex || "";
 
-  const hardStops: string[] = [];
-  if (state.test_deferred_or_modified)
-    hardStops.push("The test was deferred or modified. Do not generate a complete mCASS without clinician confirmation of data validity.");
-  if (state.unstable_cardiopulmonary_status)
-    hardStops.push("Potential safety concern. Defer or modify testing pending clinician review.");
-  if (state.active_chest_pain) hardStops.push("Potential safety concern. Defer testing and obtain appropriate clinical evaluation.");
+  /* --------------------------- Cardiovagal ------------------------- */
+  const hrdbRange = getRange(HRDB_NORMS, s.age, sex);
+  const eiRange = getRange(EI_NORMS, s.age, sex);
+  const vrRange = getRange(VALSALVA_RATIO_NORMS, s.age, sex);
+  const prt100Range = getRange(PRT100_NORMS, s.age, sex);
+  const prt50Range = getRange(PRT50_NORMS, s.age, sex);
 
-  const addReading = () => {
-    set("standing_upright_readings", [
-      ...state.standing_upright_readings,
-      { time_minutes: 1, SBP_mmHg: "", DBP_mmHg: "", HR_bpm: "", symptoms: [], symptom_notes: "" },
-    ]);
+  const hrdbStatus = classifyAgainst(s.hrdb, hrdbRange);
+  const eiStatus = classifyAgainst(s.ei, eiRange);
+  const vrStatus = classifyAgainst(s.vr, vrRange);
+  const prt100Status = classifyPrt(s.prt100, prt100Range);
+  const prt50Status = classifyPrt(s.prt50, prt50Range);
+
+  const r3015Status: string = useMemo(() => {
+    if (!isNum(s.ratio3015) || !isNum(s.ratio3015LLN)) return "unknown";
+    return Number(s.ratio3015) >= Number(s.ratio3015LLN) ? "normal" : "low";
+  }, [s.ratio3015, s.ratio3015LLN]);
+
+  const cardiovagal = useMemo(() => {
+    // severity per test: 0 normal, 1 mild (within 10% below LLN), 2 clearly abnormal
+    const grade = (v: Num, lln: number | null): 0 | 1 | 2 | null => {
+      if (!isNum(v) || lln === null) return null;
+      const val = Number(v);
+      if (val >= lln) return 0;
+      return val >= lln * 0.9 ? 1 : 2;
+    };
+    const grades = [
+      grade(s.hrdb, hrdbRange?.LLN ?? null),
+      grade(s.ei, eiRange?.LLN ?? null),
+      grade(s.vr, vrRange?.LLN ?? null),
+      grade(s.ratio3015, isNum(s.ratio3015LLN) ? Number(s.ratio3015LLN) : null),
+    ].filter((g): g is 0 | 1 | 2 => g !== null);
+
+    const mild = grades.filter((g) => g === 1).length;
+    const severe = grades.filter((g) => g === 2).length;
+    let score = 0;
+    if (severe >= 2 || (severe >= 1 && mild >= 1)) score = 3;
+    else if (severe === 1 || mild >= 2) score = 2;
+    else if (mild === 1) score = 1;
+    return { score, mild, severe, tested: grades.length };
+  }, [s.hrdb, s.ei, s.vr, s.ratio3015, s.ratio3015LLN, hrdbRange, eiRange, vrRange]);
+
+  /* --------------------------- Orthostatic ------------------------- */
+  const ortho = useMemo(() => {
+    const supine = s.readings.find((x) => x.t === 0);
+    const upright = s.readings.filter((x) => x.t > 0);
+    if (!supine || !isNum(supine.sbp) || !isNum(supine.dbp)) {
+      return {
+        available: false,
+        maxSbpFall: null as number | null,
+        maxDbpFall: null as number | null,
+        maxHrRise: null as number | null,
+        classical: false,
+        delayed: false,
+        attenuatedHR: false,
+        timeToOH: null as number | null,
+        maxSustainedHrRise: null as number | null,
+        timeToPots: null as number | null,
+        symptoms: [] as string[],
+      };
+    }
+    const sbp0 = Number(supine.sbp);
+    const dbp0 = Number(supine.dbp);
+    const hr0 = isNum(supine.hr) ? Number(supine.hr) : null;
+
+    const sbpThresh = s.baselineHypertensive && sbp0 >= 150 ? 30 : 20;
+    const dbpThresh = s.baselineHypertensive && dbp0 >= 90 ? 15 : 10;
+
+    let maxSbpFall = 0;
+    let maxDbpFall = 0;
+    let maxHrRise: number | null = null;
+    let timeToOH: number | null = null;
+    let classical = false;
+    let delayed = false;
+    let timeToPots: number | null = null;
+
+    upright.forEach((rd) => {
+      if (isNum(rd.sbp)) maxSbpFall = Math.max(maxSbpFall, sbp0 - Number(rd.sbp));
+      if (isNum(rd.dbp)) maxDbpFall = Math.max(maxDbpFall, dbp0 - Number(rd.dbp));
+      if (hr0 !== null && isNum(rd.hr)) {
+        const rise = Number(rd.hr) - hr0;
+        maxHrRise = maxHrRise === null ? rise : Math.max(maxHrRise, rise);
+      }
+      const meets =
+        (isNum(rd.sbp) && sbp0 - Number(rd.sbp) >= sbpThresh) ||
+        (isNum(rd.dbp) && dbp0 - Number(rd.dbp) >= dbpThresh);
+      if (meets && timeToOH === null) timeToOH = rd.t;
+      if (meets && rd.t <= 3) classical = true;
+      if (meets && rd.t > 3) delayed = true;
+    });
+
+    const potsThreshold = isNum(s.age) && Number(s.age) >= 12 && Number(s.age) <= 19 ? 40 : 30;
+    upright
+      .filter((rd) => rd.t <= 10)
+      .forEach((rd) => {
+        if (hr0 !== null && isNum(rd.hr) && Number(rd.hr) - hr0 >= potsThreshold && timeToPots === null) {
+          timeToPots = rd.t;
+        }
+      });
+
+    return {
+      available: true,
+      maxSbpFall,
+      maxDbpFall,
+      maxHrRise,
+      classical,
+      delayed: delayed && !classical,
+      attenuatedHR: (classical || delayed) && maxHrRise !== null && maxHrRise < 15,
+      timeToOH,
+      maxSustainedHrRise: maxHrRise,
+      timeToPots,
+      potsThreshold,
+      symptoms: Array.from(new Set(upright.flatMap((rd) => rd.symptoms))),
+    } as any;
+  }, [s.readings, s.baselineHypertensive, s.age]);
+
+  /* --------------------------- Adrenergic -------------------------- */
+  const adrenergic = useMemo(() => {
+    let valsalvaSeverity = 0;
+    const flags: string[] = [];
+    if (s.latePhaseII === "reduced") {
+      valsalvaSeverity = Math.max(valsalvaSeverity, 1);
+      flags.push("Reduced late phase II recovery");
+    }
+    if (s.latePhaseII === "absent") {
+      valsalvaSeverity = 2;
+      flags.push("Absent late phase II recovery");
+    }
+    if (s.phaseIV === "reduced") {
+      valsalvaSeverity = Math.max(valsalvaSeverity, 1);
+      flags.push("Reduced phase IV overshoot");
+    }
+    if (s.phaseIV === "absent") {
+      valsalvaSeverity = 2;
+      flags.push("Absent phase IV overshoot");
+    }
+    if (prt100Status === "high") {
+      valsalvaSeverity = Math.max(valsalvaSeverity, 1);
+      flags.push("Prolonged PRT100");
+    }
+    if (prt50Status === "high") {
+      valsalvaSeverity = Math.max(valsalvaSeverity, 1);
+      flags.push("Prolonged PRT50");
+    }
+    if (flags.length >= 2) valsalvaSeverity = Math.max(valsalvaSeverity, 2);
+
+    let score = 0;
+    if (ortho.classical) score = 2;
+    else if (ortho.delayed) score = 1;
+
+    if (ortho.classical && (ortho.attenuatedHR || valsalvaSeverity >= 1)) score = 3;
+    if (ortho.classical && ortho.attenuatedHR && valsalvaSeverity >= 2) score = 4;
+    if (!ortho.classical && !ortho.delayed) score = valsalvaSeverity >= 2 ? 2 : valsalvaSeverity;
+    score = Math.min(4, score);
+
+    return { score, valsalvaSeverity, flags };
+  }, [s.latePhaseII, s.phaseIV, prt100Status, prt50Status, ortho]);
+
+  /* --------------------------- Sudomotor --------------------------- */
+  const sudomotor = useMemo(() => {
+    let handAbn = false;
+    let footAbn = false;
+    let handSevere = false;
+    let footSevere = false;
+    let tested = false;
+    const detail: string[] = [];
+
+    if (s.sudoMode === "sudoscan") {
+      const hands = [s.sudoscan.rHand, s.sudoscan.lHand].filter(isNum) as number[];
+      const feet = [s.sudoscan.rFoot, s.sudoscan.lFoot].filter(isNum) as number[];
+      tested = hands.length > 0 || feet.length > 0;
+      const worstHand = hands.length ? Math.min(...hands) : null;
+      const worstFoot = feet.length ? Math.min(...feet) : null;
+      if (worstHand !== null) {
+        handAbn = worstHand < 60;
+        handSevere = worstHand < 40;
+        detail.push(`Hands ${worstHand} µS`);
+      }
+      if (worstFoot !== null) {
+        footAbn = worstFoot < 60;
+        footSevere = worstFoot < 40;
+        detail.push(`Feet ${worstFoot} µS`);
+      }
+    } else {
+      const handSites: QsartSite[] = ["forearm"];
+      const footSites: QsartSite[] = ["distal_leg", "foot"];
+      const evalSite = (site: QsartSite) => {
+        const v = s.qsart[site];
+        const range = getQsartRange(s.age, sex, site);
+        if (!isNum(v) || !range) return null;
+        tested = true;
+        detail.push(`${site.replace("_", " ")} ${v} µL (LLN ${range.LLN})`);
+        return { abnormal: Number(v) < range.LLN, severe: Number(v) < range.LLN * 0.5 };
+      };
+      handSites.forEach((site) => {
+        const res = evalSite(site);
+        if (res) {
+          handAbn = handAbn || res.abnormal;
+          handSevere = handSevere || res.severe;
+        }
+      });
+      footSites.forEach((site) => {
+        const res = evalSite(site);
+        if (res) {
+          footAbn = footAbn || res.abnormal;
+          footSevere = footSevere || res.severe;
+        }
+      });
+      const proximal = evalSite("proximal_leg");
+      if (proximal) {
+        footAbn = footAbn || proximal.abnormal;
+        footSevere = footSevere || proximal.severe;
+      }
+    }
+
+    let score = 0;
+    const anySevere = handSevere || footSevere;
+    if (handAbn && footAbn && anySevere) score = 3;
+    else if ((handAbn && footAbn) || (anySevere && (handAbn || footAbn))) score = 2;
+    else if (handAbn || footAbn || anySevere) score = 1;
+
+    return { score, handAbn, footAbn, handSevere, footSevere, tested, detail };
+  }, [s.sudoMode, s.sudoscan, s.qsart, s.age, sex]);
+
+  /* --------------------------- Composite --------------------------- */
+  const total = cardiovagal.score + adrenergic.score + sudomotor.score;
+  const severity = MCASS_SEVERITY(total);
+
+  const canStage = useMemo(() => {
+    const abnormal = [hrdbStatus === "low", vrStatus === "low", r3015Status === "low"].filter(Boolean)
+      .length;
+    if (abnormal >= 1 && ortho.classical) return { count: abnormal, stage: "Severe / advanced CAN" };
+    if (abnormal === 0) return { count: 0, stage: "No evidence of CAN" };
+    if (abnormal === 1) return { count: 1, stage: "Possible / early CAN" };
+    return { count: abnormal, stage: "Definite / confirmed CAN" };
+  }, [hrdbStatus, vrStatus, r3015Status, ortho.classical]);
+
+  const pots = useMemo(() => {
+    const met = ortho.timeToPots !== null && !ortho.classical;
+    return {
+      met,
+      threshold: (ortho as any).potsThreshold ?? 30,
+      timeToCriterion: ortho.timeToPots,
+      note:
+        ortho.timeToPots !== null && ortho.classical
+          ? "HR rise present but orthostatic hypotension may explain the tachycardia"
+          : "",
+    };
+  }, [ortho]);
+
+  const pattern = useMemo(() => {
+    const domains = [
+      cardiovagal.score > 0 ? "cardiovagal" : null,
+      adrenergic.score > 0 ? "adrenergic" : null,
+      sudomotor.score > 0 ? "sudomotor" : null,
+    ].filter(Boolean) as string[];
+    if (domains.length === 0) return "No significant objective autonomic abnormality";
+    if (domains.length >= 2) {
+      if (cardiovagal.score > 0 && adrenergic.score > 0 && sudomotor.score === 0)
+        return "Generalized autonomic dysfunction — central-predominant pattern (cardiovagal + adrenergic, limited distal sudomotor involvement)";
+      if (sudomotor.score >= 2 && (cardiovagal.score > 0 || adrenergic.score > 0))
+        return "Generalized autonomic dysfunction — peripheral-predominant pattern (prominent sudomotor with cardiovascular involvement)";
+      return "Generalized autonomic dysfunction";
+    }
+    return `${domains[0].charAt(0).toUpperCase()}${domains[0].slice(1)}-predominant`;
+  }, [cardiovagal.score, adrenergic.score, sudomotor.score]);
+
+  const activeConfounders = CONFOUNDERS.filter((c) => s.confounders[c.key]).map((c) => c.label);
+
+  /* --------------------------- Report ------------------------------ */
+  const reportLines = useMemo(() => {
+    const lines = [
+      "MODIFIED COMPOSITE AUTONOMIC SEVERITY SCORE",
+      "",
+      `Patient: ${s.name || "—"}`,
+      `Age/Sex: ${s.age || "—"} / ${s.sex || "—"}${ageGroup ? ` (reference group ${ageGroup})` : ""}`,
+      `Date: ${s.date || "—"}`,
+      `Indication: ${s.indication || "—"}`,
+      "",
+      `Cardiovagal score: ${cardiovagal.score} / 3`,
+      `Adrenergic score: ${adrenergic.score} / 4`,
+      `Sudomotor score: ${sudomotor.score} / 3`,
+      `mCASS total: ${total} / 10`,
+      `Severity: ${severity}`,
+      "",
+      `HRDB: ${s.hrdb || "—"} bpm (${hrdbStatus})`,
+      `E:I ratio: ${s.ei || "—"} (${eiStatus})`,
+      `Valsalva ratio: ${s.vr || "—"} (${vrStatus})`,
+      `30:15 ratio: ${s.ratio3015 || "—"} (${r3015Status})`,
+      `Valsalva BP: ${adrenergic.flags.length ? adrenergic.flags.join("; ") : "no abnormality recorded"}`,
+      "",
+      `Orthostatic hypotension: ${
+        ortho.classical ? "Classical OH" : ortho.delayed ? "Delayed OH" : "Not demonstrated"
+      }`,
+      `Maximum BP fall: ${ortho.maxSbpFall ?? "—"} / ${ortho.maxDbpFall ?? "—"} mmHg`,
+      `Maximum HR increase: ${ortho.maxHrRise ?? "—"} bpm`,
+      `HR compensation: ${ortho.attenuatedHR ? "Attenuated (<15 bpm with OH)" : "Preserved / not applicable"}`,
+      `Neurogenic OH phenotype: ${ortho.attenuatedHR ? "Supported" : "Not supported"}`,
+      `POTS physiological criterion: ${pots.met ? `Met (threshold ${pots.threshold} bpm, at ${pots.timeToCriterion} min)` : "Not met"}`,
+      `CAN stage: ${canStage.stage} (${canStage.count} abnormal cardiovagal test(s))`,
+      `Autonomic pattern: ${pattern}`,
+      "",
+      `Confounders: ${activeConfounders.length ? activeConfounders.join(", ") : "none recorded"}`,
+      `Medications: ${s.medications || "—"}`,
+      `Notes: ${s.notes || "—"}`,
+      "",
+      "Disclaimer: This is a modified CASS-derived framework. Sudoscan-derived sudomotor scoring is not",
+      "interchangeable with QSART/TST-based original CASS scoring. Normative values are from an Indian adult",
+      "reference dataset; laboratory-specific validated norms take precedence.",
+    ];
+    return lines;
+  }, [
+    s,
+    ageGroup,
+    cardiovagal.score,
+    adrenergic,
+    sudomotor.score,
+    total,
+    severity,
+    hrdbStatus,
+    eiStatus,
+    vrStatus,
+    r3015Status,
+    ortho,
+    pots,
+    canStage,
+    pattern,
+    activeConfounders,
+  ]);
+
+  const exportPdf = () => {
+    const doc = new jsPDF();
+    doc.setFontSize(13);
+    doc.text(reportLines[0], 14, 16);
+    doc.setFontSize(10);
+    let y = 26;
+    reportLines.slice(1).forEach((line) => {
+      if (y > 280) {
+        doc.addPage();
+        y = 16;
+      }
+      doc.text(line, 14, y);
+      y += 6;
+    });
+    doc.save(`mCASS-report-${s.name || "patient"}.pdf`);
+    toast.success("mCASS report exported");
   };
-  const updateReading = (idx: number, patch: Partial<UprightReading>) => {
-    set(
-      "standing_upright_readings",
-      state.standing_upright_readings.map((r, i) => (i === idx ? { ...r, ...patch } : r))
-    );
-  };
-  const removeReading = (idx: number) => {
-    set("standing_upright_readings", state.standing_upright_readings.filter((_, i) => i !== idx));
+
+  const copyReport = async () => {
+    await navigator.clipboard.writeText(reportLines.join("\n"));
+    toast.success("Report copied to clipboard");
   };
 
   const reset = () => {
-    setState(initialState);
-    toast("Form reset", { description: "All mCASS entries cleared." });
+    setS(initialState());
+    toast.success("Analyzer reset");
   };
 
-  const handleExportJSON = () => {
-    const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `mcass-${state.patient_id || "assessment"}-${new Date().toISOString().split("T")[0]}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-    toast("JSON exported");
-  };
+  const updateReading = (t: number, patch: Partial<Reading>) =>
+    setS((p) => ({
+      ...p,
+      readings: p.readings.map((rd) => (rd.t === t ? { ...rd, ...patch } : rd)),
+    }));
 
-  const handleExportPDF = () => {
-    const doc = new jsPDF();
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const margin = 16;
-    let y = 20;
-    const line = (text: string, size = 10, bold = false) => {
-      if (y > 270) {
-        doc.addPage();
-        y = 20;
-      }
-      doc.setFontSize(size);
-      doc.setFont("helvetica", bold ? "bold" : "normal");
-      const lines = doc.splitTextToSize(text, pageWidth - margin * 2);
-      lines.forEach((l: string) => {
-        if (y > 270) {
-          doc.addPage();
-          y = 20;
-        }
-        doc.text(l, margin, y);
-        y += size * 0.45;
-      });
-    };
-
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "bold");
-    doc.text("Modified Composite Autonomic Severity Score (mCASS) Report", margin, y);
-    y += 8;
-    line(`Patient ID: ${state.patient_id || "—"}   |   Date: ${state.assessment_date || "—"}   |   Age: ${state.age_years || "—"}   |   Sex: ${state.sex_at_birth || "—"}`, 9);
-    y += 4;
-    line(`Method: Cardiovagal testing: deep breathing/E:I, Valsalva ratio, 30:15 ratio. Adrenergic testing: Valsalva BP, orthostatic BP/HR. Sudomotor testing: Sudoscan ESC of palms and soles.`, 9);
-    y += 4;
-    line(
-      `Score: Cardiovagal ${state.clinician_cardiovagal_score || "—"}/3; Adrenergic ${state.clinician_adrenergic_score || "—"}/4; Sudomotor ${state.clinician_sudomotor_score || "—"}/3; mCASS ${totalScore ?? "—"}/10.`,
-      10,
-      true
-    );
-    y += 4;
-    line(`Severity category: ${derived.severityCategory}. Completeness: ${derived.completeness}.`, 9);
-    y += 4;
-    line(
-      `Resting HRV: SDNN ${state.SDNN_ms || "—"} ms, RMSSD ${state.RMSSD_ms || "—"} ms, pNN50 ${state.pNN50_percent || "—"} percent. These metrics are supportive and interpreted with rhythm, recording quality, respiration, medications, and age-adjusted normative values.`,
-      9
-    );
-    y += 4;
-    line(
-      `Deep breathing: mean delta HR ${state.db_mean_delta_hr_bpm || "—"} bpm; E:I ratio ${state.db_EI_ratio || "—"}; interpretation ${state.db_age_sex_normative_result || "—"}.`,
-      9
-    );
-    y += 4;
-    line(
-      `Valsalva: ratio ${state.valsalva_ratio || "—"}; cardiovagal interpretation ${state.valsalva_ratio_normative_result || "—"}; adrenergic BP interpretation ${state.valsalva_adrenergic_interpretation || "—"}.`,
-      9
-    );
-    y += 4;
-    line(
-      `Orthostatic hemodynamics: maximum SBP fall ${derived.maxSystolicDrop ?? "—"} mmHg, maximum DBP fall ${derived.maxDiastolicDrop ?? "—"} mmHg, maximum HR increase ${derived.maxHrIncrease ?? "—"} bpm, delta HR/delta SBP ${derived.deltaHrDeltaSbp ?? "—"} bpm/mmHg.`,
-      9
-    );
-    y += 4;
-    line(
-      `Orthostatic hypotension: ${derived.ohPresent === null ? "—" : derived.ohPresent ? (derived.ohDelayed ? "present (delayed)" : "present") : "absent"}. HR compensation: ${derived.hrCompensationInadequate === null ? "—" : derived.hrCompensationInadequate ? "inadequate" : "adequate"}. Neurogenic orthostatic pattern: ${derived.neurogenicPattern === null ? "—" : derived.neurogenicPattern ? "supported" : "not supported"}.`,
-      9
-    );
-    y += 4;
-    line(
-      `POTS physiological screen: ${derived.potsSupported === null ? (derived.potsIndeterminate ? "indeterminate" : "—") : derived.potsSupported ? "supported" : "not supported"}. This screen does not independently establish a POTS diagnosis.`,
-      9
-    );
-    y += 4;
-    line(
-      `CAN classification: ${derived.canStage}. Number of abnormal cardiovagal reflex tests: ${derived.abnormalCardiovagalCount}.`,
-      9
-    );
-    y += 4;
-    line(`Autonomic pattern: ${derived.pattern}.`, 9);
-    y += 4;
-    line(`Data quality and limitations: ${derived.qualityWarnings.length ? derived.qualityWarnings.join(" ") : "None flagged."}`, 9);
-    y += 6;
-    line(
-      "This mCASS is a modified CASS-derived clinical/research framework. The Sudoscan-derived sudomotor component is not equivalent to QSART- or thermoregulatory sweat-test-based formal Mayo CASS scoring. Results require correlation with symptoms, medications, rhythm, comorbidities, technical quality, and laboratory-specific normative values.",
-      8
-    );
-    doc.save(`mcass-report-${state.patient_id || "assessment"}.pdf`);
-    toast("PDF exported");
-  };
-
-  const handlePrint = () => window.print();
-
+  /* --------------------------- Render ------------------------------ */
   return (
-    <Card className="border-primary/40 shadow-lg overflow-hidden">
-      <CardHeader className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border-b">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-sunset flex items-center justify-center shadow-glow shrink-0">
-              <Activity className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <CardTitle className="text-xl sm:text-2xl">mCASS Autonomic Assessment</CardTitle>
-              <CardDescription className="mt-1">
-                Modified Composite Autonomic Severity Score — structured autonomic testing, orthostatic hemodynamics, POTS screen, CAN staging, HRV &amp; Sudoscan-derived sudomotor assessment.
-              </CardDescription>
-            </div>
+    <Card className="border-2">
+      <CardHeader>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <CardTitle className="flex items-center gap-2 text-xl">
+              <HeartPulse className="h-5 w-5 text-primary" />
+              Autonomic Function &amp; mCASS Analyzer
+            </CardTitle>
+            <CardDescription>
+              Age- and sex-adjusted normative values with mCASS /10, orthostatic classification, POTS
+              screening and CAN staging.
+            </CardDescription>
           </div>
-          <Badge variant="outline" className="shrink-0">v1.0.0</Badge>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" size="sm" onClick={copyReport}>
+              <ClipboardList className="mr-1.5 h-4 w-4" /> Copy report
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => window.print()}>
+              <Printer className="mr-1.5 h-4 w-4" /> Print
+            </Button>
+            <Button size="sm" onClick={exportPdf}>
+              <Download className="mr-1.5 h-4 w-4" /> PDF
+            </Button>
+            <Button variant="ghost" size="sm" onClick={reset}>
+              <RotateCcw className="mr-1.5 h-4 w-4" /> Reset
+            </Button>
+          </div>
         </div>
       </CardHeader>
 
-      <CardContent className="pt-5">
-        {/* Disclaimers */}
-        <div className="mb-5 space-y-2">
-          <div className="flex gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">
-            <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5" />
-            <div>
-              <strong>Clinical decision support only.</strong> This application does not establish a diagnosis, replace clinician judgment, replace formal autonomic laboratory interpretation, or substitute for patient-specific clinical assessment.
-            </div>
-          </div>
-          <div className="flex gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs text-slate-700">
-            <Info className="w-4 h-4 shrink-0 mt-0.5" />
-            <div>
-              <strong>mCASS is a modified CASS-derived framework</strong> and is not equivalent to the validated Mayo Composite Autonomic Severity Score. When Sudoscan is used, the sudomotor component is not interchangeable with QSART- or thermoregulatory sweat-test-based formal CASS scoring.
-            </div>
-          </div>
-          <div className="flex gap-2 rounded-lg border border-rose-200 bg-rose-50 p-3 text-xs text-rose-800">
-            <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
-            <div>
-              <strong>Do not stop, hold, or adjust medications based on this app.</strong> Medication changes and test preparation require approval from the treating clinician or autonomic laboratory. Use fall precautions and supervision for standing or tilt testing when clinically indicated.
-            </div>
-          </div>
-        </div>
-
-        {/* Hard stops */}
-        {hardStops.length > 0 && (
-          <div className="mb-5 space-y-2">
-            {hardStops.map((msg, i) => (
-              <div key={i} className="flex gap-2 rounded-lg border border-destructive bg-destructive/10 p-3 text-xs font-medium text-destructive">
-                <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
-                <span>{msg}</span>
-              </div>
-            ))}
-          </div>
-        )}
-
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="flex flex-wrap h-auto gap-1 p-1">
-            <TabsTrigger value="intake">Intake</TabsTrigger>
-            <TabsTrigger value="prep">Prep &amp; Safety</TabsTrigger>
-            <TabsTrigger value="symptoms">Symptoms</TabsTrigger>
-            <TabsTrigger value="hrv">HRV</TabsTrigger>
-            <TabsTrigger value="deepbreathing">Deep Breathing</TabsTrigger>
-            <TabsTrigger value="valsalva">Valsalva</TabsTrigger>
-            <TabsTrigger value="standing">Standing / Tilt</TabsTrigger>
-            <TabsTrigger value="handgrip">Handgrip</TabsTrigger>
-            <TabsTrigger value="sudoscan">Sudoscan</TabsTrigger>
-            <TabsTrigger value="scoring">Scoring &amp; Report</TabsTrigger>
+      <CardContent>
+        <Tabs defaultValue="patient" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-6">
+            <TabsTrigger value="patient">Patient</TabsTrigger>
+            <TabsTrigger value="cardiovagal">Cardiovagal</TabsTrigger>
+            <TabsTrigger value="adrenergic">Adrenergic</TabsTrigger>
+            <TabsTrigger value="orthostatic">Orthostatic</TabsTrigger>
+            <TabsTrigger value="sudomotor">Sudomotor</TabsTrigger>
+            <TabsTrigger value="report">Report</TabsTrigger>
           </TabsList>
 
-          {/* ---------------- INTAKE ---------------- */}
-          <TabsContent value="intake" className="space-y-5 mt-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Field label="Patient ID">
-                <Input value={state.patient_id} onChange={(e) => set("patient_id", e.target.value)} placeholder="e.g. DEIDENTIFIED-DEMO-001" />
-              </Field>
-              <Field label="Assessment date">
-                <Input type="date" value={state.assessment_date} onChange={(e) => set("assessment_date", e.target.value)} />
-              </Field>
-              <Field label="Age in years">
-                <Input type="number" min={0} max={120} value={state.age_years} onChange={(e) => set("age_years", e.target.value === "" ? "" : Number(e.target.value))} />
-              </Field>
-              <Field label="Sex at birth">
-                <Select value={state.sex_at_birth || undefined} onValueChange={(v) => set("sex_at_birth", v as SexAtBirth)}>
-                  <SelectTrigger><SelectValue placeholder="Select…" /></SelectTrigger>
+          {/* -------------------- Patient -------------------- */}
+          <TabsContent value="patient" className="space-y-5 pt-5">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              <div className="space-y-1.5">
+                <Label>Name / ID</Label>
+                <Input value={s.name} onChange={(e) => set("name", e.target.value)} />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Age (years)</Label>
+                <Input
+                  type="number"
+                  value={s.age === "" ? "" : s.age}
+                  onChange={(e) => set("age", num(e.target.value))}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Sex</Label>
+                <Select value={s.sex} onValueChange={(v) => set("sex", v as Sex)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select" />
+                  </SelectTrigger>
                   <SelectContent>
-                    {["female", "male", "intersex", "not_recorded"].map((o) => (
-                      <SelectItem key={o} value={o}>{o}</SelectItem>
-                    ))}
+                    <SelectItem value="male">Male</SelectItem>
+                    <SelectItem value="female">Female</SelectItem>
                   </SelectContent>
                 </Select>
-              </Field>
-              <Field label="Height in cm">
-                <Input type="number" min={30} max={260} value={state.height_cm} onChange={(e) => set("height_cm", e.target.value === "" ? "" : Number(e.target.value))} />
-              </Field>
-              <Field label="Weight in kg">
-                <Input type="number" min={1} max={500} value={state.weight_kg} onChange={(e) => set("weight_kg", e.target.value === "" ? "" : Number(e.target.value))} />
-              </Field>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Date</Label>
+                <Input type="date" value={s.date} onChange={(e) => set("date", e.target.value)} />
+              </div>
             </div>
 
-            <MultiSelect label="Test indication" options={TEST_INDICATIONS} value={state.test_indication} onChange={(v) => set("test_indication", v)} />
-            <MultiSelect label="Relevant conditions" options={RELEVANT_CONDITIONS} value={state.relevant_conditions} onChange={(v) => set("relevant_conditions", v)} />
+            <Alert>
+              <Info className="h-4 w-4" />
+              <AlertTitle>Reference selection</AlertTitle>
+              <AlertDescription className="text-sm">
+                {ageGroup && sex ? (
+                  <>
+                    Using Indian adult normative dataset, age group <strong>{ageGroup}</strong>,{" "}
+                    <strong>{sex}</strong>. Laboratory-specific validated norms take precedence where
+                    available.
+                  </>
+                ) : (
+                  <>
+                    Enter age (≥20 y) and sex to auto-select normative values. Available age groups:{" "}
+                    {AGE_GROUPS.join(", ")}.
+                  </>
+                )}
+              </AlertDescription>
+            </Alert>
 
-            <Field label="Clinical notes">
-              <Textarea value={state.clinical_notes} onChange={(e) => set("clinical_notes", e.target.value)} rows={3} />
-            </Field>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-1.5">
+                <Label>Indication</Label>
+                <Input value={s.indication} onChange={(e) => set("indication", e.target.value)} />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Medications</Label>
+                <Input value={s.medications} onChange={(e) => set("medications", e.target.value)} />
+              </div>
+            </div>
+
+            <div>
+              <Label className="mb-2 block">Confounders</Label>
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+                {CONFOUNDERS.map((c) => (
+                  <div key={c.key} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`conf-${c.key}`}
+                      checked={!!s.confounders[c.key]}
+                      onCheckedChange={(v) =>
+                        set("confounders", { ...s.confounders, [c.key]: !!v })
+                      }
+                    />
+                    <Label htmlFor={`conf-${c.key}`} className="cursor-pointer font-normal">
+                      {c.label}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {activeConfounders.length > 0 && (
+              <Alert variant="destructive">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>Interpret with caution</AlertTitle>
+                <AlertDescription className="text-sm">
+                  {activeConfounders.join(", ")} may invalidate heart-rate–based indices and
+                  orthostatic responses.
+                </AlertDescription>
+              </Alert>
+            )}
           </TabsContent>
 
-          {/* ---------------- PREP & SAFETY ---------------- */}
-          <TabsContent value="prep" className="space-y-5 mt-4">
-            <div className="rounded-lg border bg-muted/30 p-3 text-xs text-muted-foreground">
-              <strong>Pre-test standardization:</strong> Avoid large meals ≥2h before; avoid alcohol 24h; avoid caffeine/nicotine/stimulants per lab protocol; avoid vigorous exercise day before and day of; do not independently stop prescribed medications; arrive early for quiet supine rest.
+          {/* -------------------- Cardiovagal -------------------- */}
+          <TabsContent value="cardiovagal" className="space-y-5 pt-5">
+            <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+              <NormField
+                label="HRDB (ΔHR deep breathing)"
+                unit="bpm"
+                value={s.hrdb}
+                onChange={(v) => set("hrdb", v)}
+                range={hrdbRange}
+                status={hrdbStatus}
+              />
+              <NormField
+                label="E:I ratio"
+                value={s.ei}
+                onChange={(v) => set("ei", v)}
+                range={eiRange}
+                status={eiStatus}
+              />
+              <NormField
+                label="Valsalva ratio"
+                value={s.vr}
+                onChange={(v) => set("vr", v)}
+                range={vrRange}
+                status={vrStatus}
+              />
+              <div className="space-y-1.5">
+                <Label className="text-sm font-medium">30:15 standing ratio</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={s.ratio3015 === "" ? "" : s.ratio3015}
+                  onChange={(e) => set("ratio3015", num(e.target.value))}
+                />
+                <Input
+                  type="number"
+                  step="0.01"
+                  placeholder="Laboratory LLN"
+                  value={s.ratio3015LLN === "" ? "" : s.ratio3015LLN}
+                  onChange={(e) => set("ratio3015LLN", num(e.target.value))}
+                />
+                <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
+                  <span>Custom laboratory norm required</span>
+                  <StatusBadge status={r3015Status} />
+                </div>
+              </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Field label="Hours since food intake">
-                <Input type="number" min={0} max={72} value={state.last_food_hours} onChange={(e) => set("last_food_hours", e.target.value === "" ? "" : Number(e.target.value))} />
-              </Field>
-              <Field label="Hours since caffeine">
-                <Input type="number" min={0} max={240} value={state.caffeine_last_use_hours} onChange={(e) => set("caffeine_last_use_hours", e.target.value === "" ? "" : Number(e.target.value))} />
-              </Field>
-              <Field label="Hours since nicotine or tobacco">
-                <Input type="number" min={0} max={240} value={state.nicotine_last_use_hours} onChange={(e) => set("nicotine_last_use_hours", e.target.value === "" ? "" : Number(e.target.value))} />
-              </Field>
-              <Field label="Hours since alcohol">
-                <Input type="number" min={0} max={240} value={state.alcohol_last_use_hours} onChange={(e) => set("alcohol_last_use_hours", e.target.value === "" ? "" : Number(e.target.value))} />
-              </Field>
-              <Field label="Vigorous exercise in past 24 hours">
-                <YesNoSelect value={state.vigorous_exercise_last_24_hours} onChange={(v) => set("vigorous_exercise_last_24_hours", v)} />
-              </Field>
-              <Field label="Prescriber-approved medication plan">
-                <Select value={state.medication_hold_plan_prescriber_approved || undefined} onValueChange={(v) => set("medication_hold_plan_prescriber_approved", v)}>
-                  <SelectTrigger><SelectValue placeholder="Select…" /></SelectTrigger>
-                  <SelectContent>
-                    {["yes", "no", "not_needed", "unknown"].map((o) => (
-                      <SelectItem key={o} value={o}>{o}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </Field>
-              <Field label="Supine rest before testing (minutes)" hint="Recommended: 15">
-                <Input type="number" min={0} max={120} value={state.supine_rest_minutes} onChange={(e) => set("supine_rest_minutes", e.target.value === "" ? "" : Number(e.target.value))} />
-              </Field>
-              <Field label="Room temperature (°C)" hint="Recommended: 24">
-                <Input type="number" min={10} max={35} value={state.room_temperature_celsius} onChange={(e) => set("room_temperature_celsius", e.target.value === "" ? "" : Number(e.target.value))} />
-              </Field>
-            </div>
-
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">Medication review</Label>
-              <BoolCheck label="Medication review completed" checked={state.medication_review_completed} onChange={(v) => set("medication_review_completed", v)} />
-            </div>
-            <MultiSelect label="Medications affecting autonomic testing" options={MEDICATIONS_AFFECTING} value={state.medications_affecting_autonomic_testing} onChange={(v) => set("medications_affecting_autonomic_testing", v)} />
-            <Field label="Medication notes">
-              <Textarea value={state.medication_notes} onChange={(e) => set("medication_notes", e.target.value)} rows={2} />
-            </Field>
 
             <Separator />
-
-            <div className="flex items-center gap-2">
-              <ShieldAlert className="w-4 h-4 text-destructive" />
-              <h3 className="font-semibold">Safety screen</h3>
+            <div className="flex flex-wrap items-center gap-3">
+              <Badge variant="secondary" className="text-sm">
+                Cardiovagal score {cardiovagal.score} / 3
+              </Badge>
+              <span className="text-sm text-muted-foreground">
+                {cardiovagal.tested} interpretable test(s) · {cardiovagal.mild} mild,{" "}
+                {cardiovagal.severe} clearly abnormal
+              </span>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <BoolCheck label="Fall precautions used" checked={state.fall_precautions_used} onChange={(v) => set("fall_precautions_used", v)} />
-              <BoolCheck label="Standing or tilt supervised" checked={state.supervised_standing_or_tilt} onChange={(v) => set("supervised_standing_or_tilt", v)} />
-              <BoolCheck label="Active chest pain" checked={state.active_chest_pain} onChange={(v) => set("active_chest_pain", v)} />
-              <BoolCheck label="Unstable cardiopulmonary status" checked={state.unstable_cardiopulmonary_status} onChange={(v) => set("unstable_cardiopulmonary_status", v)} />
-              <BoolCheck label="Recent syncope with injury risk" checked={state.recent_syncope_with_injury_risk} onChange={(v) => set("recent_syncope_with_injury_risk", v)} />
-              <BoolCheck label="Test deferred or modified" checked={state.test_deferred_or_modified} onChange={(v) => set("test_deferred_or_modified", v)} />
-            </div>
-            <Field label="Safety notes">
-              <Textarea value={state.safety_notes} onChange={(e) => set("safety_notes", e.target.value)} rows={2} />
-            </Field>
           </TabsContent>
 
-          {/* ---------------- SYMPTOMS ---------------- */}
-          <TabsContent value="symptoms" className="space-y-5 mt-4">
-            <MultiSelect label="Orthostatic symptoms" options={ORTHOSTATIC_SYMPTOMS} value={state.orthostatic_symptoms} onChange={(v) => set("orthostatic_symptoms", v)} />
-            <MultiSelect label="Sudomotor symptoms" options={SUDOMOTOR_SYMPTOMS} value={state.sudomotor_symptoms} onChange={(v) => set("sudomotor_symptoms", v)} />
-            <Field label="Symptom duration (months)">
-              <Input type="number" min={0} max={1200} value={state.symptom_chronicity_months} onChange={(e) => set("symptom_chronicity_months", e.target.value === "" ? "" : Number(e.target.value))} />
-            </Field>
-            <Field label="Symptom notes">
-              <Textarea value={state.symptom_notes} onChange={(e) => set("symptom_notes", e.target.value)} rows={3} />
-            </Field>
+          {/* -------------------- Adrenergic -------------------- */}
+          <TabsContent value="adrenergic" className="space-y-5 pt-5">
+            <div className="grid gap-5 md:grid-cols-2">
+              <div className="space-y-1.5">
+                <Label>Valsalva late phase II</Label>
+                <Select value={s.latePhaseII} onValueChange={(v) => set("latePhaseII", v)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="normal">Normal — recovery toward baseline</SelectItem>
+                    <SelectItem value="reduced">Reduced recovery</SelectItem>
+                    <SelectItem value="absent">Absent recovery</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Valsalva phase IV</Label>
+                <Select value={s.phaseIV} onValueChange={(v) => set("phaseIV", v)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="normal">Normal — overshoot preserved</SelectItem>
+                    <SelectItem value="reduced">Reduced overshoot</SelectItem>
+                    <SelectItem value="absent">Absent overshoot</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <NormField
+                label="PRT100 (pressure recovery time)"
+                unit="s"
+                value={s.prt100}
+                onChange={(v) => set("prt100", v)}
+                range={prt100Range}
+                status={prt100Status === "high" ? "low" : prt100Status}
+                hint="Prolonged = abnormal"
+              />
+              <NormField
+                label="PRT50"
+                unit="s"
+                value={s.prt50}
+                onChange={(v) => set("prt50", v)}
+                range={prt50Range}
+                status={prt50Status === "high" ? "low" : prt50Status}
+                hint="Prolonged = abnormal"
+              />
+            </div>
+
+            <Separator />
+            <div className="flex flex-wrap items-center gap-3">
+              <Badge variant="secondary" className="text-sm">
+                Adrenergic score {adrenergic.score} / 4
+              </Badge>
+              <span className="text-sm text-muted-foreground">
+                {adrenergic.flags.length ? adrenergic.flags.join("; ") : "No Valsalva BP abnormality recorded"}
+              </span>
+            </div>
           </TabsContent>
 
-          {/* ---------------- HRV ---------------- */}
-          <TabsContent value="hrv" className="space-y-5 mt-4">
-            <div className="rounded-lg border bg-muted/30 p-3 text-xs text-muted-foreground">
-              <strong>Protocol:</strong> Supine preferred; 15 min pre-recording rest; at least 5 min of stable artifact-screened ECG. Remain awake, avoid talking/moving/coughing/phone/active mental tasks; breathe normally. Preferred rhythm: sinus. Artifact warning threshold: &gt;5%.
+          {/* -------------------- Orthostatic -------------------- */}
+          <TabsContent value="orthostatic" className="space-y-5 pt-5">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="htn-baseline"
+                checked={s.baselineHypertensive}
+                onCheckedChange={(v) => set("baselineHypertensive", !!v)}
+              />
+              <Label htmlFor="htn-baseline" className="cursor-pointer font-normal">
+                Hypertensive baseline (≥150/90) — apply substantial-fall thresholds (SBP ≥30 / DBP ≥15)
+              </Label>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Field label="Rhythm">
-                <Select value={state.hrv_rhythm || undefined} onValueChange={(v) => set("hrv_rhythm", v)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {["sinus", "atrial fibrillation", "frequent ectopy", "paced", "other non-sinus"].map((o) => (
-                      <SelectItem key={o} value={o}>{o}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </Field>
-              <Field label="Recording duration (minutes)">
-                <Input type="number" value={state.hrv_recording_duration_minutes} onChange={(e) => set("hrv_recording_duration_minutes", e.target.value === "" ? "" : Number(e.target.value))} />
-              </Field>
-              <Field label="Artifact burden (%)">
-                <Input type="number" value={state.hrv_artifact_percent} onChange={(e) => set("hrv_artifact_percent", e.target.value === "" ? "" : Number(e.target.value))} />
-              </Field>
-              <Field label="Mean heart rate (bpm)">
-                <Input type="number" value={state.mean_heart_rate_bpm} onChange={(e) => set("mean_heart_rate_bpm", e.target.value === "" ? "" : Number(e.target.value))} />
-              </Field>
-              <Field label="Mean NN interval (ms)">
-                <Input type="number" value={state.mean_nn_interval_ms} onChange={(e) => set("mean_nn_interval_ms", e.target.value === "" ? "" : Number(e.target.value))} />
-              </Field>
-              <Field label="SDNN (ms)">
-                <Input type="number" value={state.SDNN_ms} onChange={(e) => set("SDNN_ms", e.target.value === "" ? "" : Number(e.target.value))} />
-              </Field>
-              <Field label="SDSD (ms)">
-                <Input type="number" value={state.SDSD_ms} onChange={(e) => set("SDSD_ms", e.target.value === "" ? "" : Number(e.target.value))} />
-              </Field>
-              <Field label="RMSSD (ms)">
-                <Input type="number" value={state.RMSSD_ms} onChange={(e) => set("RMSSD_ms", e.target.value === "" ? "" : Number(e.target.value))} />
-              </Field>
-              <Field label="NN50 (count)">
-                <Input type="number" value={state.NN50_count} onChange={(e) => set("NN50_count", e.target.value === "" ? "" : Number(e.target.value))} />
-              </Field>
-              <Field label="pNN50 (%)">
-                <Input type="number" value={state.pNN50_percent} onChange={(e) => set("pNN50_percent", e.target.value === "" ? "" : Number(e.target.value))} />
-              </Field>
-              <Field label="VLF power (ms²)">
-                <Input type="number" value={state.VLF_power_ms2} onChange={(e) => set("VLF_power_ms2", e.target.value === "" ? "" : Number(e.target.value))} />
-              </Field>
-              <Field label="LF power (ms²)">
-                <Input type="number" value={state.LF_power_ms2} onChange={(e) => set("LF_power_ms2", e.target.value === "" ? "" : Number(e.target.value))} />
-              </Field>
-              <Field label="HF power (ms²)">
-                <Input type="number" value={state.HF_power_ms2} onChange={(e) => set("HF_power_ms2", e.target.value === "" ? "" : Number(e.target.value))} />
-              </Field>
-              <Field label="LF/HF ratio">
-                <Input type="number" value={state.LF_HF_ratio} onChange={(e) => set("LF_HF_ratio", e.target.value === "" ? "" : Number(e.target.value))} />
-              </Field>
-            </div>
-            <p className="text-[11px] text-muted-foreground">
-              Resting HRV parameters are supportive data and should not independently generate additional mCASS points. LF is not a pure cardiac sympathetic marker; LF/HF ratio should not be treated as a standalone validated index of sympathovagal balance.
-            </p>
-          </TabsContent>
 
-          {/* ---------------- DEEP BREATHING ---------------- */}
-          <TabsContent value="deepbreathing" className="space-y-5 mt-4">
-            <div className="rounded-lg border bg-muted/30 p-3 text-xs text-muted-foreground">
-              <strong>Protocol:</strong> 6 breaths/min (5s inspiration, 5s expiration), ~6 target cycles, ~1 minute. Supine or seated per lab reference. Continuous ECG. Follow paced breathing; avoid talking, coughing, straining, body movement.
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[640px] text-sm">
+                <thead>
+                  <tr className="border-b text-left text-muted-foreground">
+                    <th className="py-2 pr-3">Time</th>
+                    <th className="py-2 pr-3">SBP</th>
+                    <th className="py-2 pr-3">DBP</th>
+                    <th className="py-2 pr-3">HR</th>
+                    <th className="py-2">Symptoms</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {s.readings.map((rd) => (
+                    <tr key={rd.t} className="border-b align-top">
+                      <td className="py-2 pr-3 font-medium">{rd.t === 0 ? "Supine" : `${rd.t} min`}</td>
+                      {(["sbp", "dbp", "hr"] as const).map((f) => (
+                        <td key={f} className="py-2 pr-3">
+                          <Input
+                            type="number"
+                            className="w-24"
+                            value={rd[f] === "" ? "" : (rd[f] as number)}
+                            onChange={(e) => updateReading(rd.t, { [f]: num(e.target.value) } as any)}
+                          />
+                        </td>
+                      ))}
+                      <td className="py-2">
+                        <div className="flex flex-wrap gap-2">
+                          {SYMPTOMS.map((sym) => (
+                            <button
+                              key={sym}
+                              type="button"
+                              disabled={rd.t === 0}
+                              onClick={() =>
+                                updateReading(rd.t, {
+                                  symptoms: rd.symptoms.includes(sym)
+                                    ? rd.symptoms.filter((x) => x !== sym)
+                                    : [...rd.symptoms, sym],
+                                })
+                              }
+                              className={`rounded-full border px-2.5 py-1 text-xs transition-colors disabled:opacity-40 ${
+                                rd.symptoms.includes(sym)
+                                  ? "border-primary bg-primary text-primary-foreground"
+                                  : "border-border hover:bg-muted"
+                              }`}
+                            >
+                              {sym}
+                            </button>
+                          ))}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Field label="Breaths per minute">
-                <Input type="number" value={state.db_breaths_per_minute} onChange={(e) => set("db_breaths_per_minute", e.target.value === "" ? "" : Number(e.target.value))} />
-              </Field>
-              <Field label="Inspiration (seconds)">
-                <Input type="number" value={state.db_inspiration_seconds} onChange={(e) => set("db_inspiration_seconds", e.target.value === "" ? "" : Number(e.target.value))} />
-              </Field>
-              <Field label="Expiration (seconds)">
-                <Input type="number" value={state.db_expiration_seconds} onChange={(e) => set("db_expiration_seconds", e.target.value === "" ? "" : Number(e.target.value))} />
-              </Field>
-              <Field label="Acceptable cycles">
-                <Input type="number" value={state.db_acceptable_cycles} onChange={(e) => set("db_acceptable_cycles", e.target.value === "" ? "" : Number(e.target.value))} />
-              </Field>
-              <Field label="Cycle delta HR (bpm, comma-separated)">
-                <Input value={state.db_cycle_delta_hr_bpm} onChange={(e) => set("db_cycle_delta_hr_bpm", e.target.value)} placeholder="e.g. 8, 9, 8, 7, 9, 8" />
-              </Field>
-              <Field label="Mean delta HR (bpm)">
-                <Input type="number" value={state.db_mean_delta_hr_bpm} onChange={(e) => set("db_mean_delta_hr_bpm", e.target.value === "" ? "" : Number(e.target.value))} />
-              </Field>
-              <Field label="E:I ratio">
-                <Input type="number" step="0.01" value={state.db_EI_ratio} onChange={(e) => set("db_EI_ratio", e.target.value === "" ? "" : Number(e.target.value))} />
-              </Field>
-              <Field label="Age/sex normative result">
-                <Select value={state.db_age_sex_normative_result || undefined} onValueChange={(v) => set("db_age_sex_normative_result", v)}>
-                  <SelectTrigger><SelectValue placeholder="Select…" /></SelectTrigger>
-                  <SelectContent>
-                    {["normal", "borderline", "abnormal", "norms unavailable", "uninterpretable"].map((o) => (
-                      <SelectItem key={o} value={o}>{o}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </Field>
-              <Field label="Technical quality">
-                <Select value={state.db_technical_quality || undefined} onValueChange={(v) => set("db_technical_quality", v)}>
-                  <SelectTrigger><SelectValue placeholder="Select…" /></SelectTrigger>
-                  <SelectContent>
-                    {["adequate", "suboptimal breathing", "artifact or ectopy", "patient unable to complete", "other"].map((o) => (
-                      <SelectItem key={o} value={o}>{o}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </Field>
-            </div>
-            <p className="text-[11px] text-muted-foreground">
-              Screening values only: delta HR ≥15 bpm often broadly reassuring in younger/middle-aged adults; 10–14 bpm borderline; &lt;10 bpm markedly reduced (supports substantial cardiovagal impairment if confounders excluded). Use age-, sex-, and laboratory-adjusted norms as the preferred standard.
-            </p>
-          </TabsContent>
 
-          {/* ---------------- VALSALVA ---------------- */}
-          <TabsContent value="valsalva" className="space-y-5 mt-4">
-            <div className="rounded-lg border bg-muted/30 p-3 text-xs text-muted-foreground">
-              <strong>Protocol:</strong> Strain ~40 mmHg for ~15s. Valsalva ratio contributes to cardiovagal scoring; beat-to-beat BP response (late phase II recovery, phase IV overshoot) contributes to adrenergic scoring.
+            <div className="space-y-1.5">
+              <Label>Competing causes for tachycardia (anaemia, fever, deconditioning, anxiety…)</Label>
+              <Input
+                value={s.competingCauses}
+                onChange={(e) => set("competingCauses", e.target.value)}
+              />
             </div>
-            <div className="space-y-2">
-              <BoolCheck label="Valsalva performed" checked={state.valsalva_performed} onChange={(v) => set("valsalva_performed", v)} />
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Field label="Strain pressure (mmHg)" hint="Recommended: 40">
-                <Input type="number" value={state.valsalva_strain_pressure_mmHg} onChange={(e) => set("valsalva_strain_pressure_mmHg", e.target.value === "" ? "" : Number(e.target.value))} />
-              </Field>
-              <Field label="Strain duration (seconds)" hint="Recommended: 15">
-                <Input type="number" value={state.valsalva_strain_duration_seconds} onChange={(e) => set("valsalva_strain_duration_seconds", e.target.value === "" ? "" : Number(e.target.value))} />
-              </Field>
-              <Field label="Acceptable trials">
-                <Input type="number" value={state.valsalva_acceptable_trials} onChange={(e) => set("valsalva_acceptable_trials", e.target.value === "" ? "" : Number(e.target.value))} />
-              </Field>
-              <Field label="Valsalva ratio">
-                <Input type="number" step="0.01" value={state.valsalva_ratio} onChange={(e) => set("valsalva_ratio", e.target.value === "" ? "" : Number(e.target.value))} />
-              </Field>
-              <Field label="Valsalva ratio normative result">
-                <Select value={state.valsalva_ratio_normative_result || undefined} onValueChange={(v) => set("valsalva_ratio_normative_result", v)}>
-                  <SelectTrigger><SelectValue placeholder="Select…" /></SelectTrigger>
-                  <SelectContent>
-                    {["normal", "borderline", "abnormal", "norms unavailable", "uninterpretable"].map((o) => (
-                      <SelectItem key={o} value={o}>{o}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </Field>
-              <Field label="Late phase II recovery">
-                <Select value={state.valsalva_late_phase_II_recovery || undefined} onValueChange={(v) => set("valsalva_late_phase_II_recovery", v)}>
-                  <SelectTrigger><SelectValue placeholder="Select…" /></SelectTrigger>
-                  <SelectContent>
-                    {["normal", "reduced", "absent", "not assessed"].map((o) => (
-                      <SelectItem key={o} value={o}>{o}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </Field>
-              <Field label="Phase IV overshoot">
-                <Select value={state.valsalva_phase_IV_overshoot || undefined} onValueChange={(v) => set("valsalva_phase_IV_overshoot", v)}>
-                  <SelectTrigger><SelectValue placeholder="Select…" /></SelectTrigger>
-                  <SelectContent>
-                    {["normal", "reduced", "absent", "not assessed"].map((o) => (
-                      <SelectItem key={o} value={o}>{o}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </Field>
-              <Field label="Adrenergic interpretation">
-                <Select value={state.valsalva_adrenergic_interpretation || undefined} onValueChange={(v) => set("valsalva_adrenergic_interpretation", v)}>
-                  <SelectTrigger><SelectValue placeholder="Select…" /></SelectTrigger>
-                  <SelectContent>
-                    {["normal", "mild abnormality", "moderate abnormality", "marked abnormality", "severe abnormality", "uninterpretable", "not assessed"].map((o) => (
-                      <SelectItem key={o} value={o}>{o}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </Field>
-            </div>
-            <div className="space-y-2">
-              <BoolCheck label="Beat-to-beat BP available" checked={state.valsalva_beat_to_beat_bp_available} onChange={(v) => set("valsalva_beat_to_beat_bp_available", v)} />
-            </div>
-            <Field label="Valsalva notes">
-              <Textarea value={state.valsalva_notes} onChange={(e) => set("valsalva_notes", e.target.value)} rows={2} />
-            </Field>
-          </TabsContent>
 
-          {/* ---------------- STANDING / TILT ---------------- */}
-          <TabsContent value="standing" className="space-y-5 mt-4">
-            <div className="rounded-lg border bg-muted/30 p-3 text-xs text-muted-foreground">
-              <strong>Protocol:</strong> Supine rest ≥5 min (10–15 min preferred with HRV). Baseline supine BP/HR. Standing BP/HR at 1, 3, 5 min (if symptoms persist or delayed OH suspected); continue to 10 min if evaluating POTS. Use fall precautions; terminate for syncope, severe presyncope, chest pain, dangerous arrhythmia, or clinician concern.
+            <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+              <div className="rounded-lg border p-3">
+                <p className="text-xs text-muted-foreground">Max SBP fall</p>
+                <p className="text-lg font-semibold">{ortho.maxSbpFall ?? "—"} mmHg</p>
+              </div>
+              <div className="rounded-lg border p-3">
+                <p className="text-xs text-muted-foreground">Max DBP fall</p>
+                <p className="text-lg font-semibold">{ortho.maxDbpFall ?? "—"} mmHg</p>
+              </div>
+              <div className="rounded-lg border p-3">
+                <p className="text-xs text-muted-foreground">Max HR rise</p>
+                <p className="text-lg font-semibold">{ortho.maxHrRise ?? "—"} bpm</p>
+              </div>
+              <div className="rounded-lg border p-3">
+                <p className="text-xs text-muted-foreground">Classification</p>
+                <p className="text-lg font-semibold">
+                  {ortho.classical ? "Classical OH" : ortho.delayed ? "Delayed OH" : "No OH"}
+                </p>
+              </div>
             </div>
-            <div className="space-y-2">
-              <BoolCheck label="Standing / tilt performed" checked={state.standing_performed} onChange={(v) => set("standing_performed", v)} />
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Field label="Method">
-                <Select value={state.standing_method || undefined} onValueChange={(v) => set("standing_method", v)}>
-                  <SelectTrigger><SelectValue placeholder="Select…" /></SelectTrigger>
-                  <SelectContent>
-                    {["active standing", "head-up tilt", "both"].map((o) => (
-                      <SelectItem key={o} value={o}>{o}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </Field>
-              <Field label="30:15 ratio">
-                <Input type="number" step="0.01" value={state.standing_thirty_fifteen_ratio} onChange={(e) => set("standing_thirty_fifteen_ratio", e.target.value === "" ? "" : Number(e.target.value))} />
-              </Field>
-              <Field label="30:15 normative result">
-                <Select value={state.standing_thirty_fifteen_normative_result || undefined} onValueChange={(v) => set("standing_thirty_fifteen_normative_result", v)}>
-                  <SelectTrigger><SelectValue placeholder="Select…" /></SelectTrigger>
-                  <SelectContent>
-                    {["normal", "borderline", "abnormal", "norms unavailable", "uninterpretable", "not assessed"].map((o) => (
-                      <SelectItem key={o} value={o}>{o}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </Field>
-            </div>
-            <div className="space-y-2">
-              <BoolCheck label="Continuous ECG" checked={state.standing_continuous_ecg} onChange={(v) => set("standing_continuous_ecg", v)} />
-              <BoolCheck label="Continuous beat-to-beat BP" checked={state.standing_continuous_beat_to_beat_bp} onChange={(v) => set("standing_continuous_beat_to_beat_bp", v)} />
-              <BoolCheck label="Test terminated early" checked={state.standing_test_terminated_early} onChange={(v) => set("standing_test_terminated_early", v)} />
-            </div>
-            {state.standing_test_terminated_early && (
-              <Field label="Termination reason">
-                <Textarea value={state.standing_termination_reason} onChange={(e) => set("standing_termination_reason", e.target.value)} rows={2} />
-              </Field>
+
+            {ortho.attenuatedHR && (
+              <Alert variant="destructive">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>Neurogenic pattern supported</AlertTitle>
+                <AlertDescription className="text-sm">
+                  Orthostatic hypotension with attenuated HR compensation (&lt;15 bpm). Interpret with
+                  confounders (rate-limiting drugs, pacing, arrhythmia).
+                </AlertDescription>
+              </Alert>
             )}
 
-            <div className="rounded-lg border p-4 space-y-4">
-              <h4 className="font-semibold text-sm">Supine baseline</h4>
-              <div className="grid grid-cols-3 gap-3">
-                <Field label="SBP (mmHg)">
-                  <Input type="number" value={state.standing_supine_SBP_mmHg} onChange={(e) => set("standing_supine_SBP_mmHg", e.target.value === "" ? "" : Number(e.target.value))} />
-                </Field>
-                <Field label="DBP (mmHg)">
-                  <Input type="number" value={state.standing_supine_DBP_mmHg} onChange={(e) => set("standing_supine_DBP_mmHg", e.target.value === "" ? "" : Number(e.target.value))} />
-                </Field>
-                <Field label="HR (bpm)">
-                  <Input type="number" value={state.standing_supine_HR_bpm} onChange={(e) => set("standing_supine_HR_bpm", e.target.value === "" ? "" : Number(e.target.value))} />
-                </Field>
-              </div>
+            <Alert>
+              <Activity className="h-4 w-4" />
+              <AlertTitle>POTS physiological criterion</AlertTitle>
+              <AlertDescription className="text-sm">
+                Threshold {pots.threshold} bpm within 10 minutes ·{" "}
+                {pots.met
+                  ? `Met at ${pots.timeToCriterion} min`
+                  : pots.note || "Not met"}{" "}
+                · Symptoms reproduced:{" "}
+                <button
+                  type="button"
+                  className="underline"
+                  onClick={() => set("potsSymptomsReproduced", !s.potsSymptomsReproduced)}
+                >
+                  {s.potsSymptomsReproduced ? "yes" : "no"}
+                </button>
+                . POTS does not contribute to the mCASS total.
+              </AlertDescription>
+            </Alert>
+          </TabsContent>
+
+          {/* -------------------- Sudomotor -------------------- */}
+          <TabsContent value="sudomotor" className="space-y-5 pt-5">
+            <div className="space-y-1.5">
+              <Label>Test used</Label>
+              <Select
+                value={s.sudoMode}
+                onValueChange={(v) => set("sudoMode", v as State["sudoMode"])}
+              >
+                <SelectTrigger className="max-w-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="sudoscan">Sudoscan (electrochemical skin conductance)</SelectItem>
+                  <SelectItem value="qsart">QSART (preferred)</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
-            <div className="rounded-lg border p-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <h4 className="font-semibold text-sm">Upright readings</h4>
-                <Button type="button" variant="outline" size="sm" onClick={addReading}>
-                  + Add reading
-                </Button>
+            {s.sudoMode === "sudoscan" ? (
+              <>
+                <div className="grid gap-4 md:grid-cols-4">
+                  {(
+                    [
+                      ["rHand", "Right palm"],
+                      ["lHand", "Left palm"],
+                      ["rFoot", "Right sole"],
+                      ["lFoot", "Left sole"],
+                    ] as const
+                  ).map(([key, label]) => (
+                    <div key={key} className="space-y-1.5">
+                      <Label>
+                        {label} <span className="font-normal text-muted-foreground">(µS)</span>
+                      </Label>
+                      <Input
+                        type="number"
+                        value={s.sudoscan[key] === "" ? "" : (s.sudoscan[key] as number)}
+                        onChange={(e) =>
+                          set("sudoscan", { ...s.sudoscan, [key]: num(e.target.value) })
+                        }
+                      />
+                      <StatusBadge status={sudoscanBand(s.sudoscan[key]) === "high" ? "high" : sudoscanBand(s.sudoscan[key])} />
+                    </div>
+                  ))}
+                </div>
+                <div className="rounded-lg border p-3 text-sm">
+                  <p className="mb-1 font-medium">Practical interpretation guide</p>
+                  <ul className="space-y-0.5 text-muted-foreground">
+                    {SUDOSCAN_GUIDE.map((g) => (
+                      <li key={g.band}>
+                        <strong>{g.band}</strong> — {g.meaning}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </>
+            ) : (
+              <div className="grid gap-4 md:grid-cols-4">
+                {QSART_SITES.map((site) => {
+                  const range = getQsartRange(s.age, sex, site.key);
+                  return (
+                    <NormField
+                      key={site.key}
+                      label={site.label}
+                      unit="µL"
+                      value={s.qsart[site.key]}
+                      onChange={(v) => set("qsart", { ...s.qsart, [site.key]: v })}
+                      range={range}
+                      status={classifyAgainst(s.qsart[site.key], range)}
+                    />
+                  );
+                })}
               </div>
-              {state.standing_upright_readings.length === 0 && (
-                <p className="text-xs text-muted-foreground">No upright readings added yet.</p>
-              )}
-              {state.standing_upright_readings.map((r, idx) => (
-                <div key={idx} className="rounded-lg border bg-muted/20 p-3 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-medium">Reading {idx + 1}</span>
-                    <Button type="button" variant="ghost" size="sm" onClick={() => removeReading(idx)}>Remove</Button>
-                  </div>
-                  <div className="grid grid-cols-4 gap-2">
-                    <Field label="Time (min)">
-                      <Input type="number" value={r.time_minutes} onChange={(e) => updateReading(idx, { time_minutes: Number(e.target.value) })} />
-                    </Field>
-                    <Field label="SBP">
-                      <Input type="number" value={r.SBP_mmHg} onChange={(e) => updateReading(idx, { SBP_mmHg: e.target.value === "" ? "" : Number(e.target.value) })} />
-                    </Field>
-                    <Field label="DBP">
-                      <Input type="number" value={r.DBP_mmHg} onChange={(e) => updateReading(idx, { DBP_mmHg: e.target.value === "" ? "" : Number(e.target.value) })} />
-                    </Field>
-                    <Field label="HR">
-                      <Input type="number" value={r.HR_bpm} onChange={(e) => updateReading(idx, { HR_bpm: e.target.value === "" ? "" : Number(e.target.value) })} />
-                    </Field>
-                  </div>
-                  <MultiSelect label="Symptoms" options={UPRIGHT_SYMPTOMS} value={r.symptoms} onChange={(v) => updateReading(idx, { symptoms: v })} />
-                  <Field label="Symptom notes">
-                    <Input value={r.symptom_notes} onChange={(e) => updateReading(idx, { symptom_notes: e.target.value })} />
-                  </Field>
+            )}
+
+            <Separator />
+            <div className="flex flex-wrap items-center gap-3">
+              <Badge variant="secondary" className="text-sm">
+                Sudomotor score {sudomotor.score} / 3
+              </Badge>
+              <span className="text-sm text-muted-foreground">
+                {sudomotor.tested ? sudomotor.detail.join(" · ") : "No sudomotor data entered"}
+              </span>
+            </div>
+          </TabsContent>
+
+          {/* -------------------- Report -------------------- */}
+          <TabsContent value="report" className="space-y-5 pt-5">
+            <div className="grid gap-3 md:grid-cols-4">
+              {[
+                { label: "Cardiovagal", value: `${cardiovagal.score} / 3` },
+                { label: "Adrenergic", value: `${adrenergic.score} / 4` },
+                { label: "Sudomotor", value: `${sudomotor.score} / 3` },
+                { label: "mCASS total", value: `${total} / 10` },
+              ].map((b) => (
+                <div key={b.label} className="rounded-lg border bg-muted/40 p-4">
+                  <p className="text-xs text-muted-foreground">{b.label}</p>
+                  <p className="text-2xl font-bold">{b.value}</p>
                 </div>
               ))}
             </div>
 
-            <Field label="Standing / tilt notes">
-              <Textarea value={state.standing_notes} onChange={(e) => set("standing_notes", e.target.value)} rows={2} />
-            </Field>
-          </TabsContent>
-
-          {/* ---------------- HANDGRIP ---------------- */}
-          <TabsContent value="handgrip" className="space-y-5 mt-4">
-            <div className="rounded-lg border bg-muted/30 p-3 text-xs text-muted-foreground">
-              <strong>Protocol:</strong> ~30% of maximum voluntary contraction for 3–5 min. Ancillary adrenergic evidence; should not replace beat-to-beat Valsalva BP or standing/tilt BP assessment.
-            </div>
-            <div className="space-y-2">
-              <BoolCheck label="Sustained handgrip performed" checked={state.handgrip_performed} onChange={(v) => set("handgrip_performed", v)} />
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Field label="Maximum voluntary contraction (kg)">
-                <Input type="number" value={state.handgrip_maximum_voluntary_contraction_kg} onChange={(e) => set("handgrip_maximum_voluntary_contraction_kg", e.target.value === "" ? "" : Number(e.target.value))} />
-              </Field>
-              <Field label="Target % MVC" hint="Recommended: 30">
-                <Input type="number" value={state.handgrip_target_percent_MVC} onChange={(e) => set("handgrip_target_percent_MVC", e.target.value === "" ? "" : Number(e.target.value))} />
-              </Field>
-              <Field label="Duration (seconds)">
-                <Input type="number" value={state.handgrip_duration_seconds} onChange={(e) => set("handgrip_duration_seconds", e.target.value === "" ? "" : Number(e.target.value))} />
-              </Field>
-              <Field label="Baseline DBP (mmHg)">
-                <Input type="number" value={state.handgrip_baseline_DBP_mmHg} onChange={(e) => set("handgrip_baseline_DBP_mmHg", e.target.value === "" ? "" : Number(e.target.value))} />
-              </Field>
-              <Field label="Peak DBP (mmHg)">
-                <Input type="number" value={state.handgrip_peak_DBP_mmHg} onChange={(e) => set("handgrip_peak_DBP_mmHg", e.target.value === "" ? "" : Number(e.target.value))} />
-              </Field>
-              <Field label="Delta DBP (mmHg)">
-                <Input type="number" value={state.handgrip_delta_DBP_mmHg} onChange={(e) => set("handgrip_delta_DBP_mmHg", e.target.value === "" ? "" : Number(e.target.value))} />
-              </Field>
-              <Field label="Interpretation">
-                <Select value={state.handgrip_interpretation || undefined} onValueChange={(v) => set("handgrip_interpretation", v)}>
-                  <SelectTrigger><SelectValue placeholder="Select…" /></SelectTrigger>
-                  <SelectContent>
-                    {["normal", "borderline", "abnormal", "uninterpretable", "not assessed"].map((o) => (
-                      <SelectItem key={o} value={o}>{o}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </Field>
-            </div>
-            <p className="text-[11px] text-muted-foreground">
-              Historical interpretation only: DBP rise ≥16 mmHg normal; 11–15 borderline; ≤10 abnormal. Use local laboratory reference values when available.
-            </p>
-            <Field label="Handgrip notes">
-              <Textarea value={state.handgrip_notes} onChange={(e) => set("handgrip_notes", e.target.value)} rows={2} />
-            </Field>
-          </TabsContent>
-
-          {/* ---------------- SUDOSCAN ---------------- */}
-          <TabsContent value="sudoscan" className="space-y-5 mt-4">
-            <div className="rounded-lg border bg-muted/30 p-3 text-xs text-muted-foreground">
-              <strong>Sudoscan ESC:</strong> Palmar and plantar electrochemical skin conductance (µS). Provides the modified 0–3 mCASS sudomotor domain score. Not equivalent to QSART or thermoregulatory sweat testing; ESC alone must not be presented as a definitive diagnostic test for CAN.
-            </div>
-            <div className="space-y-2">
-              <BoolCheck label="Sudoscan performed" checked={state.sudoscan_performed} onChange={(v) => set("sudoscan_performed", v)} />
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Field label="Device model">
-                <Input value={state.sudoscan_device_model} onChange={(e) => set("sudoscan_device_model", e.target.value)} />
-              </Field>
-              <Field label="Software version">
-                <Input value={state.sudoscan_device_software_version} onChange={(e) => set("sudoscan_device_software_version", e.target.value)} />
-              </Field>
-              <Field label="Palmar ESC left (µS)">
-                <Input type="number" value={state.sudoscan_palmar_ESC_left_uS} onChange={(e) => set("sudoscan_palmar_ESC_left_uS", e.target.value === "" ? "" : Number(e.target.value))} />
-              </Field>
-              <Field label="Palmar ESC right (µS)">
-                <Input type="number" value={state.sudoscan_palmar_ESC_right_uS} onChange={(e) => set("sudoscan_palmar_ESC_right_uS", e.target.value === "" ? "" : Number(e.target.value))} />
-              </Field>
-              <Field label="Plantar ESC left (µS)">
-                <Input type="number" value={state.sudoscan_plantar_ESC_left_uS} onChange={(e) => set("sudoscan_plantar_ESC_left_uS", e.target.value === "" ? "" : Number(e.target.value))} />
-              </Field>
-              <Field label="Plantar ESC right (µS)">
-                <Input type="number" value={state.sudoscan_plantar_ESC_right_uS} onChange={(e) => set("sudoscan_plantar_ESC_right_uS", e.target.value === "" ? "" : Number(e.target.value))} />
-              </Field>
-              <Field label="Palmar ESC mean (µS)">
-                <Input type="number" value={state.sudoscan_palmar_ESC_mean_uS} onChange={(e) => set("sudoscan_palmar_ESC_mean_uS", e.target.value === "" ? "" : Number(e.target.value))} />
-              </Field>
-              <Field label="Plantar ESC mean (µS)">
-                <Input type="number" value={state.sudoscan_plantar_ESC_mean_uS} onChange={(e) => set("sudoscan_plantar_ESC_mean_uS", e.target.value === "" ? "" : Number(e.target.value))} />
-              </Field>
-              <Field label="Hand lower limit of normal (µS)">
-                <Input type="number" value={state.sudoscan_hand_lower_limit_normal_uS} onChange={(e) => set("sudoscan_hand_lower_limit_normal_uS", e.target.value === "" ? "" : Number(e.target.value))} />
-              </Field>
-              <Field label="Foot lower limit of normal (µS)">
-                <Input type="number" value={state.sudoscan_foot_lower_limit_normal_uS} onChange={(e) => set("sudoscan_foot_lower_limit_normal_uS", e.target.value === "" ? "" : Number(e.target.value))} />
-              </Field>
-              <Field label="Hand status">
-                <Select value={state.sudoscan_hand_status || undefined} onValueChange={(v) => set("sudoscan_hand_status", v)}>
-                  <SelectTrigger><SelectValue placeholder="Select…" /></SelectTrigger>
-                  <SelectContent>
-                    {["normal", "abnormal", "unknown no norms", "uninterpretable"].map((o) => (
-                      <SelectItem key={o} value={o}>{o}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </Field>
-              <Field label="Foot status">
-                <Select value={state.sudoscan_foot_status || undefined} onValueChange={(v) => set("sudoscan_foot_status", v)}>
-                  <SelectTrigger><SelectValue placeholder="Select…" /></SelectTrigger>
-                  <SelectContent>
-                    {["normal", "abnormal", "unknown no norms", "uninterpretable"].map((o) => (
-                      <SelectItem key={o} value={o}>{o}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </Field>
-            </div>
-            <MultiSelect label="Quality flags" options={SUDOSCAN_QUALITY_FLAGS} value={state.sudoscan_quality_flags} onChange={(v) => set("sudoscan_quality_flags", v)} />
-            <Field label="Quality notes">
-              <Textarea value={state.sudoscan_quality_notes} onChange={(e) => set("sudoscan_quality_notes", e.target.value)} rows={2} />
-            </Field>
-            <p className="text-[11px] text-muted-foreground">
-              Broad screening ranges (feet only): generally normal &gt;60–70 µS; possible moderate dysfunction ~40–60 µS; abnormal &lt;40 µS. These are broad screening ranges only and should not replace device-specific laboratory normal limits.
-            </p>
-          </TabsContent>
-
-          {/* ---------------- SCORING & REPORT ---------------- */}
-          <TabsContent value="scoring" className="space-y-5 mt-4">
-            <div className="rounded-lg border bg-muted/30 p-3 text-xs text-muted-foreground">
-              <strong>Scoring framework:</strong> mCASS = Cardiovagal (0–3) + Adrenergic (0–4) + Sudomotor (0–3) = 0–10. Severity: 0 Normal; 1–3 Mild; 4–6 Moderate; 7–10 Severe. Suggested scores must be reviewed and approved by a qualified clinician. The app preserves raw measurements, normative interpretation, data-quality flags, and the reason for any clinician override.
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <Field label="Cardiovagal score /3">
-                <Input type="number" min={0} max={3} value={state.clinician_cardiovagal_score} onChange={(e) => set("clinician_cardiovagal_score", e.target.value === "" ? "" : Number(e.target.value))} />
-              </Field>
-              <Field label="Adrenergic score /4">
-                <Input type="number" min={0} max={4} value={state.clinician_adrenergic_score} onChange={(e) => set("clinician_adrenergic_score", e.target.value === "" ? "" : Number(e.target.value))} />
-              </Field>
-              <Field label="Sudomotor score /3">
-                <Input type="number" min={0} max={3} value={state.clinician_sudomotor_score} onChange={(e) => set("clinician_sudomotor_score", e.target.value === "" ? "" : Number(e.target.value))} />
-              </Field>
-            </div>
-
-            <Field label="Clinician override reason (if any)">
-              <Textarea value={state.clinician_override_reason} onChange={(e) => set("clinician_override_reason", e.target.value)} rows={2} />
-            </Field>
-            <Field label="Interpretive summary">
-              <Textarea value={state.clinician_interpretive_summary} onChange={(e) => set("clinician_interpretive_summary", e.target.value)} rows={3} />
-            </Field>
-
-            <Separator />
-
-            {/* Derived results */}
-            <div className="rounded-xl border p-4 space-y-3">
-              <div className="flex items-center gap-2">
-                <Stethoscope className="w-4 h-4 text-primary" />
-                <h3 className="font-semibold">Derived results</h3>
+            <div className="grid gap-3 md:grid-cols-3">
+              <div className="rounded-lg border p-4">
+                <p className="text-xs text-muted-foreground">Severity</p>
+                <p className="font-semibold">{severity}</p>
               </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-sm">
-                <div className="rounded-lg bg-muted/40 p-2"><span className="text-muted-foreground text-xs">mCASS total</span><div className="font-bold text-lg">{totalScore ?? "—"}/10</div></div>
-                <div className="rounded-lg bg-muted/40 p-2"><span className="text-muted-foreground text-xs">Severity</span><div className="font-semibold">{derived.severityCategory}</div></div>
-                <div className="rounded-lg bg-muted/40 p-2"><span className="text-muted-foreground text-xs">Completeness</span><div className="font-semibold">{derived.completeness}</div></div>
-                <div className="rounded-lg bg-muted/40 p-2"><span className="text-muted-foreground text-xs">Max SBP fall</span><div className="font-semibold">{derived.maxSystolicDrop ?? "—"} mmHg</div></div>
-                <div className="rounded-lg bg-muted/40 p-2"><span className="text-muted-foreground text-xs">Max DBP fall</span><div className="font-semibold">{derived.maxDiastolicDrop ?? "—"} mmHg</div></div>
-                <div className="rounded-lg bg-muted/40 p-2"><span className="text-muted-foreground text-xs">Max HR rise</span><div className="font-semibold">{derived.maxHrIncrease ?? "—"} bpm</div></div>
-                <div className="rounded-lg bg-muted/40 p-2"><span className="text-muted-foreground text-xs">ΔHR/ΔSBP</span><div className="font-semibold">{derived.deltaHrDeltaSbp ?? "—"} bpm/mmHg</div></div>
-                <div className="rounded-lg bg-muted/40 p-2"><span className="text-muted-foreground text-xs">Orthostatic hypotension</span><div className="font-semibold">{derived.ohPresent === null ? "—" : derived.ohPresent ? (derived.ohDelayed ? "Present (delayed)" : "Present") : "Absent"}</div></div>
-                <div className="rounded-lg bg-muted/40 p-2"><span className="text-muted-foreground text-xs">HR compensation</span><div className="font-semibold">{derived.hrCompensationInadequate === null ? "—" : derived.hrCompensationInadequate ? "Inadequate" : "Adequate"}</div></div>
-                <div className="rounded-lg bg-muted/40 p-2"><span className="text-muted-foreground text-xs">Neurogenic pattern</span><div className="font-semibold">{derived.neurogenicPattern === null ? "—" : derived.neurogenicPattern ? "Supported" : "Not supported"}</div></div>
-                <div className="rounded-lg bg-muted/40 p-2"><span className="text-muted-foreground text-xs">POTS screen</span><div className="font-semibold">{derived.potsSupported === null ? (derived.potsIndeterminate ? "Indeterminate" : "—") : derived.potsSupported ? "Supported" : "Not supported"}</div></div>
-                <div className="rounded-lg bg-muted/40 p-2"><span className="text-muted-foreground text-xs">CAN stage</span><div className="font-semibold">{derived.canStage}</div></div>
-                <div className="rounded-lg bg-muted/40 p-2"><span className="text-muted-foreground text-xs">Abnormal cardiovagal tests</span><div className="font-semibold">{derived.abnormalCardiovagalCount}</div></div>
-                <div className="rounded-lg bg-muted/40 p-2"><span className="text-muted-foreground text-xs">Hand % LLN</span><div className="font-semibold">{derived.handPercentLLN === null ? "—" : derived.handPercentLLN.toFixed(0) + "%"}</div></div>
-                <div className="rounded-lg bg-muted/40 p-2"><span className="text-muted-foreground text-xs">Foot % LLN</span><div className="font-semibold">{derived.footPercentLLN === null ? "—" : derived.footPercentLLN.toFixed(0) + "%"}</div></div>
-                <div className="rounded-lg bg-muted/40 p-2"><span className="text-muted-foreground text-xs">Pattern</span><div className="font-semibold">{derived.pattern}</div></div>
+              <div className="rounded-lg border p-4">
+                <p className="text-xs text-muted-foreground">CAN stage</p>
+                <p className="font-semibold">{canStage.stage}</p>
+              </div>
+              <div className="rounded-lg border p-4">
+                <p className="text-xs text-muted-foreground">Autonomic pattern</p>
+                <p className="font-semibold">{pattern}</p>
               </div>
             </div>
 
-            {derived.qualityWarnings.length > 0 && (
-              <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 space-y-2">
-                <div className="flex items-center gap-2 text-amber-800">
-                  <AlertTriangle className="w-4 h-4" />
-                  <h3 className="font-semibold text-sm">Data quality warnings</h3>
-                </div>
-                <ul className="list-disc pl-5 text-xs text-amber-800 space-y-1">
-                  {derived.qualityWarnings.map((w, i) => (
-                    <li key={i}>{w}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-xs text-slate-700">
-              <strong>Mandatory disclaimer:</strong> This mCASS is a modified CASS-derived clinical/research framework. The Sudoscan-derived sudomotor component is not equivalent to QSART- or thermoregulatory sweat-test-based formal Mayo CASS scoring. Results require correlation with symptoms, medications, rhythm, comorbidities, technical quality, and laboratory-specific normative values.
+            <div className="space-y-1.5">
+              <Label>Clinical notes</Label>
+              <Textarea
+                value={s.notes}
+                onChange={(e) => set("notes", e.target.value)}
+                className="min-h-[80px]"
+              />
             </div>
 
-            <div className="flex flex-wrap gap-2 pt-2">
-              <Button onClick={handleExportPDF} className="bg-gradient-sunset hover:opacity-90 text-white border-0 shadow-glow">
-                <Download className="w-4 h-4 mr-2" /> Export PDF
-              </Button>
-              <Button onClick={handleExportJSON} variant="outline">
-                <FileText className="w-4 h-4 mr-2" /> Export JSON
-              </Button>
-              <Button onClick={handlePrint} variant="outline">
-                <Printer className="w-4 h-4 mr-2" /> Print
-              </Button>
-              <Button onClick={reset} variant="ghost">
-                <RotateCcw className="w-4 h-4 mr-2" /> Reset
-              </Button>
-            </div>
+            <pre className="max-h-[420px] overflow-auto whitespace-pre-wrap rounded-lg border bg-muted/40 p-4 text-xs leading-relaxed">
+              {reportLines.join("\n")}
+            </pre>
+
+            <Alert>
+              <Stethoscope className="h-4 w-4" />
+              <AlertTitle>Clinical status</AlertTitle>
+              <AlertDescription className="text-sm">
+                Modified clinical/research framework — not equivalent to the validated Mayo CASS.
+                Pattern classification is supportive and should not be used alone for anatomical
+                localization.
+              </AlertDescription>
+            </Alert>
           </TabsContent>
         </Tabs>
       </CardContent>
     </Card>
   );
-}
+};
+
+export default McassMiniApp;
