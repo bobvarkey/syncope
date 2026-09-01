@@ -46,6 +46,7 @@ import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useAssessmentProgress } from "@/contexts/AssessmentProgressContext";
+import { useActiveSection } from "@/contexts/ActiveSectionContext";
 import { cn } from "@/lib/utils";
 
 // Sunset Blaze accent classes per icon + group gradients
@@ -60,8 +61,7 @@ const sections = [
     prominent: true,
     subsections: [
       { id: "hutt-mini-app", title: "Head-Up Tilt Table Test", icon: ArrowUpFromLine, color: "text-[hsl(340_85%_60%)]" },
-      { id: "can-mini-app", title: "CAN / mCASS Mini App", icon: Heart, color: "text-[hsl(280_75%_60%)]" },
-      { id: "mcass-mini-app", title: "mCASS Autonomic Assessment", icon: Activity, color: "text-[hsl(190_80%_50%)]" },
+      { id: "mcass-mini-app", title: "CAN / mCASS Autonomic Assessment", icon: Activity, color: "text-[hsl(190_80%_50%)]" },
     ],
   },
   {
@@ -151,17 +151,23 @@ const sections = [
 
 const STORAGE_KEY = "assessment-sidebar-open-groups";
 
+const DEFAULT_OPEN_GROUPS: Record<string, boolean> = sections.reduce(
+  (acc, s) => ({ ...acc, [s.id]: true }),
+  {} as Record<string, boolean>
+);
+
 export function AssessmentSidebar() {
   const { state, isMobile, toggleSidebar } = useSidebar();
   const collapsed = state === "collapsed";
   const [activeSection, setActiveSection] = useState<string>("");
+  const { activeId, setActiveId, clearActiveId } = useActiveSection();
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {
-    if (typeof window === "undefined") return {};
+    if (typeof window === "undefined") return DEFAULT_OPEN_GROUPS;
     try {
       const raw = window.localStorage.getItem(STORAGE_KEY);
-      return raw ? JSON.parse(raw) : {};
+      return raw ? { ...DEFAULT_OPEN_GROUPS, ...JSON.parse(raw) } : DEFAULT_OPEN_GROUPS;
     } catch {
-      return {};
+      return DEFAULT_OPEN_GROUPS;
     }
   });
   const [query, setQuery] = useState("");
@@ -224,12 +230,23 @@ export function AssessmentSidebar() {
   }, []);
 
   const scrollToSection = (sectionId: string) => {
-    const element = document.getElementById(sectionId);
-    if (element) {
-      const yOffset = -80;
-      const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
-      window.scrollTo({ top: y, behavior: "smooth" });
+    setActiveId(sectionId);
+    if (window.location.hash !== `#${sectionId}`) {
+      window.history.replaceState(null, '', `#${sectionId}`);
+      window.dispatchEvent(new Event('hashchange'));
     }
+    // wait for the focused section to become visible before scrolling to it
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const element = document.getElementById(sectionId);
+        if (element) {
+          const yOffset = -80;
+          const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+          window.scrollTo({ top: y, behavior: "smooth" });
+        }
+      });
+    });
+    if (isMobile) toggleSidebar();
   };
 
   const toggleGroup = (id: string) =>
@@ -275,6 +292,17 @@ export function AssessmentSidebar() {
             </Button>
           )}
         </div>
+        {!collapsed && activeId && (
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={clearActiveId}
+            className="w-full justify-center text-xs font-semibold"
+          >
+            <X className="h-3.5 w-3.5 mr-1.5" />
+            Show all sections
+          </Button>
+        )}
         {!collapsed && (
           <div className="relative">
             <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
@@ -367,7 +395,7 @@ export function AssessmentSidebar() {
                     <SidebarMenu>
                       {section.subsections.map((subsection) => {
                         const progress = getCompletionPercentage(subsection.id);
-                        const active = activeSection === subsection.id;
+                        const active = activeSection === subsection.id || activeId === subsection.id;
                         return (
                           <SidebarMenuItem key={subsection.id}>
                             <div className="space-y-1">

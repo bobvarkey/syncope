@@ -9,6 +9,7 @@ import { FileText, Printer, Download, FileDown, History, TestTube, Brain, Shield
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AssessmentSidebar } from "@/components/AssessmentSidebar";
 import { AssessmentProgressProvider, useAssessmentProgress } from "@/contexts/AssessmentProgressContext";
+import { ActiveSectionProvider, useActiveSection } from "@/contexts/ActiveSectionContext";
 import { LanguageProvider, useLanguage } from "@/contexts/LanguageContext";
 import { SectionWithProgress } from "@/components/SectionWithProgress";
 import { AssessmentDashboard } from "@/components/AssessmentDashboard";
@@ -38,7 +39,6 @@ import SyncopeMedicationsSection from "@/components/questionnaire/SyncopeMedicat
 import EcgSyncopeAbcde from "@/components/questionnaire/EcgSyncopeAbcde";
 import SyncopeMiniApp from "@/components/questionnaire/SyncopeMiniApp";
 import HuttMiniApp from "@/components/questionnaire/HuttMiniApp";
-import CanMiniApp from "@/components/questionnaire/CanMiniApp";
 import EcgScoringChecklist from "@/components/questionnaire/EcgScoringChecklist";
 import McassMiniApp from "@/components/questionnaire/McassMiniApp";
 import AntiArrhythmicsSection from "@/components/questionnaire/AntiArrhythmicsSection";
@@ -58,6 +58,32 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
+/** Maps each sidebar-navigable leaf section id to its containing accordion group id. */
+const LEAF_GROUP_MAP: Record<string, string> = {
+  'circumstances': 'clinical-history',
+  'onset': 'clinical-history',
+  'attack': 'clinical-history',
+  'end': 'clinical-history',
+  'background': 'clinical-history',
+  'clinical-features': 'clinical-history',
+  'ecg-scoring-checklist': 'investigations',
+  'ecg-abcde': 'investigations',
+  'syncope-medications': 'investigations',
+  'lab-tests': 'investigations',
+  'initial-evaluation': 'investigations',
+  'tilt-test': 'investigations',
+  'risk-score': 'investigations',
+  'subclavian-steal': 'investigations',
+  'carotid-massage': 'investigations',
+  'orthostatic-intolerance': 'investigations',
+  'autonomic-testing': 'investigations',
+  'differential-diagnosis-section': 'differential-diagnosis',
+  'diagnostic-criteria': 'differential-diagnosis',
+  'ai-diagnosis': 'differential-diagnosis',
+  'interventions': 'management',
+  'drop-attacks': 'drop-attacks-group',
+  'anti-arrhythmics': 'pharmacology',
+};
 
 const AssessmentProgressHeader = () => {
   const { sectionProgress } = useAssessmentProgress();
@@ -113,6 +139,12 @@ const AssessmentProgressHeader = () => {
 const IndexContent = () => {
   const { language, t } = useLanguage();
   const { sectionProgress, getCompletionPercentage } = useAssessmentProgress();
+  const { activeId } = useActiveSection();
+  const isFocused = activeId !== null;
+  /** Hides everything except the sidebar-selected section when a focus selection is active. */
+  const sectionClass = (id: string) => cn(isFocused && activeId !== id && "hidden");
+  const groupClass = (groupId: string) =>
+    cn(isFocused && LEAF_GROUP_MAP[activeId as string] !== groupId && "hidden");
   
   const getGroupCompletion = (sections: string[]) => {
     let totalCompleted = 0;
@@ -175,32 +207,7 @@ const IndexContent = () => {
       const hash = window.location.hash.replace('#', '');
       if (!hash) return;
 
-      const groupMapping: Record<string, string> = {
-        'circumstances': 'clinical-history',
-        'onset': 'clinical-history',
-        'attack': 'clinical-history',
-        'end': 'clinical-history',
-        'background': 'clinical-history',
-        'clinical-features': 'clinical-history',
-        'ecg-scoring-checklist': 'investigations',
-        'ecg-abcde': 'investigations',
-        'syncope-medications': 'investigations',
-        'lab-tests': 'investigations',
-        'initial-evaluation': 'investigations',
-        'tilt-test': 'investigations',
-        'risk-score': 'investigations',
-        'subclavian-steal': 'investigations',
-        'carotid-massage': 'investigations',
-        'orthostatic-intolerance': 'investigations',
-        'autonomic-testing': 'investigations',
-        'differential-diagnosis-section': 'differential-diagnosis',
-        'diagnostic-criteria': 'differential-diagnosis',
-        'ai-diagnosis': 'differential-diagnosis',
-        'interventions': 'management',
-        'drop-attacks': 'drop-attacks-group'
-      };
-
-      const groupId = groupMapping[hash];
+      const groupId = LEAF_GROUP_MAP[hash];
       if (groupId) {
         setOpenAccordionGroups(prev => 
           prev.includes(groupId) ? prev : [...prev, groupId]
@@ -328,7 +335,7 @@ const IndexContent = () => {
             <div className="max-w-7xl mx-auto w-full">
               <section
                 aria-label="SyncDx introduction"
-                className="mb-5 sm:mb-8 rounded-2xl overflow-hidden border shadow-soft bg-card"
+                className={cn("mb-5 sm:mb-8 rounded-2xl overflow-hidden border shadow-soft bg-card", isFocused && "hidden")}
               >
                 <div className="relative flex justify-center items-center bg-muted/20">
                   <img
@@ -358,29 +365,27 @@ const IndexContent = () => {
                 </div>
               </section>
 
-              <div id="syncope-mini-app" className="mb-6 sm:mb-8 scroll-mt-20">
+              <div id="syncope-mini-app" className={cn("mb-6 sm:mb-8 scroll-mt-20", isFocused && "hidden")}>
                 <SyncopeMiniApp />
               </div>
 
-              <div id="hutt-mini-app" className="mb-6 sm:mb-8 scroll-mt-20">
+              <div id="hutt-mini-app" className={cn("mb-6 sm:mb-8 scroll-mt-20", sectionClass("hutt-mini-app"))}>
                 <HuttMiniApp />
               </div>
 
-              <div id="can-mini-app" className="mb-6 sm:mb-8 scroll-mt-20">
-                <CanMiniApp />
-              </div>
-
-              <div id="mcass-mini-app" className="mb-6 sm:mb-8 scroll-mt-20">
+              <div id="mcass-mini-app" className={cn("mb-6 sm:mb-8 scroll-mt-20", sectionClass("mcass-mini-app"))}>
                 <McassMiniApp />
               </div>
 
 
 
-              <AssessmentDashboard />
+              <div className={cn(isFocused && "hidden")}>
+                <AssessmentDashboard />
+              </div>
 
 
               
-              <Card className="mb-6">
+              <Card className={cn("mb-6", isFocused && !LEAF_GROUP_MAP[activeId as string] && "hidden")}>
                 <CardHeader>
                   <CardTitle>Patient Assessment Form</CardTitle>
                   <CardDescription>
@@ -388,10 +393,12 @@ const IndexContent = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  <PatientInfoSection
-                    data={formData.patientInfo}
-                    onUpdate={(data) => updateSection('patientInfo', data)}
-                  />
+                  <div className={cn(isFocused && "hidden")}>
+                    <PatientInfoSection
+                      data={formData.patientInfo}
+                      onUpdate={(data) => updateSection('patientInfo', data)}
+                    />
+                  </div>
                   
                   <Accordion 
                     type="multiple" 
@@ -400,7 +407,7 @@ const IndexContent = () => {
                     className="space-y-4"
                   >
                     {/* Clinical History Group */}
-                    <AccordionItem value="clinical-history" className="border rounded-xl overflow-hidden shadow-sm">
+                    <AccordionItem value="clinical-history" className={cn("border rounded-xl overflow-hidden shadow-sm", groupClass("clinical-history"))}>
                       <AccordionTrigger className="px-6 py-4 bg-muted/30 hover:no-underline hover:bg-muted/50 transition-all [&[data-state=open]]:bg-muted/10">
                         <div className="flex-1 flex items-center justify-between pr-4">
                           <div className="flex items-center gap-3 text-left">
@@ -426,7 +433,7 @@ const IndexContent = () => {
                         </div>
                       </AccordionTrigger>
                       <AccordionContent className="px-6 pt-6 pb-4 space-y-8">
-                        <div id="circumstances">
+                        <div id="circumstances" className={sectionClass("circumstances")}>
                           <SectionWithProgress sectionId="circumstances" data={formData.circumstances}>
                             <CircumstancesSection 
                               data={formData.circumstances} 
@@ -437,7 +444,7 @@ const IndexContent = () => {
                         
                         <Separator />
                         
-                        <div id="onset">
+                        <div id="onset" className={sectionClass("onset")}>
                           <SectionWithProgress sectionId="onset" data={formData.onset}>
                             <OnsetSection 
                               data={formData.onset} 
@@ -448,7 +455,7 @@ const IndexContent = () => {
                         
                         <Separator />
                         
-                        <div id="attack">
+                        <div id="attack" className={sectionClass("attack")}>
                           <SectionWithProgress sectionId="attack" data={formData.attack}>
                             <AttackSection 
                               data={formData.attack} 
@@ -459,7 +466,7 @@ const IndexContent = () => {
                         
                         <Separator />
                         
-                        <div id="end">
+                        <div id="end" className={sectionClass("end")}>
                           <SectionWithProgress sectionId="end" data={formData.end}>
                             <EndSection 
                               data={formData.end} 
@@ -470,7 +477,7 @@ const IndexContent = () => {
                         
                         <Separator />
                         
-                        <div id="background">
+                        <div id="background" className={sectionClass("background")}>
                           <SectionWithProgress sectionId="background" data={formData.background}>
                             <BackgroundSection 
                               data={formData.background} 
@@ -481,7 +488,7 @@ const IndexContent = () => {
                         
                         <Separator />
                         
-                        <div id="clinical-features">
+                        <div id="clinical-features" className={sectionClass("clinical-features")}>
                           <SectionWithProgress sectionId="clinical-features" data={formData.clinicalFeatures}>
                             <ClinicalFeaturesSection 
                               data={formData.clinicalFeatures} 
@@ -493,7 +500,7 @@ const IndexContent = () => {
                     </AccordionItem>
 
                     {/* Investigations Group */}
-                    <AccordionItem value="investigations" className="border rounded-xl overflow-hidden shadow-sm">
+                    <AccordionItem value="investigations" className={cn("border rounded-xl overflow-hidden shadow-sm", groupClass("investigations"))}>
                       <AccordionTrigger className="px-6 py-4 bg-muted/30 hover:no-underline hover:bg-muted/50 transition-all [&[data-state=open]]:bg-muted/10">
                         <div className="flex-1 flex items-center justify-between pr-4">
                           <div className="flex items-center gap-3 text-left">
@@ -523,7 +530,7 @@ const IndexContent = () => {
                         </div>
                       </AccordionTrigger>
                       <AccordionContent className="px-6 pt-6 pb-4 space-y-8">
-                        <div id="ecg-scoring-checklist">
+                        <div id="ecg-scoring-checklist" className={sectionClass("ecg-scoring-checklist")}>
                           <EcgScoringChecklist
                             linkedAbcdeSelection={(formData.ecgAbcde as any)?.selectedPatterns}
                             data={formData.ecgScoring}
@@ -533,7 +540,7 @@ const IndexContent = () => {
 
                         <Separator />
                         
-                        <div id="ecg-abcde">
+                        <div id="ecg-abcde" className={sectionClass("ecg-abcde")}>
                           <EcgSyncopeAbcde
                             data={formData.ecgAbcde}
                             onUpdate={(data) => updateSection('ecgAbcde', data)}
@@ -542,7 +549,7 @@ const IndexContent = () => {
 
                         <Separator />
 
-                        <div id="syncope-medications">
+                        <div id="syncope-medications" className={sectionClass("syncope-medications")}>
                           <SectionWithProgress sectionId="syncope-medications" data={formData.syncopeMedications}>
                             <SyncopeMedicationsSection
                               data={formData.syncopeMedications}
@@ -556,7 +563,7 @@ const IndexContent = () => {
 
                         <Separator />
                         
-                        <div id="lab-tests">
+                        <div id="lab-tests" className={sectionClass("lab-tests")}>
                           <SectionWithProgress sectionId="lab-tests" data={formData.labTests}>
                             <LabTestsSection 
                               data={formData.labTests} 
@@ -567,7 +574,7 @@ const IndexContent = () => {
                         
                         <Separator />
                         
-                        <div id="initial-evaluation">
+                        <div id="initial-evaluation" className={sectionClass("initial-evaluation")}>
                           <SectionWithProgress sectionId="initial-evaluation" data={formData.initialEvaluation}>
                             <InitialEvaluationSection 
                               data={formData.initialEvaluation} 
@@ -578,7 +585,7 @@ const IndexContent = () => {
                         
                         <Separator />
                         
-                        <div id="tilt-test">
+                        <div id="tilt-test" className={sectionClass("tilt-test")}>
                           <SectionWithProgress sectionId="tilt-test" data={formData.tiltTestProtocol}>
                             <TiltTestProtocolSection 
                               data={formData.tiltTestProtocol} 
@@ -589,7 +596,7 @@ const IndexContent = () => {
                         
                         <Separator />
                         
-                        <div id="risk-score">
+                        <div id="risk-score" className={sectionClass("risk-score")}>
                           <SectionWithProgress sectionId="risk-score" data={formData.riskScore}>
                             <RiskScoreSection 
                               data={formData.riskScore} 
@@ -600,7 +607,7 @@ const IndexContent = () => {
                         
                         <Separator />
                         
-                        <div id="subclavian-steal">
+                        <div id="subclavian-steal" className={sectionClass("subclavian-steal")}>
                           <SectionWithProgress sectionId="subclavian-steal" data={formData.subclavianSteal}>
                             <SubclavianStealSection 
                               data={formData.subclavianSteal} 
@@ -611,7 +618,7 @@ const IndexContent = () => {
                         
                         <Separator />
                         
-                        <div id="carotid-massage">
+                        <div id="carotid-massage" className={sectionClass("carotid-massage")}>
                           <SectionWithProgress sectionId="carotid-massage" data={formData.carotidSinusMassage}>
                             <CarotidSinusMassageSection 
                               data={formData.carotidSinusMassage} 
@@ -622,7 +629,7 @@ const IndexContent = () => {
                         
                         <Separator />
                         
-                        <div id="orthostatic-intolerance">
+                        <div id="orthostatic-intolerance" className={sectionClass("orthostatic-intolerance")}>
                           <SectionWithProgress sectionId="orthostatic-intolerance" data={formData.orthostaticIntolerance}>
                             <OrthostaticIntoleranceSection 
                               data={formData.orthostaticIntolerance} 
@@ -633,7 +640,7 @@ const IndexContent = () => {
                         
                         <Separator />
                         
-                        <div id="autonomic-testing">
+                        <div id="autonomic-testing" className={sectionClass("autonomic-testing")}>
                           <SectionWithProgress sectionId="autonomic-testing" data={formData.autonomicTesting}>
                             <AutonomicTestingSection 
                               data={formData.autonomicTesting} 
@@ -645,7 +652,7 @@ const IndexContent = () => {
                     </AccordionItem>
 
                     {/* Differential Diagnosis Group */}
-                    <AccordionItem value="differential-diagnosis" className="border rounded-xl overflow-hidden shadow-sm">
+                    <AccordionItem value="differential-diagnosis" className={cn("border rounded-xl overflow-hidden shadow-sm", groupClass("differential-diagnosis"))}>
                       <AccordionTrigger className="px-6 py-4 bg-muted/30 hover:no-underline hover:bg-muted/50 transition-all [&[data-state=open]]:bg-muted/10">
                         <div className="flex-1 flex items-center justify-between pr-4">
                           <div className="flex items-center gap-3 text-left">
@@ -671,7 +678,7 @@ const IndexContent = () => {
                         </div>
                       </AccordionTrigger>
                       <AccordionContent className="px-6 pt-6 pb-4 space-y-8">
-                        <div id="differential-diagnosis-section">
+                        <div id="differential-diagnosis-section" className={sectionClass("differential-diagnosis-section")}>
                           <SectionWithProgress sectionId="differential-diagnosis-section" data={formData.differentialDiagnosis}>
                             <DifferentialDiagnosisSection 
                               data={formData.differentialDiagnosis} 
@@ -682,7 +689,7 @@ const IndexContent = () => {
                         
                         <Separator />
                         
-                        <div id="diagnostic-criteria">
+                        <div id="diagnostic-criteria" className={sectionClass("diagnostic-criteria")}>
                           <SectionWithProgress sectionId="diagnostic-criteria" data={formData.diagnosticCriteria}>
                             <DiagnosticCriteriaSection 
                               data={formData.diagnosticCriteria} 
@@ -693,14 +700,14 @@ const IndexContent = () => {
                         
                         <Separator />
                         
-                        <div id="ai-diagnosis">
+                        <div id="ai-diagnosis" className={sectionClass("ai-diagnosis")}>
                           <AIDiagnosisSection />
                         </div>
                       </AccordionContent>
                     </AccordionItem>
 
                     {/* Management Group */}
-                    <AccordionItem value="management" className="border rounded-xl overflow-hidden shadow-sm">
+                    <AccordionItem value="management" className={cn("border rounded-xl overflow-hidden shadow-sm", groupClass("management"))}>
                       <AccordionTrigger className="px-6 py-4 bg-muted/30 hover:no-underline hover:bg-muted/50 transition-all [&[data-state=open]]:bg-muted/10">
                         <div className="flex-1 flex items-center justify-between pr-4">
                           <div className="flex items-center gap-3 text-left">
@@ -726,7 +733,7 @@ const IndexContent = () => {
                         </div>
                       </AccordionTrigger>
                       <AccordionContent className="px-6 pt-6 pb-4 space-y-8">
-                        <div id="interventions">
+                        <div id="interventions" className={sectionClass("interventions")}>
                           <SectionWithProgress sectionId="interventions" data={formData.interventions}>
                             <InterventionsSection 
                               data={formData.interventions} 
@@ -738,7 +745,7 @@ const IndexContent = () => {
                     </AccordionItem>
 
                     {/* Drop Attacks Group */}
-                    <AccordionItem value="drop-attacks-group" className="border rounded-xl overflow-hidden shadow-sm">
+                    <AccordionItem value="drop-attacks-group" className={cn("border rounded-xl overflow-hidden shadow-sm", groupClass("drop-attacks-group"))}>
                       <AccordionTrigger className="px-6 py-4 bg-muted/30 hover:no-underline hover:bg-muted/50 transition-all [&[data-state=open]]:bg-muted/10">
                         <div className="flex-1 flex items-center justify-between pr-4">
                           <div className="flex items-center gap-3 text-left">
@@ -764,7 +771,7 @@ const IndexContent = () => {
                         </div>
                       </AccordionTrigger>
                       <AccordionContent className="px-6 pt-6 pb-4 space-y-8">
-                        <div id="drop-attacks">
+                        <div id="drop-attacks" className={sectionClass("drop-attacks")}>
                           <SectionWithProgress sectionId="drop-attacks" data={formData.dropAttacks}>
                             <DropAttacksSection 
                               data={formData.dropAttacks} 
@@ -778,7 +785,12 @@ const IndexContent = () => {
                 </CardContent>
               </Card>
 
-              <Accordion type="single" collapsible className="w-full space-y-4 mb-6 print:hidden">
+              <Accordion
+                type="multiple"
+                value={openAccordionGroups}
+                onValueChange={setOpenAccordionGroups}
+                className={cn("w-full space-y-4 mb-6 print:hidden", isFocused && activeId !== "anti-arrhythmics" && "hidden")}
+              >
                 <AccordionItem value="pharmacology" className="border rounded-xl overflow-hidden shadow-sm">
                   <AccordionTrigger className="px-6 py-4 bg-muted/30 hover:no-underline hover:bg-muted/50 transition-all">
                     <div className="flex items-center gap-3 text-left">
@@ -792,13 +804,16 @@ const IndexContent = () => {
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="px-6 pt-6 pb-4 space-y-8">
-                    <div id="anti-arrhythmics-pharmacology">
+                    <div id="anti-arrhythmics" className={sectionClass("anti-arrhythmics")}>
                       <AntiArrhythmicsSection />
                     </div>
                   </AccordionContent>
                 </AccordionItem>
 
-                <AccordionItem value="summary-report" className="border rounded-xl overflow-hidden shadow-sm border-primary/30">
+                <AccordionItem
+                  value="summary-report"
+                  className={cn("border rounded-xl overflow-hidden shadow-sm border-primary/30", isFocused && "hidden")}
+                >
                   <AccordionTrigger className="px-6 py-4 bg-primary/5 hover:no-underline hover:bg-primary/10 transition-all">
                     <div className="flex items-center gap-3 text-left">
                       <div className="p-2 rounded-lg bg-primary/10">
@@ -868,7 +883,11 @@ const IndexContent = () => {
 };
 
 const Index = () => {
-  return <IndexContent />;
+  return (
+    <ActiveSectionProvider>
+      <IndexContent />
+    </ActiveSectionProvider>
+  );
 };
 
 export default Index;

@@ -22,7 +22,7 @@ export function getAgeGroup(age: number | ""): AgeGroup | null {
   return ">=71";
 }
 
-type Range = { LLN: number; ULN: number };
+export type Range = { LLN: number; ULN: number };
 type BySex = Record<Sex, Range>;
 type ByAge = Record<AgeGroup, BySex>;
 
@@ -195,7 +195,93 @@ export function getQsartRange(
   return QSART_NORMS[g][sex][site];
 }
 
+/**
+ * Optional laboratory-specific LLN/ULN overrides that take precedence over the
+ * Indian adult reference dataset. Used by both the mCASS analyzer and the
+ * Autonomic Testing section so they compute identical results.
+ */
+export interface LabOverrides {
+  hrdb?: Partial<Range>;
+  ei?: Partial<Range>;
+  vr?: Partial<Range>;
+  prt100?: Partial<Range>;
+  prt50?: Partial<Range>;
+  qsart?: Partial<Record<QsartSite, Partial<Range>>>;
+}
+
+/** Merges an optional lab override on top of a dataset range (override wins field-by-field). */
+export function applyOverride(range: Range | null, override?: Partial<Range>): Range | null {
+  if (!range && !override) return null;
+  if (!override || (override.LLN === undefined && override.ULN === undefined)) return range;
+  return {
+    LLN: override.LLN ?? range?.LLN ?? 0,
+    ULN: override.ULN ?? range?.ULN ?? 0,
+  };
+}
+
+/**
+ * 30:15 ratio (active standing) — provisional, age-aware screening fallback.
+ *
+ * No validated India-specific age-stratified reference table exists for this
+ * ratio. These bands are derived from published age-adjusted Ewing-test
+ * literature (NOT Indian-specific) and are only a screening fallback when a
+ * laboratory-specific LLN is unavailable; prefer lab age/sex-adjusted norms.
+ */
+export type Ratio3015AgeBand = "18-40" | "41-60" | "61-70" | ">=70";
+
+export interface Ratio3015Band {
+  /** Values at/above this are reassuring / normal. */
+  normalLLN: number;
+  /** Values at/above this (but below normalLLN) are borderline; below is abnormal. */
+  borderlineLow: number;
+}
+
+export const RATIO_3015_FALLBACK: Record<Ratio3015AgeBand, Ratio3015Band> = {
+  "18-40": { normalLLN: 1.04, borderlineLow: 1.01 },
+  "41-60": { normalLLN: 1.04, borderlineLow: 1.01 },
+  "61-70": { normalLLN: 1.02, borderlineLow: 1.0 },
+  ">=70": { normalLLN: 1.0, borderlineLow: 0.98 },
+};
+
+export function getRatio3015AgeBand(age: number | ""): Ratio3015AgeBand | null {
+  if (age === "" || Number.isNaN(Number(age))) return null;
+  const a = Number(age);
+  if (a < 18) return null;
+  if (a <= 40) return "18-40";
+  if (a <= 60) return "41-60";
+  if (a <= 70) return "61-70";
+  return ">=70";
+}
+
+export function getRatio3015Fallback(age: number | ""): Ratio3015Band | null {
+  const band = getRatio3015AgeBand(age);
+  return band ? RATIO_3015_FALLBACK[band] : null;
+}
+
 export type NormStatus = "normal" | "low" | "high" | "unknown";
+
+/**
+ * Classify the 30:15 ratio. Uses the lab-specific LLN when supplied
+ * (normal vs. abnormal only); otherwise falls back to the provisional,
+ * non-Indian-specific age-band table above ("high" is reused to render the
+ * "borderline" badge).
+ */
+export function classifyRatio3015(
+  value: number | "",
+  labLLN: number | "",
+  age: number | ""
+): NormStatus {
+  if (value === "" || Number.isNaN(Number(value))) return "unknown";
+  const v = Number(value);
+  if (labLLN !== "" && !Number.isNaN(Number(labLLN))) {
+    return v >= Number(labLLN) ? "normal" : "low";
+  }
+  const band = getRatio3015Fallback(age);
+  if (!band) return "unknown";
+  if (v >= band.normalLLN) return "normal";
+  if (v >= band.borderlineLow) return "high";
+  return "low";
+}
 
 /** Below LLN = abnormal (low); above ULN flagged as high (informational). */
 export function classifyAgainst(value: number | "", range: Range | null): NormStatus {

@@ -23,6 +23,7 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   Select,
   SelectContent,
@@ -32,23 +33,27 @@ import {
 } from "@/components/ui/select";
 import {
   AGE_GROUPS,
-  EI_NORMS,
-  HRDB_NORMS,
-  MCASS_SEVERITY,
-  PRT100_NORMS,
-  PRT50_NORMS,
+  LabOverrides,
   QSART_SITES,
   QsartSite,
   Sex,
   SUDOSCAN_GUIDE,
-  VALSALVA_RATIO_NORMS,
+  applyOverride,
   classifyAgainst,
-  classifyPrt,
   getAgeGroup,
   getQsartRange,
-  getRange,
   sudoscanBand,
 } from "@/lib/autonomicNorms";
+import {
+  computeAdrenergic,
+  computeCanStage,
+  computeCardiovagal,
+  computeMcassTotal,
+  computeOrtho,
+  computePattern,
+  computePots,
+  computeSudomotor,
+} from "@/lib/mcassScoring";
 
 /* ------------------------------------------------------------------ */
 /* State                                                               */
@@ -95,9 +100,13 @@ interface State {
   // sudomotor
   sudoMode: "sudoscan" | "qsart";
   sudoscan: { rHand: Num; lHand: Num; rFoot: Num; lFoot: Num };
+  /** Merged from the CAN Mini App: optional patient/device-specific LLN override (default 60 µS). */
+  sudoscanLln: { hand: Num; foot: Num };
   qsart: Record<QsartSite, Num>;
 
   notes: string;
+  /** Optional laboratory-specific LLN/ULN overrides; take precedence over the Indian dataset. */
+  labOverrides: LabOverrides;
 }
 
 const CONFOUNDERS: { key: string; label: string }[] = [
@@ -110,6 +119,49 @@ const CONFOUNDERS: { key: string; label: string }[] = [
   { key: "dehydration", label: "Dehydration" },
   { key: "acute_illness", label: "Acute illness" },
 ];
+
+/** Merged from the CAN Mini App: generic age-only (non-sex-specific) lower limit for
+ *  deep-breathing HR variation, retained as a supplementary reference alongside the
+ *  age- and sex-adjusted Indian dataset (HRDB_NORMS) used above. */
+const genericDeepBreathingLln = (age: number | null) => {
+  if (age === null) return 10;
+  if (age < 20) return 18;
+  if (age < 30) return 15;
+  if (age < 40) return 13;
+  if (age < 50) return 11;
+  if (age < 60) return 9;
+  if (age < 70) return 7;
+  return 5;
+};
+
+/** Merged from the CAN Mini App: protocol/performance notes shown on hover. */
+const TEST_REQS: Record<string, string> = {
+  hrdb:
+    "Deep-breathing ΔHR: 6 breaths/min (5 s in, 5 s out) for ~1 min; supine or seated, continuous ECG; avoid talking/coughing/straining; use age- and sex-adjusted norms (LLN declines with age).",
+  ei:
+    "E:I ratio: mean longest expiratory NN interval ÷ mean shortest inspiratory NN interval across ≥6 paced cycles at 6 breaths/min; sinus rhythm preferred; chronotropic/anticholinergic drugs confound the result.",
+  vr:
+    "Valsalva ratio: strain at ~40 mmHg for ~15 s (blow into manometer), usually ×2–3 trials; ratio = longest post-strain RR ÷ shortest strain RR; beat-to-beat BP (late phase II, phase IV overshoot) informs adrenergic scoring.",
+  ratio3015:
+    "30:15 ratio: after active standing, longest RR near the 30th beat ÷ shortest RR near the 15th beat; requires continuous ECG and prompt upright transition; use laboratory age-adjusted norms.",
+  orthostatic:
+    "Stand/tilt: supine rest ≥5 min (10–15 min preferred), then active stand or head-up tilt; record BP/HR at 1, 3, 5 min (continue to 10 min if POTS suspected). OH = sustained SBP fall ≥20 or DBP fall ≥10 mmHg within 3 min. Use fall precautions; supervised; terminate for syncope, presyncope, chest pain, or arrhythmia.",
+  sudomotor:
+    "Sudoscan ESC: electrochemical skin conductance of palms and soles in µS; standard generalized LLN = 60 µS. Not equivalent to QSART/thermoregulatory sweat testing. Interpret with device/age/sex-specific norms; poor contact, callus, edema, or skin disease limit validity.",
+};
+
+/** Merged from the CAN Mini App: tooltip-wrapped field label. */
+const ReqTip = ({ id, title }: { id: string; title: string }) => (
+  <Tooltip>
+    <TooltipTrigger asChild>
+      <span className="inline-flex items-center gap-1 cursor-help">
+        {title}
+        <Info className="h-3.5 w-3.5 text-muted-foreground" />
+      </span>
+    </TooltipTrigger>
+    <TooltipContent className="max-w-sm text-xs leading-relaxed">{TEST_REQS[id]}</TooltipContent>
+  </Tooltip>
+);
 
 const SYMPTOMS = [
   "Light-headedness",
@@ -146,8 +198,10 @@ const initialState = (): State => ({
   competingCauses: "",
   sudoMode: "sudoscan",
   sudoscan: { rHand: "", lHand: "", rFoot: "", lFoot: "" },
+  sudoscanLln: { hand: "", foot: "" },
   qsart: { forearm: "", proximal_leg: "", distal_leg: "", foot: "" },
   notes: "",
+  labOverrides: {},
 });
 
 const num = (v: string): Num => (v === "" ? "" : Number(v));
@@ -172,14 +226,16 @@ const NormField = ({
   range,
   status,
   hint,
+  note,
 }: {
-  label: string;
+  label: React.ReactNode;
   unit?: string;
   value: Num;
   onChange: (v: Num) => void;
   range: { LLN: number; ULN: number } | null;
   status: string;
   hint?: string;
+  note?: string;
 }) => (
   <div className="space-y-1.5">
     <Label className="text-sm font-medium">
@@ -199,6 +255,7 @@ const NormField = ({
       </span>
       <StatusBadge status={status} />
     </div>
+    {note && <p className="text-[11px] text-muted-foreground">{note}</p>}
   </div>
 );
 
@@ -227,277 +284,98 @@ const McassMiniApp = () => {
 
   const set = <K extends keyof State>(k: K, v: State[K]) => setS((p) => ({ ...p, [k]: v }));
 
+  /** Sets/clears a lab-specific LLN/ULN override for a scalar test. */
+  const setOverride = (
+    test: "hrdb" | "ei" | "vr" | "prt100" | "prt50",
+    field: "LLN" | "ULN",
+    value: Num
+  ) =>
+    setS((p) => ({
+      ...p,
+      labOverrides: {
+        ...p.labOverrides,
+        [test]: { ...p.labOverrides[test], [field]: value === "" ? undefined : Number(value) },
+      },
+    }));
+
+  /** Sets/clears a lab-specific LLN/ULN override for a QSART site. */
+  const setQsartOverride = (site: QsartSite, field: "LLN" | "ULN", value: Num) =>
+    setS((p) => ({
+      ...p,
+      labOverrides: {
+        ...p.labOverrides,
+        qsart: {
+          ...p.labOverrides.qsart,
+          [site]: { ...p.labOverrides.qsart?.[site], [field]: value === "" ? undefined : Number(value) },
+        },
+      },
+    }));
+
   const ageGroup = getAgeGroup(s.age);
   const sex = s.sex || "";
 
-  /* --------------------------- Cardiovagal ------------------------- */
-  const hrdbRange = getRange(HRDB_NORMS, s.age, sex);
-  const eiRange = getRange(EI_NORMS, s.age, sex);
-  const vrRange = getRange(VALSALVA_RATIO_NORMS, s.age, sex);
-  const prt100Range = getRange(PRT100_NORMS, s.age, sex);
-  const prt50Range = getRange(PRT50_NORMS, s.age, sex);
+  /* -------- Shared scoring (identical to Autonomic Testing section) ------- */
+  const cardiovagal = computeCardiovagal({
+    age: s.age,
+    sex,
+    hrdb: s.hrdb,
+    ei: s.ei,
+    vr: s.vr,
+    ratio3015: s.ratio3015,
+    ratio3015LLN: s.ratio3015LLN,
+    overrides: s.labOverrides,
+  });
+  const { hrdbRange, eiRange, vrRange, hrdbStatus, eiStatus, vrStatus, r3015Status, ratio3015Fallback } =
+    cardiovagal;
 
-  const hrdbStatus = classifyAgainst(s.hrdb, hrdbRange);
-  const eiStatus = classifyAgainst(s.ei, eiRange);
-  const vrStatus = classifyAgainst(s.vr, vrRange);
-  const prt100Status = classifyPrt(s.prt100, prt100Range);
-  const prt50Status = classifyPrt(s.prt50, prt50Range);
+  const ortho = computeOrtho(s.readings, s.baselineHypertensive, s.age);
 
-  const r3015Status: string = useMemo(() => {
-    if (!isNum(s.ratio3015) || !isNum(s.ratio3015LLN)) return "unknown";
-    return Number(s.ratio3015) >= Number(s.ratio3015LLN) ? "normal" : "low";
-  }, [s.ratio3015, s.ratio3015LLN]);
+  const adrenergic = computeAdrenergic({
+    age: s.age,
+    sex,
+    latePhaseII: s.latePhaseII,
+    phaseIV: s.phaseIV,
+    prt100: s.prt100,
+    prt50: s.prt50,
+    ortho,
+    overrides: s.labOverrides,
+  });
+  const { prt100Range, prt50Range, prt100Status, prt50Status } = adrenergic;
 
-  const cardiovagal = useMemo(() => {
-    // severity per test: 0 normal, 1 mild (within 10% below LLN), 2 clearly abnormal
-    const grade = (v: Num, lln: number | null): 0 | 1 | 2 | null => {
-      if (!isNum(v) || lln === null) return null;
-      const val = Number(v);
-      if (val >= lln) return 0;
-      return val >= lln * 0.9 ? 1 : 2;
-    };
-    const grades = [
-      grade(s.hrdb, hrdbRange?.LLN ?? null),
-      grade(s.ei, eiRange?.LLN ?? null),
-      grade(s.vr, vrRange?.LLN ?? null),
-      grade(s.ratio3015, isNum(s.ratio3015LLN) ? Number(s.ratio3015LLN) : null),
-    ].filter((g): g is 0 | 1 | 2 => g !== null);
-
-    const mild = grades.filter((g) => g === 1).length;
-    const severe = grades.filter((g) => g === 2).length;
-    let score = 0;
-    if (severe >= 2 || (severe >= 1 && mild >= 1)) score = 3;
-    else if (severe === 1 || mild >= 2) score = 2;
-    else if (mild === 1) score = 1;
-    return { score, mild, severe, tested: grades.length };
-  }, [s.hrdb, s.ei, s.vr, s.ratio3015, s.ratio3015LLN, hrdbRange, eiRange, vrRange]);
-
-  /* --------------------------- Orthostatic ------------------------- */
-  const ortho = useMemo(() => {
-    const supine = s.readings.find((x) => x.t === 0);
-    const upright = s.readings.filter((x) => x.t > 0);
-    if (!supine || !isNum(supine.sbp) || !isNum(supine.dbp)) {
-      return {
-        available: false,
-        maxSbpFall: null as number | null,
-        maxDbpFall: null as number | null,
-        maxHrRise: null as number | null,
-        classical: false,
-        delayed: false,
-        attenuatedHR: false,
-        timeToOH: null as number | null,
-        maxSustainedHrRise: null as number | null,
-        timeToPots: null as number | null,
-        symptoms: [] as string[],
-      };
-    }
-    const sbp0 = Number(supine.sbp);
-    const dbp0 = Number(supine.dbp);
-    const hr0 = isNum(supine.hr) ? Number(supine.hr) : null;
-
-    const sbpThresh = s.baselineHypertensive && sbp0 >= 150 ? 30 : 20;
-    const dbpThresh = s.baselineHypertensive && dbp0 >= 90 ? 15 : 10;
-
-    let maxSbpFall = 0;
-    let maxDbpFall = 0;
-    let maxHrRise: number | null = null;
-    let timeToOH: number | null = null;
-    let classical = false;
-    let delayed = false;
-    let timeToPots: number | null = null;
-
-    upright.forEach((rd) => {
-      if (isNum(rd.sbp)) maxSbpFall = Math.max(maxSbpFall, sbp0 - Number(rd.sbp));
-      if (isNum(rd.dbp)) maxDbpFall = Math.max(maxDbpFall, dbp0 - Number(rd.dbp));
-      if (hr0 !== null && isNum(rd.hr)) {
-        const rise = Number(rd.hr) - hr0;
-        maxHrRise = maxHrRise === null ? rise : Math.max(maxHrRise, rise);
-      }
-      const meets =
-        (isNum(rd.sbp) && sbp0 - Number(rd.sbp) >= sbpThresh) ||
-        (isNum(rd.dbp) && dbp0 - Number(rd.dbp) >= dbpThresh);
-      if (meets && timeToOH === null) timeToOH = rd.t;
-      if (meets && rd.t <= 3) classical = true;
-      if (meets && rd.t > 3) delayed = true;
-    });
-
-    const potsThreshold = isNum(s.age) && Number(s.age) >= 12 && Number(s.age) <= 19 ? 40 : 30;
-    upright
-      .filter((rd) => rd.t <= 10)
-      .forEach((rd) => {
-        if (hr0 !== null && isNum(rd.hr) && Number(rd.hr) - hr0 >= potsThreshold && timeToPots === null) {
-          timeToPots = rd.t;
-        }
-      });
-
-    return {
-      available: true,
-      maxSbpFall,
-      maxDbpFall,
-      maxHrRise,
-      classical,
-      delayed: delayed && !classical,
-      attenuatedHR: (classical || delayed) && maxHrRise !== null && maxHrRise < 15,
-      timeToOH,
-      maxSustainedHrRise: maxHrRise,
-      timeToPots,
-      potsThreshold,
-      symptoms: Array.from(new Set(upright.flatMap((rd) => rd.symptoms))),
-    } as any;
-  }, [s.readings, s.baselineHypertensive, s.age]);
-
-  /* --------------------------- Adrenergic -------------------------- */
-  const adrenergic = useMemo(() => {
-    let valsalvaSeverity = 0;
-    const flags: string[] = [];
-    if (s.latePhaseII === "reduced") {
-      valsalvaSeverity = Math.max(valsalvaSeverity, 1);
-      flags.push("Reduced late phase II recovery");
-    }
-    if (s.latePhaseII === "absent") {
-      valsalvaSeverity = 2;
-      flags.push("Absent late phase II recovery");
-    }
-    if (s.phaseIV === "reduced") {
-      valsalvaSeverity = Math.max(valsalvaSeverity, 1);
-      flags.push("Reduced phase IV overshoot");
-    }
-    if (s.phaseIV === "absent") {
-      valsalvaSeverity = 2;
-      flags.push("Absent phase IV overshoot");
-    }
-    if (prt100Status === "high") {
-      valsalvaSeverity = Math.max(valsalvaSeverity, 1);
-      flags.push("Prolonged PRT100");
-    }
-    if (prt50Status === "high") {
-      valsalvaSeverity = Math.max(valsalvaSeverity, 1);
-      flags.push("Prolonged PRT50");
-    }
-    if (flags.length >= 2) valsalvaSeverity = Math.max(valsalvaSeverity, 2);
-
-    let score = 0;
-    if (ortho.classical) score = 2;
-    else if (ortho.delayed) score = 1;
-
-    if (ortho.classical && (ortho.attenuatedHR || valsalvaSeverity >= 1)) score = 3;
-    if (ortho.classical && ortho.attenuatedHR && valsalvaSeverity >= 2) score = 4;
-    if (!ortho.classical && !ortho.delayed) score = valsalvaSeverity >= 2 ? 2 : valsalvaSeverity;
-    score = Math.min(4, score);
-
-    return { score, valsalvaSeverity, flags };
-  }, [s.latePhaseII, s.phaseIV, prt100Status, prt50Status, ortho]);
-
-  /* --------------------------- Sudomotor --------------------------- */
-  const sudomotor = useMemo(() => {
-    let handAbn = false;
-    let footAbn = false;
-    let handSevere = false;
-    let footSevere = false;
-    let tested = false;
-    const detail: string[] = [];
-
-    if (s.sudoMode === "sudoscan") {
-      const hands = [s.sudoscan.rHand, s.sudoscan.lHand].filter(isNum) as number[];
-      const feet = [s.sudoscan.rFoot, s.sudoscan.lFoot].filter(isNum) as number[];
-      tested = hands.length > 0 || feet.length > 0;
-      const worstHand = hands.length ? Math.min(...hands) : null;
-      const worstFoot = feet.length ? Math.min(...feet) : null;
-      if (worstHand !== null) {
-        handAbn = worstHand < 60;
-        handSevere = worstHand < 40;
-        detail.push(`Hands ${worstHand} µS`);
-      }
-      if (worstFoot !== null) {
-        footAbn = worstFoot < 60;
-        footSevere = worstFoot < 40;
-        detail.push(`Feet ${worstFoot} µS`);
-      }
-    } else {
-      const handSites: QsartSite[] = ["forearm"];
-      const footSites: QsartSite[] = ["distal_leg", "foot"];
-      const evalSite = (site: QsartSite) => {
-        const v = s.qsart[site];
-        const range = getQsartRange(s.age, sex, site);
-        if (!isNum(v) || !range) return null;
-        tested = true;
-        detail.push(`${site.replace("_", " ")} ${v} µL (LLN ${range.LLN})`);
-        return { abnormal: Number(v) < range.LLN, severe: Number(v) < range.LLN * 0.5 };
-      };
-      handSites.forEach((site) => {
-        const res = evalSite(site);
-        if (res) {
-          handAbn = handAbn || res.abnormal;
-          handSevere = handSevere || res.severe;
-        }
-      });
-      footSites.forEach((site) => {
-        const res = evalSite(site);
-        if (res) {
-          footAbn = footAbn || res.abnormal;
-          footSevere = footSevere || res.severe;
-        }
-      });
-      const proximal = evalSite("proximal_leg");
-      if (proximal) {
-        footAbn = footAbn || proximal.abnormal;
-        footSevere = footSevere || proximal.severe;
-      }
-    }
-
-    let score = 0;
-    const anySevere = handSevere || footSevere;
-    if (handAbn && footAbn && anySevere) score = 3;
-    else if ((handAbn && footAbn) || (anySevere && (handAbn || footAbn))) score = 2;
-    else if (handAbn || footAbn || anySevere) score = 1;
-
-    return { score, handAbn, footAbn, handSevere, footSevere, tested, detail };
-  }, [s.sudoMode, s.sudoscan, s.qsart, s.age, sex]);
+  const sudomotor = computeSudomotor({
+    age: s.age,
+    sex,
+    sudoMode: s.sudoMode,
+    sudoscan: s.sudoscan,
+    sudoscanLln: s.sudoscanLln,
+    qsart: s.qsart,
+    overrides: s.labOverrides,
+  });
 
   /* --------------------------- Composite --------------------------- */
-  const total = cardiovagal.score + adrenergic.score + sudomotor.score;
-  const severity = MCASS_SEVERITY(total);
-
-  const canStage = useMemo(() => {
-    const abnormal = [hrdbStatus === "low", vrStatus === "low", r3015Status === "low"].filter(Boolean)
-      .length;
-    if (abnormal >= 1 && ortho.classical) return { count: abnormal, stage: "Severe / advanced CAN" };
-    if (abnormal === 0) return { count: 0, stage: "No evidence of CAN" };
-    if (abnormal === 1) return { count: 1, stage: "Possible / early CAN" };
-    return { count: abnormal, stage: "Definite / confirmed CAN" };
-  }, [hrdbStatus, vrStatus, r3015Status, ortho.classical]);
-
-  const pots = useMemo(() => {
-    const met = ortho.timeToPots !== null && !ortho.classical;
-    return {
-      met,
-      threshold: (ortho as any).potsThreshold ?? 30,
-      timeToCriterion: ortho.timeToPots,
-      note:
-        ortho.timeToPots !== null && ortho.classical
-          ? "HR rise present but orthostatic hypotension may explain the tachycardia"
-          : "",
-    };
-  }, [ortho]);
-
-  const pattern = useMemo(() => {
-    const domains = [
-      cardiovagal.score > 0 ? "cardiovagal" : null,
-      adrenergic.score > 0 ? "adrenergic" : null,
-      sudomotor.score > 0 ? "sudomotor" : null,
-    ].filter(Boolean) as string[];
-    if (domains.length === 0) return "No significant objective autonomic abnormality";
-    if (domains.length >= 2) {
-      if (cardiovagal.score > 0 && adrenergic.score > 0 && sudomotor.score === 0)
-        return "Generalized autonomic dysfunction — central-predominant pattern (cardiovagal + adrenergic, limited distal sudomotor involvement)";
-      if (sudomotor.score >= 2 && (cardiovagal.score > 0 || adrenergic.score > 0))
-        return "Generalized autonomic dysfunction — peripheral-predominant pattern (prominent sudomotor with cardiovascular involvement)";
-      return "Generalized autonomic dysfunction";
-    }
-    return `${domains[0].charAt(0).toUpperCase()}${domains[0].slice(1)}-predominant`;
-  }, [cardiovagal.score, adrenergic.score, sudomotor.score]);
+  const { total, severity } = computeMcassTotal(cardiovagal.score, adrenergic.score, sudomotor.score);
+  const canStage = computeCanStage(hrdbStatus, vrStatus, r3015Status, ortho.classical);
+  const pots = computePots(ortho);
+  const pattern = computePattern(cardiovagal.score, adrenergic.score, sudomotor.score);
 
   const activeConfounders = CONFOUNDERS.filter((c) => s.confounders[c.key]).map((c) => c.label);
+
+  /** Merged from the CAN Mini App: quick data-quality/confounder warnings. */
+  const warnings = useMemo(() => {
+    const w: string[] = [];
+    const chronotropicKeys = ["beta_blocker", "non_dhp_ccb", "ivabradine", "digoxin"];
+    if (chronotropicKeys.some((k) => s.confounders[k]))
+      w.push("Chronotropic medication may confound HR-based cardiovagal indices.");
+    if (s.confounders.atrial_fibrillation || s.confounders.pacemaker)
+      w.push("Non-sinus / paced rhythm: HRV and cardiovagal reflex indices may be uninterpretable.");
+    if (cardiovagal.tested > 0 && cardiovagal.tested < 2)
+      w.push("Fewer than two cardiovagal tests entered; CAN staging requires \u22652 interpretable tests.");
+    if (sudomotor.handLlnUsedDefault || sudomotor.footLlnUsedDefault)
+      w.push("Sudoscan LLN left blank \u2014 standard generalized 60 \u00b5S default used. Confirm against device/laboratory norms if available.");
+    if (s.baselineHypertensive && ((ortho.maxSbpFall ?? 0) >= 30 || (ortho.maxDbpFall ?? 0) >= 15))
+      w.push("Substantial orthostatic fall on a hypertensive supine baseline (supine hypertension with OH).");
+    return w;
+  }, [s.confounders, cardiovagal.tested, sudomotor.handLlnUsedDefault, sudomotor.footLlnUsedDefault, s.baselineHypertensive, ortho.maxSbpFall, ortho.maxDbpFall]);
 
   /* --------------------------- Report ------------------------------ */
   const reportLines = useMemo(() => {
@@ -536,6 +414,7 @@ const McassMiniApp = () => {
       `Medications: ${s.medications || "—"}`,
       `Notes: ${s.notes || "—"}`,
       "",
+      ...(warnings.length ? ["Warnings:", ...warnings.map((w) => `- ${w}`), ""] : []),
       "Disclaimer: This is a modified CASS-derived framework. Sudoscan-derived sudomotor scoring is not",
       "interchangeable with QSART/TST-based original CASS scoring. Normative values are from an Indian adult",
       "reference dataset; laboratory-specific validated norms take precedence.",
@@ -558,6 +437,7 @@ const McassMiniApp = () => {
     canStage,
     pattern,
     activeConfounders,
+    warnings,
   ]);
 
   const exportPdf = () => {
@@ -602,11 +482,13 @@ const McassMiniApp = () => {
           <div>
             <CardTitle className="flex items-center gap-2 text-xl">
               <HeartPulse className="h-5 w-5 text-primary" />
-              Autonomic Function &amp; mCASS Analyzer
+              CAN / mCASS Autonomic Function Analyzer
             </CardTitle>
             <CardDescription>
-              Age- and sex-adjusted normative values with mCASS /10, orthostatic classification, POTS
-              screening and CAN staging.
+              Combined Cardiac Autonomic Neuropathy (CAN) staging and Autonomic Function / mCASS
+              analyzer. Age- and sex-adjusted normative values with mCASS /10, orthostatic
+              classification, POTS screening and CAN staging. Decision support only — not the
+              validated Mayo CASS.
             </CardDescription>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -730,35 +612,103 @@ const McassMiniApp = () => {
                 </AlertDescription>
               </Alert>
             )}
+
+            <div className="rounded-xl border p-4 space-y-4">
+              <div>
+                <Label className="text-base font-semibold">Laboratory norms override</Label>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Enter your own lab-specific LLN/ULN to replace the Indian age/sex dataset for a
+                  given test. Leave blank to keep using the dataset (or the age-band 30:15
+                  fallback). Applies identically in the Autonomic Testing section.
+                </p>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {(
+                  [
+                    ["hrdb", "HRDB (bpm)", hrdbRange],
+                    ["ei", "E:I ratio", eiRange],
+                    ["vr", "Valsalva ratio", vrRange],
+                    ["prt100", "PRT100 (s)", prt100Range],
+                    ["prt50", "PRT50 (s)", prt50Range],
+                  ] as const
+                ).map(([key, label, range]) => (
+                  <div key={key} className="space-y-1.5">
+                    <Label className="text-xs">{label}</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        type="number"
+                        step="0.01"
+                        placeholder={`LLN${range ? ` (${range.LLN})` : ""}`}
+                        value={s.labOverrides[key]?.LLN ?? ""}
+                        onChange={(e) => setOverride(key, "LLN", num(e.target.value))}
+                      />
+                      <Input
+                        type="number"
+                        step="0.01"
+                        placeholder={`ULN${range ? ` (${range.ULN})` : ""}`}
+                        value={s.labOverrides[key]?.ULN ?? ""}
+                        onChange={(e) => setOverride(key, "ULN", num(e.target.value))}
+                      />
+                    </div>
+                  </div>
+                ))}
+                {QSART_SITES.map((site) => (
+                  <div key={site.key} className="space-y-1.5">
+                    <Label className="text-xs">QSART {site.label} (µL)</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        type="number"
+                        step="0.001"
+                        placeholder="LLN"
+                        value={s.labOverrides.qsart?.[site.key]?.LLN ?? ""}
+                        onChange={(e) => setQsartOverride(site.key, "LLN", num(e.target.value))}
+                      />
+                      <Input
+                        type="number"
+                        step="0.001"
+                        placeholder="ULN"
+                        value={s.labOverrides.qsart?.[site.key]?.ULN ?? ""}
+                        onChange={(e) => setQsartOverride(site.key, "ULN", num(e.target.value))}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </TabsContent>
 
           {/* -------------------- Cardiovagal -------------------- */}
           <TabsContent value="cardiovagal" className="space-y-5 pt-5">
             <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
               <NormField
-                label="HRDB (ΔHR deep breathing)"
+                label={<ReqTip id="hrdb" title="HRDB (ΔHR deep breathing)" />}
                 unit="bpm"
                 value={s.hrdb}
                 onChange={(v) => set("hrdb", v)}
                 range={hrdbRange}
                 status={hrdbStatus}
+                note={`Generic age-only reference (non-Indian, non-sex-specific) LLN ≈ ${genericDeepBreathingLln(
+                  isNum(s.age) ? Number(s.age) : null
+                )} bpm — prefer the age/sex range above when available.`}
               />
               <NormField
-                label="E:I ratio"
+                label={<ReqTip id="ei" title="E:I ratio" />}
                 value={s.ei}
                 onChange={(v) => set("ei", v)}
                 range={eiRange}
                 status={eiStatus}
               />
               <NormField
-                label="Valsalva ratio"
+                label={<ReqTip id="vr" title="Valsalva ratio" />}
                 value={s.vr}
                 onChange={(v) => set("vr", v)}
                 range={vrRange}
                 status={vrStatus}
               />
               <div className="space-y-1.5">
-                <Label className="text-sm font-medium">30:15 standing ratio</Label>
+                <Label className="text-sm font-medium">
+                  <ReqTip id="ratio3015" title="30:15 standing ratio" />
+                </Label>
                 <Input
                   type="number"
                   step="0.01"
@@ -768,14 +718,28 @@ const McassMiniApp = () => {
                 <Input
                   type="number"
                   step="0.01"
-                  placeholder="Laboratory LLN"
+                  placeholder="Laboratory LLN (preferred, if available)"
                   value={s.ratio3015LLN === "" ? "" : s.ratio3015LLN}
                   onChange={(e) => set("ratio3015LLN", num(e.target.value))}
                 />
                 <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
-                  <span>Custom laboratory norm required</span>
+                  <span>
+                    {isNum(s.ratio3015LLN)
+                      ? "Using laboratory LLN"
+                      : ratio3015Fallback
+                      ? `Provisional fallback: normal ≥${ratio3015Fallback.normalLLN}, borderline ≥${ratio3015Fallback.borderlineLow}, else abnormal`
+                      : "Enter age or a laboratory LLN"}
+                  </span>
                   <StatusBadge status={r3015Status} />
                 </div>
+                {!isNum(s.ratio3015LLN) && (
+                  <p className="text-[11px] text-muted-foreground">
+                    No validated India-specific age-stratified 30:15 reference exists. This
+                    age-band cut-off is provisional, derived from published age-adjusted
+                    Ewing-test literature (not Indian-specific) — use your lab's own age/sex
+                    norms when available.
+                  </p>
+                )}
               </div>
             </div>
 
@@ -984,7 +948,9 @@ const McassMiniApp = () => {
           {/* -------------------- Sudomotor -------------------- */}
           <TabsContent value="sudomotor" className="space-y-5 pt-5">
             <div className="space-y-1.5">
-              <Label>Test used</Label>
+              <Label>
+                <ReqTip id="sudomotor" title="Test used" />
+              </Label>
               <Select
                 value={s.sudoMode}
                 onValueChange={(v) => set("sudoMode", v as State["sudoMode"])}
@@ -1025,6 +991,42 @@ const McassMiniApp = () => {
                     </div>
                   ))}
                 </div>
+                <div className="grid gap-4 md:grid-cols-4">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Hand LLN override <span className="font-normal text-muted-foreground">(µS, default 60)</span></Label>
+                    <Input
+                      type="number"
+                      placeholder="60"
+                      value={s.sudoscanLln.hand === "" ? "" : (s.sudoscanLln.hand as number)}
+                      onChange={(e) => set("sudoscanLln", { ...s.sudoscanLln, hand: num(e.target.value) })}
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Foot LLN override <span className="font-normal text-muted-foreground">(µS, default 60)</span></Label>
+                    <Input
+                      type="number"
+                      placeholder="60"
+                      value={s.sudoscanLln.foot === "" ? "" : (s.sudoscanLln.foot as number)}
+                      onChange={(e) => set("sudoscanLln", { ...s.sudoscanLln, foot: num(e.target.value) })}
+                    />
+                  </div>
+                </div>
+                {(sudomotor.handPct !== null || sudomotor.footPct !== null) && (
+                  <div className="flex flex-wrap gap-2">
+                    {sudomotor.handPct !== null && (
+                      <Badge variant="outline">
+                        Hand {sudomotor.handPct.toFixed(0)}% of LLN
+                        {sudomotor.handLlnUsedDefault ? " (60 µS default)" : ""}
+                      </Badge>
+                    )}
+                    {sudomotor.footPct !== null && (
+                      <Badge variant="outline">
+                        Foot {sudomotor.footPct.toFixed(0)}% of LLN
+                        {sudomotor.footLlnUsedDefault ? " (60 µS default)" : ""}
+                      </Badge>
+                    )}
+                  </div>
+                )}
                 <div className="rounded-lg border p-3 text-sm">
                   <p className="mb-1 font-medium">Practical interpretation guide</p>
                   <ul className="space-y-0.5 text-muted-foreground">
@@ -1039,7 +1041,7 @@ const McassMiniApp = () => {
             ) : (
               <div className="grid gap-4 md:grid-cols-4">
                 {QSART_SITES.map((site) => {
-                  const range = getQsartRange(s.age, sex, site.key);
+                  const range = applyOverride(getQsartRange(s.age, sex, site.key), s.labOverrides.qsart?.[site.key]);
                   return (
                     <NormField
                       key={site.key}
@@ -1109,6 +1111,17 @@ const McassMiniApp = () => {
             <pre className="max-h-[420px] overflow-auto whitespace-pre-wrap rounded-lg border bg-muted/40 p-4 text-xs leading-relaxed">
               {reportLines.join("\n")}
             </pre>
+
+            {warnings.length > 0 && (
+              <ul className="space-y-2">
+                {warnings.map((w) => (
+                  <li key={w} className="flex gap-2 text-xs text-[hsl(28_100%_40%)]">
+                    <AlertTriangle className="h-4 w-4 shrink-0" />
+                    <span>{w}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
 
             <Alert>
               <Stethoscope className="h-4 w-4" />
