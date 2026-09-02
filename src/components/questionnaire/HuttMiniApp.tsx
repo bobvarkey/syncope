@@ -6,12 +6,8 @@ import {
   Download,
   FileText,
   HeartPulse,
-  Pause,
-  Play,
   Printer,
-  RotateCcw,
   Share2,
-  Timer,
   ChevronDown,
   Save,
 } from "lucide-react";
@@ -455,7 +451,7 @@ ${result.note}`;
         </div>
         <h2 className="mt-4 text-2xl font-bold md:text-4xl">Head-up tilt-table test runner</h2>
         <p className="mt-3 max-w-3xl text-white/90 text-sm md:text-base">
-          Pick a protocol, run the phase timer, log HR/BP, and get a VASIS-style interpretation with a copy-ready EMR note.
+          Pick a protocol, log HR/BP at each time point, and get a VASIS-style interpretation with a copy-ready EMR note.
         </p>
 
         <div className="mt-5 inline-flex rounded-2xl bg-white/10 p-1 backdrop-blur">
@@ -486,6 +482,11 @@ ${result.note}`;
             <Field label="HR (bpm)" value={entry.hr} onChange={(v) => setEntry((e) => ({ ...e, hr: v }))} />
             <Field label="SBP" value={entry.sbp} onChange={(v) => setEntry((e) => ({ ...e, sbp: v }))} />
             <Field label="DBP" value={entry.dbp} onChange={(v) => setEntry((e) => ({ ...e, dbp: v }))} />
+            <Field
+              label="Time (min)"
+              value={seconds === 0 ? "" : String(Math.round(seconds / 60))}
+              onChange={(v) => setSeconds(Number(v || 0) * 60)}
+            />
             <div>
               <div className="mb-1 text-xs font-semibold text-slate-600">Symptoms</div>
               <input
@@ -500,7 +501,7 @@ ${result.note}`;
             onClick={addObs}
             className="mt-3 inline-flex items-center gap-2 rounded-xl bg-gradient-sunset px-4 py-2 text-sm font-semibold text-white shadow-glow"
           >
-            + Log at t={fmt(seconds)}
+            + Log observation at {fmt(seconds)}
           </button>
 
           <div className="mt-4 max-h-64 overflow-y-auto rounded-xl border border-slate-200">
