@@ -479,71 +479,9 @@ ${result.note}`;
 
 
       <div className="mt-5 grid gap-5 lg:grid-cols-12">
-        {/* Runner */}
-        <Panel title="Phase runner" icon={<Timer size={18} />} className="lg:col-span-5">
-          <div className="rounded-2xl bg-slate-50 p-4">
-            <div className="flex items-baseline justify-between">
-              <div>
-                <div className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                  Phase {phaseIdx + 1} of {protocol.phases.length}
-                </div>
-                <div className="text-lg font-bold text-slate-800">{currentPhase.name}</div>
-              </div>
-              <div className="text-4xl font-bold tabular-nums text-slate-900">{fmt(seconds)}</div>
-            </div>
-            <p className="mt-2 text-xs text-slate-600">{currentPhase.detail}</p>
-            <div className="mt-2 text-[11px] text-slate-500">
-              Target: {fmt(currentPhase.minSeconds)}
-              {currentPhase.maxSeconds !== currentPhase.minSeconds && `–${fmt(currentPhase.maxSeconds)}`}
-            </div>
-            <div className="mt-4 flex flex-wrap gap-2">
-              <button
-                onClick={() => setRunning((r) => !r)}
-                className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white"
-              >
-                {running ? <Pause size={16} /> : <Play size={16} />}
-                {running ? "Pause" : "Start"}
-              </button>
-              <button
-                onClick={() => {
-                  setSeconds(0);
-                  setRunning(false);
-                }}
-                className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-800"
-              >
-                <RotateCcw size={16} /> Reset
-              </button>
-              <button
-                onClick={nextPhase}
-                className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-800"
-              >
-                Next phase →
-              </button>
-            </div>
-          </div>
-
-          <div className="mt-4 flex flex-wrap gap-1.5">
-            {protocol.phases.map((p, i) => (
-              <button
-                key={p.id}
-                onClick={() => {
-                  setPhaseIdx(i);
-                  setSeconds(0);
-                }}
-                className={`px-3 py-1.5 text-xs font-semibold rounded-full border ${
-                  i === phaseIdx
-                    ? "bg-slate-900 text-white border-slate-900"
-                    : "bg-white text-slate-700 border-slate-300"
-                }`}
-              >
-                {i + 1}. {p.name}
-              </button>
-            ))}
-          </div>
-        </Panel>
-
         {/* Vitals entry */}
-        <Panel title="Vitals & symptoms log" icon={<HeartPulse size={18} />} className="lg:col-span-7">
+        <Panel title="Vitals & symptoms log" icon={<HeartPulse size={18} />} className="lg:col-span-12">
+
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             <Field label="HR (bpm)" value={entry.hr} onChange={(v) => setEntry((e) => ({ ...e, hr: v }))} />
             <Field label="SBP" value={entry.sbp} onChange={(v) => setEntry((e) => ({ ...e, sbp: v }))} />
