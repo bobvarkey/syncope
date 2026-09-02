@@ -478,7 +478,7 @@ ${result.note}`;
         {/* Vitals entry */}
         <Panel title="Vitals & symptoms log" icon={<HeartPulse size={18} />} className="lg:col-span-12">
 
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
             <Field label="HR (bpm)" value={entry.hr} onChange={(v) => setEntry((e) => ({ ...e, hr: v }))} />
             <Field label="SBP" value={entry.sbp} onChange={(v) => setEntry((e) => ({ ...e, sbp: v }))} />
             <Field label="DBP" value={entry.dbp} onChange={(v) => setEntry((e) => ({ ...e, dbp: v }))} />
