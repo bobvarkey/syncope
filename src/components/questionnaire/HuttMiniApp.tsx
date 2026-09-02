@@ -484,9 +484,10 @@ ${result.note}`;
             <Field label="DBP" value={entry.dbp} onChange={(v) => setEntry((e) => ({ ...e, dbp: v }))} />
             <Field
               label="Time (min)"
-              value={seconds === 0 ? "" : String(Math.round(seconds / 60))}
+              value={seconds === 0 ? "" : Math.round(seconds / 60)}
               onChange={(v) => setSeconds(Number(v || 0) * 60)}
             />
+
             <div>
               <div className="mb-1 text-xs font-semibold text-slate-600">Symptoms</div>
               <input
