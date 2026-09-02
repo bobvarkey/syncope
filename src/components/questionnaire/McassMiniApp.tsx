@@ -14,6 +14,7 @@ import {
 import jsPDF from "jspdf";
 import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -161,6 +162,127 @@ const ReqTip = ({ id, title }: { id: string; title: string }) => (
     </TooltipTrigger>
     <TooltipContent className="max-w-sm text-xs leading-relaxed">{TEST_REQS[id]}</TooltipContent>
   </Tooltip>
+);
+
+/** Plain-language explanation of each test contributing to the mCASS. */
+type Explanation = { title: string; what: string; measures: string; abnormal: string; scoring: string };
+
+const EXPLANATIONS: Record<string, Explanation[]> = {
+  cardiovagal: [
+    {
+      title: "HRDB — heart-rate response to deep breathing",
+      what: "Paced breathing at 6 breaths/min for ~1 minute with continuous ECG.",
+      measures: "Respiratory sinus arrhythmia, i.e. vagal (parasympathetic) control of the sinus node.",
+      abnormal: "ΔHR below the age- and sex-adjusted LLN. It is the single most reproducible cardiovagal index.",
+      scoring: "Contributes to the cardiovagal domain (0–3): mildly reduced values score 1, clearly abnormal values score more.",
+    },
+    {
+      title: "E:I ratio — expiratory : inspiratory ratio",
+      what: "Longest expiratory RR interval divided by the shortest inspiratory RR interval during the same paced-breathing run.",
+      measures: "The same vagal reflex as HRDB, expressed as a ratio so it is less dependent on baseline heart rate.",
+      abnormal: "Ratio below the age/sex LLN; falls physiologically with age.",
+      scoring: "Cardiovagal domain, alongside HRDB and the Valsalva ratio.",
+    },
+    {
+      title: "Valsalva ratio",
+      what: "Forced expiration at ~40 mmHg for 15 s; longest RR after the strain ÷ shortest RR during the strain.",
+      measures: "Baroreflex-mediated vagal rebound after the strain-induced fall in venous return.",
+      abnormal: "Ratio below the age/sex LLN — indicates blunted cardiovagal baroreflex gain.",
+      scoring: "Cardiovagal domain. Requires sinus rhythm and adequate strain effort.",
+    },
+    {
+      title: "30:15 ratio (active standing)",
+      what: "Longest RR around the 30th beat ÷ shortest RR around the 15th beat after standing up.",
+      measures: "Immediate vagal withdrawal then reactivation on standing.",
+      abnormal: "Below the laboratory LLN (preferred) or below the provisional age-band cut-off shown here.",
+      scoring: "Supportive cardiovagal information; use lab norms whenever available.",
+    },
+  ],
+  adrenergic: [
+    {
+      title: "Valsalva late phase II",
+      what: "Beat-to-beat blood pressure during the second half of the strain.",
+      measures: "Sympathetic vasoconstrictor (α-adrenergic) recruitment that defends BP while venous return is reduced.",
+      abnormal: "Reduced or absent recovery of BP toward baseline indicates adrenergic vasoconstrictor failure.",
+      scoring: "Adrenergic domain (0–4): reduced = mild, absent = more severe.",
+    },
+    {
+      title: "Valsalva phase IV overshoot",
+      what: "BP response immediately after release of the strain.",
+      measures: "Combined sympathetic vasoconstriction and cardiac output surge; a normal overshoot exceeds baseline BP.",
+      abnormal: "Reduced or absent overshoot supports adrenergic impairment.",
+      scoring: "Adrenergic domain, added to the late phase II grade.",
+    },
+    {
+      title: "PRT100 — pressure recovery time to 100% of baseline",
+      what: "Seconds from the lowest phase III BP until BP returns fully to the pre-Valsalva baseline.",
+      measures: "Speed of the baroreflex adrenergic response; the most sensitive marker of early adrenergic failure.",
+      abnormal: "Prolonged (above the age/sex ULN) = abnormal.",
+      scoring: "Supports the adrenergic grade and the neurogenic-versus-non-neurogenic distinction.",
+    },
+    {
+      title: "PRT50 — pressure recovery time to 50% of baseline",
+      what: "Seconds until BP recovers halfway back to baseline after the strain.",
+      measures: "Early phase of the same baroreflex response; less affected by noise than PRT100.",
+      abnormal: "Prolonged (above the age/sex ULN) = abnormal.",
+      scoring: "Corroborates PRT100 within the adrenergic domain.",
+    },
+  ],
+  orthostatic: [
+    {
+      title: "Orthostatic blood-pressure and heart-rate profile",
+      what: "Supine rest, then active stand or head-up tilt with BP/HR at 1, 3, 5 and 10 minutes.",
+      measures: "Integrated adrenergic defence of blood pressure in the upright posture.",
+      abnormal: "Classical OH = sustained SBP fall ≥20 or DBP fall ≥10 mmHg within 3 min (≥30/≥15 if hypertensive baseline); a fall after 3 min is delayed OH.",
+      scoring: "Adrenergic domain; an HR rise <15 bpm despite OH supports a neurogenic (autonomic) cause.",
+    },
+    {
+      title: "POTS physiological criterion",
+      what: "Sustained HR rise within 10 minutes upright without orthostatic hypotension, with symptom reproduction.",
+      measures: "Orthostatic intolerance from excessive compensatory tachycardia, not from BP failure.",
+      abnormal: "≥30 bpm in adults (≥40 bpm if under 20 years), symptoms ≥3 months, competing causes excluded.",
+      scoring: "Reported separately — POTS does not contribute points to the mCASS total.",
+    },
+  ],
+  sudomotor: [
+    {
+      title: "QSART — quantitative sudomotor axon reflex test",
+      what: "Acetylcholine iontophoresis at forearm, proximal leg, distal leg and foot; sweat volume recorded per site.",
+      measures: "Postganglionic sympathetic sudomotor (cholinergic) nerve fibre function; the reference standard for the CASS sudomotor domain.",
+      abnormal: "Sweat volume below the age/sex/site LLN; a length-dependent distal-to-proximal gradient suggests small-fibre neuropathy.",
+      scoring: "Sudomotor domain (0–3), scaled by the number and severity of affected sites.",
+    },
+    {
+      title: "Sudoscan — electrochemical skin conductance (ESC)",
+      what: "Reverse-iontophoresis measurement of palmar and plantar conductance in µS; takes ~3 minutes.",
+      measures: "Chloride-conductance surrogate of sweat-gland (sudomotor) function — a screening substitute when QSART is unavailable.",
+      abnormal: "Below the device/lab LLN (generalised default 60 µS); 40–60 µS is borderline, <40 µS clearly abnormal.",
+      scoring: "Maps onto the sudomotor domain, but Sudoscan-based scoring is NOT interchangeable with QSART/TST-based original CASS scoring.",
+    },
+  ],
+};
+
+const TestExplainers = ({ group }: { group: keyof typeof EXPLANATIONS }) => (
+  <Accordion type="single" collapsible className="rounded-xl border px-4">
+    <AccordionItem value="explain" className="border-none">
+      <AccordionTrigger className="text-sm font-semibold">
+        What these tests mean & how they are scored
+      </AccordionTrigger>
+      <AccordionContent className="space-y-4 pb-4">
+        {EXPLANATIONS[group].map((e) => (
+          <div key={e.title} className="rounded-lg bg-muted/40 p-3 text-sm">
+            <p className="font-semibold">{e.title}</p>
+            <ul className="mt-1.5 space-y-1 text-muted-foreground">
+              <li><strong className="text-foreground">How it is done:</strong> {e.what}</li>
+              <li><strong className="text-foreground">What it measures:</strong> {e.measures}</li>
+              <li><strong className="text-foreground">What is abnormal:</strong> {e.abnormal}</li>
+              <li><strong className="text-foreground">Scoring:</strong> {e.scoring}</li>
+            </ul>
+          </div>
+        ))}
+      </AccordionContent>
+    </AccordionItem>
+  </Accordion>
 );
 
 const SYMPTOMS = [
@@ -510,12 +632,13 @@ const McassMiniApp = () => {
 
       <CardContent>
         <Tabs defaultValue="patient" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-6">
+          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-7">
             <TabsTrigger value="patient">Patient</TabsTrigger>
             <TabsTrigger value="cardiovagal">Cardiovagal</TabsTrigger>
             <TabsTrigger value="adrenergic">Adrenergic</TabsTrigger>
             <TabsTrigger value="orthostatic">Orthostatic</TabsTrigger>
             <TabsTrigger value="sudomotor">Sudomotor</TabsTrigger>
+            <TabsTrigger value="labnorms">Lab norms</TabsTrigger>
             <TabsTrigger value="report">Report</TabsTrigger>
           </TabsList>
 
@@ -613,72 +736,11 @@ const McassMiniApp = () => {
               </Alert>
             )}
 
-            <div className="rounded-xl border p-4 space-y-4">
-              <div>
-                <Label className="text-base font-semibold">Laboratory norms override</Label>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Enter your own lab-specific LLN/ULN to replace the Indian age/sex dataset for a
-                  given test. Leave blank to keep using the dataset (or the age-band 30:15
-                  fallback). Applies identically in the Autonomic Testing section.
-                </p>
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {(
-                  [
-                    ["hrdb", "HRDB (bpm)", hrdbRange],
-                    ["ei", "E:I ratio", eiRange],
-                    ["vr", "Valsalva ratio", vrRange],
-                    ["prt100", "PRT100 (s)", prt100Range],
-                    ["prt50", "PRT50 (s)", prt50Range],
-                  ] as const
-                ).map(([key, label, range]) => (
-                  <div key={key} className="space-y-1.5">
-                    <Label className="text-xs">{label}</Label>
-                    <div className="flex gap-2">
-                      <Input
-                        type="number"
-                        step="0.01"
-                        placeholder={`LLN${range ? ` (${range.LLN})` : ""}`}
-                        value={s.labOverrides[key]?.LLN ?? ""}
-                        onChange={(e) => setOverride(key, "LLN", num(e.target.value))}
-                      />
-                      <Input
-                        type="number"
-                        step="0.01"
-                        placeholder={`ULN${range ? ` (${range.ULN})` : ""}`}
-                        value={s.labOverrides[key]?.ULN ?? ""}
-                        onChange={(e) => setOverride(key, "ULN", num(e.target.value))}
-                      />
-                    </div>
-                  </div>
-                ))}
-                {QSART_SITES.map((site) => (
-                  <div key={site.key} className="space-y-1.5">
-                    <Label className="text-xs">QSART {site.label} (µL)</Label>
-                    <div className="flex gap-2">
-                      <Input
-                        type="number"
-                        step="0.001"
-                        placeholder="LLN"
-                        value={s.labOverrides.qsart?.[site.key]?.LLN ?? ""}
-                        onChange={(e) => setQsartOverride(site.key, "LLN", num(e.target.value))}
-                      />
-                      <Input
-                        type="number"
-                        step="0.001"
-                        placeholder="ULN"
-                        value={s.labOverrides.qsart?.[site.key]?.ULN ?? ""}
-                        onChange={(e) => setQsartOverride(site.key, "ULN", num(e.target.value))}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
           </TabsContent>
 
           {/* -------------------- Cardiovagal -------------------- */}
           <TabsContent value="cardiovagal" className="space-y-5 pt-5">
+            <TestExplainers group="cardiovagal" />
             <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
               <NormField
                 label={<ReqTip id="hrdb" title="HRDB (ΔHR deep breathing)" />}
@@ -757,6 +819,7 @@ const McassMiniApp = () => {
 
           {/* -------------------- Adrenergic -------------------- */}
           <TabsContent value="adrenergic" className="space-y-5 pt-5">
+            <TestExplainers group="adrenergic" />
             <div className="grid gap-5 md:grid-cols-2">
               <div className="space-y-1.5">
                 <Label>Valsalva late phase II</Label>
@@ -785,7 +848,7 @@ const McassMiniApp = () => {
                 </Select>
               </div>
               <NormField
-                label="PRT100 (pressure recovery time)"
+                label="PRT100 — pressure recovery time to 100% of baseline"
                 unit="s"
                 value={s.prt100}
                 onChange={(v) => set("prt100", v)}
@@ -794,7 +857,7 @@ const McassMiniApp = () => {
                 hint="Prolonged = abnormal"
               />
               <NormField
-                label="PRT50"
+                label="PRT50 — pressure recovery time to 50% of baseline"
                 unit="s"
                 value={s.prt50}
                 onChange={(v) => set("prt50", v)}
@@ -817,6 +880,7 @@ const McassMiniApp = () => {
 
           {/* -------------------- Orthostatic -------------------- */}
           <TabsContent value="orthostatic" className="space-y-5 pt-5">
+            <TestExplainers group="orthostatic" />
             <div className="flex items-center space-x-2">
               <Checkbox
                 id="htn-baseline"
@@ -947,6 +1011,7 @@ const McassMiniApp = () => {
 
           {/* -------------------- Sudomotor -------------------- */}
           <TabsContent value="sudomotor" className="space-y-5 pt-5">
+            <TestExplainers group="sudomotor" />
             <div className="space-y-1.5">
               <Label>
                 <ReqTip id="sudomotor" title="Test used" />
@@ -1065,6 +1130,72 @@ const McassMiniApp = () => {
               <span className="text-sm text-muted-foreground">
                 {sudomotor.tested ? sudomotor.detail.join(" · ") : "No sudomotor data entered"}
               </span>
+            </div>
+          </TabsContent>
+
+          {/* -------------------- Laboratory norms override -------------------- */}
+          <TabsContent value="labnorms" className="space-y-5 pt-5">
+            <div className="rounded-xl border p-4 space-y-4">
+              <div>
+                <Label className="text-base font-semibold">Laboratory norms override</Label>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Enter your own lab-specific LLN/ULN to replace the Indian age/sex dataset for a
+                  given test. Leave blank to keep using the dataset (or the age-band 30:15
+                  fallback). Applies identically in the Autonomic Testing section.
+                </p>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {(
+                  [
+                    ["hrdb", "HRDB (bpm)", hrdbRange],
+                    ["ei", "E:I ratio", eiRange],
+                    ["vr", "Valsalva ratio", vrRange],
+                    ["prt100", "PRT100 — pressure recovery time to 100% of baseline (s)", prt100Range],
+                    ["prt50", "PRT50 — pressure recovery time to 50% of baseline (s)", prt50Range],
+                  ] as const
+                ).map(([key, label, range]) => (
+                  <div key={key} className="space-y-1.5">
+                    <Label className="text-xs">{label}</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        type="number"
+                        step="0.01"
+                        placeholder={`LLN${range ? ` (${range.LLN})` : ""}`}
+                        value={s.labOverrides[key]?.LLN ?? ""}
+                        onChange={(e) => setOverride(key, "LLN", num(e.target.value))}
+                      />
+                      <Input
+                        type="number"
+                        step="0.01"
+                        placeholder={`ULN${range ? ` (${range.ULN})` : ""}`}
+                        value={s.labOverrides[key]?.ULN ?? ""}
+                        onChange={(e) => setOverride(key, "ULN", num(e.target.value))}
+                      />
+                    </div>
+                  </div>
+                ))}
+                {QSART_SITES.map((site) => (
+                  <div key={site.key} className="space-y-1.5">
+                    <Label className="text-xs">QSART {site.label} (µL)</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        type="number"
+                        step="0.001"
+                        placeholder="LLN"
+                        value={s.labOverrides.qsart?.[site.key]?.LLN ?? ""}
+                        onChange={(e) => setQsartOverride(site.key, "LLN", num(e.target.value))}
+                      />
+                      <Input
+                        type="number"
+                        step="0.001"
+                        placeholder="ULN"
+                        value={s.labOverrides.qsart?.[site.key]?.ULN ?? ""}
+                        onChange={(e) => setQsartOverride(site.key, "ULN", num(e.target.value))}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </TabsContent>
 
