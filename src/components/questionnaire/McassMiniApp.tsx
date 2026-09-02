@@ -510,12 +510,13 @@ const McassMiniApp = () => {
 
       <CardContent>
         <Tabs defaultValue="patient" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-6">
+          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-7">
             <TabsTrigger value="patient">Patient</TabsTrigger>
             <TabsTrigger value="cardiovagal">Cardiovagal</TabsTrigger>
             <TabsTrigger value="adrenergic">Adrenergic</TabsTrigger>
             <TabsTrigger value="orthostatic">Orthostatic</TabsTrigger>
             <TabsTrigger value="sudomotor">Sudomotor</TabsTrigger>
+            <TabsTrigger value="labnorms">Lab norms</TabsTrigger>
             <TabsTrigger value="report">Report</TabsTrigger>
           </TabsList>
 
@@ -613,68 +614,6 @@ const McassMiniApp = () => {
               </Alert>
             )}
 
-            <div className="rounded-xl border p-4 space-y-4">
-              <div>
-                <Label className="text-base font-semibold">Laboratory norms override</Label>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Enter your own lab-specific LLN/ULN to replace the Indian age/sex dataset for a
-                  given test. Leave blank to keep using the dataset (or the age-band 30:15
-                  fallback). Applies identically in the Autonomic Testing section.
-                </p>
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {(
-                  [
-                    ["hrdb", "HRDB (bpm)", hrdbRange],
-                    ["ei", "E:I ratio", eiRange],
-                    ["vr", "Valsalva ratio", vrRange],
-                    ["prt100", "PRT100 (s)", prt100Range],
-                    ["prt50", "PRT50 (s)", prt50Range],
-                  ] as const
-                ).map(([key, label, range]) => (
-                  <div key={key} className="space-y-1.5">
-                    <Label className="text-xs">{label}</Label>
-                    <div className="flex gap-2">
-                      <Input
-                        type="number"
-                        step="0.01"
-                        placeholder={`LLN${range ? ` (${range.LLN})` : ""}`}
-                        value={s.labOverrides[key]?.LLN ?? ""}
-                        onChange={(e) => setOverride(key, "LLN", num(e.target.value))}
-                      />
-                      <Input
-                        type="number"
-                        step="0.01"
-                        placeholder={`ULN${range ? ` (${range.ULN})` : ""}`}
-                        value={s.labOverrides[key]?.ULN ?? ""}
-                        onChange={(e) => setOverride(key, "ULN", num(e.target.value))}
-                      />
-                    </div>
-                  </div>
-                ))}
-                {QSART_SITES.map((site) => (
-                  <div key={site.key} className="space-y-1.5">
-                    <Label className="text-xs">QSART {site.label} (µL)</Label>
-                    <div className="flex gap-2">
-                      <Input
-                        type="number"
-                        step="0.001"
-                        placeholder="LLN"
-                        value={s.labOverrides.qsart?.[site.key]?.LLN ?? ""}
-                        onChange={(e) => setQsartOverride(site.key, "LLN", num(e.target.value))}
-                      />
-                      <Input
-                        type="number"
-                        step="0.001"
-                        placeholder="ULN"
-                        value={s.labOverrides.qsart?.[site.key]?.ULN ?? ""}
-                        onChange={(e) => setQsartOverride(site.key, "ULN", num(e.target.value))}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
           </TabsContent>
 
           {/* -------------------- Cardiovagal -------------------- */}
@@ -785,7 +724,7 @@ const McassMiniApp = () => {
                 </Select>
               </div>
               <NormField
-                label="PRT100 (pressure recovery time)"
+                label="PRT100 — pressure recovery time to 100% of baseline"
                 unit="s"
                 value={s.prt100}
                 onChange={(v) => set("prt100", v)}
@@ -794,7 +733,7 @@ const McassMiniApp = () => {
                 hint="Prolonged = abnormal"
               />
               <NormField
-                label="PRT50"
+                label="PRT50 — pressure recovery time to 50% of baseline"
                 unit="s"
                 value={s.prt50}
                 onChange={(v) => set("prt50", v)}
@@ -1065,6 +1004,72 @@ const McassMiniApp = () => {
               <span className="text-sm text-muted-foreground">
                 {sudomotor.tested ? sudomotor.detail.join(" · ") : "No sudomotor data entered"}
               </span>
+            </div>
+          </TabsContent>
+
+          {/* -------------------- Laboratory norms override -------------------- */}
+          <TabsContent value="labnorms" className="space-y-5 pt-5">
+            <div className="rounded-xl border p-4 space-y-4">
+              <div>
+                <Label className="text-base font-semibold">Laboratory norms override</Label>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Enter your own lab-specific LLN/ULN to replace the Indian age/sex dataset for a
+                  given test. Leave blank to keep using the dataset (or the age-band 30:15
+                  fallback). Applies identically in the Autonomic Testing section.
+                </p>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {(
+                  [
+                    ["hrdb", "HRDB (bpm)", hrdbRange],
+                    ["ei", "E:I ratio", eiRange],
+                    ["vr", "Valsalva ratio", vrRange],
+                    ["prt100", "PRT100 — pressure recovery time to 100% of baseline (s)", prt100Range],
+                    ["prt50", "PRT50 — pressure recovery time to 50% of baseline (s)", prt50Range],
+                  ] as const
+                ).map(([key, label, range]) => (
+                  <div key={key} className="space-y-1.5">
+                    <Label className="text-xs">{label}</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        type="number"
+                        step="0.01"
+                        placeholder={`LLN${range ? ` (${range.LLN})` : ""}`}
+                        value={s.labOverrides[key]?.LLN ?? ""}
+                        onChange={(e) => setOverride(key, "LLN", num(e.target.value))}
+                      />
+                      <Input
+                        type="number"
+                        step="0.01"
+                        placeholder={`ULN${range ? ` (${range.ULN})` : ""}`}
+                        value={s.labOverrides[key]?.ULN ?? ""}
+                        onChange={(e) => setOverride(key, "ULN", num(e.target.value))}
+                      />
+                    </div>
+                  </div>
+                ))}
+                {QSART_SITES.map((site) => (
+                  <div key={site.key} className="space-y-1.5">
+                    <Label className="text-xs">QSART {site.label} (µL)</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        type="number"
+                        step="0.001"
+                        placeholder="LLN"
+                        value={s.labOverrides.qsart?.[site.key]?.LLN ?? ""}
+                        onChange={(e) => setQsartOverride(site.key, "LLN", num(e.target.value))}
+                      />
+                      <Input
+                        type="number"
+                        step="0.001"
+                        placeholder="ULN"
+                        value={s.labOverrides.qsart?.[site.key]?.ULN ?? ""}
+                        onChange={(e) => setQsartOverride(site.key, "ULN", num(e.target.value))}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </TabsContent>
 
