@@ -249,8 +249,15 @@ export function AssessmentSidebar() {
     if (isMobile) toggleSidebar();
   };
 
-  const toggleGroup = (id: string) =>
+  const toggleGroup = (id: string) => {
+    // when the rail is collapsed to icons, a group click should re-open the sidebar
+    if (collapsed && !isMobile) {
+      toggleSidebar();
+      setOpenGroups((prev) => ({ ...prev, [id]: true }));
+      return;
+    }
     setOpenGroups((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
 
   const highlight = (text: string) => {
     if (!q) return text;
