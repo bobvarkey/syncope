@@ -276,7 +276,7 @@ export function AssessmentSidebar() {
           aria-hidden="true"
         />
       )}
-      <Sidebar className={cn("border-r relative z-40", collapsed ? "w-14" : "w-72")} collapsible="icon">
+      <Sidebar className="border-r z-40" collapsible="icon">
       <div className="p-2 space-y-2 border-b">
         <div className="flex items-center justify-between">
           <SidebarTrigger />
