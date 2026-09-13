@@ -236,6 +236,20 @@ const EcgSyncopeAbcde = ({ data, onUpdate }: EcgSyncopeAbcdeProps) => {
           </figcaption>
         </figure>
 
+        {/* Electrical conduction system — bifascicular block anatomy */}
+        <figure className="rounded-lg border overflow-hidden bg-background">
+          <img
+            src="/images/electrical-conduction-system.jpg"
+            alt="Electrical Conduction System of the Heart — SA node to AV node, bundle of His, right and left bundle branches, fascicles, and Purkinje fibres. Bifascicular block involves the right bundle branch plus one fascicle of the left bundle."
+            loading="lazy"
+            className="media-uniform-contain"
+          />
+          <figcaption className="px-3 py-2 text-[11px] text-muted-foreground leading-snug border-t bg-muted/30">
+            Conduction system anatomy. <strong>Bifascicular block</strong> (ECG key “A”) = RBBB plus one left fascicular
+            block (LBBB–like or RBBB + LAHB/​LPHB) — may progress to complete heart block and cause syncope.
+          </figcaption>
+        </figure>
+
         {/* Example Test Cases */}
         <div className="rounded-lg border bg-muted/10 p-3">
           <Label className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2 block">
