@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
-import { FileText, Printer, Download, FileDown, History, TestTube, Brain, Shield, AlertTriangle, Pill } from "lucide-react";
+import { FileText, Printer, Download, FileDown, History, TestTube, Brain, Shield, AlertTriangle, Pill, Footprints } from "lucide-react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AssessmentSidebar } from "@/components/AssessmentSidebar";
 import { AssessmentProgressProvider, useAssessmentProgress } from "@/contexts/AssessmentProgressContext";
@@ -326,6 +326,15 @@ const IndexContent = () => {
               >
                 Start triage
               </Button>
+              <Button
+                onClick={() => document.getElementById('falls-gait-evaluation')?.scrollIntoView({ behavior: 'smooth' })}
+                variant="outline"
+                size="sm"
+                className="hidden md:inline-flex gap-1.5"
+              >
+                <Footprints className="h-4 w-4" />
+                Falls &amp; gait
+              </Button>
             </div>
             <div className="md:hidden px-3 pb-2">
               <QuickSearch />
@@ -374,17 +383,17 @@ const IndexContent = () => {
               </div>
 
               <div
-                id="episodic-algorithm"
-                className={cn("mb-6 sm:mb-8 scroll-mt-20", sectionClass("episodic-algorithm"))}
-              >
-                <EpisodicConsciousnessAlgorithm />
-              </div>
-
-              <div
                 id="falls-gait-evaluation"
                 className={cn("mb-6 sm:mb-8 scroll-mt-20", sectionClass("falls-gait-evaluation"))}
               >
                 <FallsGaitSection />
+              </div>
+
+              <div
+                id="episodic-algorithm"
+                className={cn("mb-6 sm:mb-8 scroll-mt-20", sectionClass("episodic-algorithm"))}
+              >
+                <EpisodicConsciousnessAlgorithm />
               </div>
 
               <div id="hutt-mini-app" className={cn("mb-6 sm:mb-8 scroll-mt-20", sectionClass("hutt-mini-app"))}>
