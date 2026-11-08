@@ -23,6 +23,7 @@ import {
   Search,
   X,
   ArrowUpFromLine,
+  GitBranch,
 } from "lucide-react";
 
 import {
@@ -112,6 +113,17 @@ const sections = [
       { id: "differential-diagnosis-section", title: "Differential Diagnosis", icon: Lightbulb, color: "text-[hsl(45_100%_55%)]" },
       { id: "diagnostic-criteria", title: "Diagnostic Criteria", icon: CheckSquare, color: "text-[hsl(160_70%_45%)]" },
       { id: "ai-diagnosis", title: "AI Diagnosis Assistant", icon: Sparkles, color: "text-[hsl(260_80%_65%)]" },
+    ],
+  },
+  {
+    id: "episodic-loc-falls",
+    title: "Episodic LOC & Falls",
+    icon: GitBranch,
+    color: "text-[hsl(200_85%_55%)]",
+    gradient: "from-[hsl(200_85%_55%/0.22)] via-[hsl(190_80%_50%/0.18)] to-transparent",
+    ring: "hsl(200_85%_55%)",
+    subsections: [
+      { id: "episodic-algorithm", title: "Bradley LOC & Falls Algorithm", icon: GitBranch, color: "text-[hsl(200_85%_55%)]" },
     ],
   },
   {

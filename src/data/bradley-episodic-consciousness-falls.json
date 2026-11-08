@@ -1,0 +1,941 @@
+{
+  "title": "Episodic Impairment of Consciousness, Falls and Drop Attacks",
+  "version": "1.0",
+  "source": {
+    "book": "Neurology in Clinical Practice, 6th Edition (Bradley’s)",
+    "chapters": [
+      {
+        "number": 2,
+        "title": "Episodic Impairment of Consciousness",
+        "pdf_pages": "1-10"
+      },
+      {
+        "number": 3,
+        "title": "Falls and Drop Attacks",
+        "pdf_pages": "11-16"
+      }
+    ],
+    "publication_year": 2012
+  },
+  "scope": "Source-grounded diagnostic decision support; not a validated diagnostic score",
+  "implementation": {
+    "entry_node": "START",
+    "node_types": [
+      "decision",
+      "diagnostic_endpoint"
+    ],
+    "navigation": "Select an option and follow its next node ID",
+    "multiple_diagnoses_possible": true,
+    "unknown_answers_allowed": true
+  },
+  "initial_assessment": {
+    "history": [
+      "age and event frequency",
+      "witness description",
+      "posture and precipitating factors",
+      "prodrome or aura",
+      "duration of loss of awareness",
+      "skin color, sweating, pulse and respiration",
+      "tonic/clonic activity or automatisms",
+      "injury, incontinence and tongue injury",
+      "post-event confusion and time to recovery",
+      "cardiac, vascular, neurologic and medication history",
+      "environmental factors and prior falls"
+    ],
+    "examination": [
+      "vital signs and orthostatic BP",
+      "cardiac auscultation and ECG",
+      "neurological examination",
+      "gait, balance, strength, sensation, reflexes and eye movements"
+    ],
+    "safety_note": "Urgent evaluation for severe injury, ongoing altered consciousness, concerning cardiac symptoms, new focal neurological deficits or other acute instability; this safety overlay is an implementation precaution, not a quoted Bradley decision rule."
+  },
+  "nodes": [
+    {
+      "id": "START",
+      "type": "decision",
+      "question": "What is the presenting event?",
+      "options": [
+        {
+          "label": "Transient impairment or loss of consciousness",
+          "next": "LOC"
+        },
+        {
+          "label": "Sudden unexplained drop or fall",
+          "next": "FALL"
+        },
+        {
+          "label": "Uncertain",
+          "next": "HISTORY"
+        }
+      ],
+      "source_pages": [
+        1,
+        11
+      ]
+    },
+    {
+      "id": "HISTORY",
+      "type": "decision",
+      "question": "Obtain witness account, onset, duration, triggers, posture, movements, recovery, medication and cardiac/neurologic history. Is consciousness lost?",
+      "options": [
+        {
+          "label": "Yes",
+          "next": "LOC"
+        },
+        {
+          "label": "No",
+          "next": "FALL_NO_LOC"
+        },
+        {
+          "label": "Unknown",
+          "next": "UNCERTAIN"
+        }
+      ],
+      "source_pages": [
+        2,
+        11
+      ]
+    },
+    {
+      "id": "LOC",
+      "type": "decision",
+      "question": "What is the dominant episode pattern?",
+      "options": [
+        {
+          "label": "Pallor, sweating, presyncope, posture/trigger relation, rapid clear recovery",
+          "next": "SYNCOPE"
+        },
+        {
+          "label": "Stereotyped spells, aura, rhythmic motor activity or postictal confusion",
+          "next": "SEIZURE"
+        },
+        {
+          "label": "Prolonged variable uncoordinated episodes, often eye closure",
+          "next": "PNES"
+        },
+        {
+          "label": "Child with provoked crying or breath-holding",
+          "next": "BREATH_HOLD"
+        },
+        {
+          "label": "Metabolic symptoms or unclear",
+          "next": "OTHER_LOC"
+        }
+      ],
+      "source_pages": [
+        1,
+        2,
+        7,
+        9,
+        10
+      ]
+    },
+    {
+      "id": "SYNCOPE",
+      "type": "decision",
+      "question": "Which syncope trigger or clinical clue predominates?",
+      "options": [
+        {
+          "label": "Palpitations, sudden onset, exertion, structural cardiac disease or family sudden death",
+          "next": "CARDIAC"
+        },
+        {
+          "label": "Standing, heat, pain, fear, emotion, venipuncture, nausea or sweating",
+          "next": "VASOVAGAL"
+        },
+        {
+          "label": "On standing or after medications/volume loss",
+          "next": "ORTHOSTATIC"
+        },
+        {
+          "label": "Cough, urination, defecation, swallowing, Valsalva or diving",
+          "next": "SITUATIONAL"
+        },
+        {
+          "label": "Head rotation, focal brainstem symptoms, arm exercise or vascular findings",
+          "next": "VASCULAR"
+        },
+        {
+          "label": "Fasting, hypoxia, anemia, hyperventilation",
+          "next": "METABOLIC"
+        },
+        {
+          "label": "No clear explanation",
+          "next": "UNEXPLAINED_SYNCOPE"
+        }
+      ],
+      "source_pages": [
+        2,
+        3,
+        5,
+        6
+      ]
+    },
+    {
+      "id": "CARDIAC",
+      "type": "decision",
+      "question": "Suspected mechanism?",
+      "options": [
+        {
+          "label": "Abrupt episodes with rhythm disturbance, bradycardia or tachycardia",
+          "next": "ARRHYTHMIA"
+        },
+        {
+          "label": "Exertional or positional event with murmur/outflow or inflow obstruction",
+          "next": "STRUCTURAL_CARDIAC"
+        },
+        {
+          "label": "Neck pressure/tight collar or swallowing-associated throat pain and bradycardia",
+          "next": "REFLEX_CARDIAC"
+        },
+        {
+          "label": "Uncertain",
+          "next": "CARDIAC_EVAL"
+        }
+      ],
+      "source_pages": [
+        3,
+        4
+      ]
+    },
+    {
+      "id": "SEIZURE",
+      "type": "decision",
+      "question": "What is the ictal semiology?",
+      "options": [
+        {
+          "label": "Very brief staring, abrupt onset/offset, no postictal confusion",
+          "next": "ABSENCE"
+        },
+        {
+          "label": "Tonic then clonic activity with slow confused recovery",
+          "next": "TONIC_CLONIC"
+        },
+        {
+          "label": "Aura, impaired awareness, automatisms and gradual recovery",
+          "next": "FOCAL_IMPAIRED"
+        },
+        {
+          "label": "Sudden loss of tone or tonic fall",
+          "next": "EPILEPTIC_DROP"
+        },
+        {
+          "label": "Uncertain",
+          "next": "SEIZURE_EVAL"
+        }
+      ],
+      "source_pages": [
+        7,
+        8,
+        12
+      ]
+    },
+    {
+      "id": "FALL",
+      "type": "decision",
+      "question": "Was awareness impaired during the drop?",
+      "options": [
+        {
+          "label": "Yes",
+          "next": "LOC"
+        },
+        {
+          "label": "No",
+          "next": "FALL_NO_LOC"
+        },
+        {
+          "label": "Unknown",
+          "next": "UNCERTAIN"
+        }
+      ],
+      "source_pages": [
+        11,
+        12
+      ]
+    },
+    {
+      "id": "FALL_NO_LOC",
+      "type": "decision",
+      "question": "Is the event an abrupt drop without warning or a fall related to impaired gait/balance?",
+      "options": [
+        {
+          "label": "Abrupt drop without warning",
+          "next": "DROP"
+        },
+        {
+          "label": "Impaired gait, balance or postural challenge",
+          "next": "GAIT_FALL"
+        },
+        {
+          "label": "Uncertain",
+          "next": "FALL_EVAL"
+        }
+      ],
+      "source_pages": [
+        11
+      ]
+    },
+    {
+      "id": "DROP",
+      "type": "decision",
+      "question": "What distinctive accompanying feature is present?",
+      "options": [
+        {
+          "label": "Vascular symptoms or head/arm movement trigger",
+          "next": "DROP_VASCULAR"
+        },
+        {
+          "label": "Vertigo or known Ménière disease, sudden push to ground",
+          "next": "OTOLITHIC"
+        },
+        {
+          "label": "Emotion/laughter/startle with preserved awareness and flaccidity",
+          "next": "CATAPLEXY"
+        },
+        {
+          "label": "Startle followed by stiffness",
+          "next": "HYPEREKPLEXIA"
+        },
+        {
+          "label": "Possible midline/foramen magnum lesion",
+          "next": "STRUCTURAL_DROP"
+        },
+        {
+          "label": "Middle-aged woman, unexplained forward fall and normal interictal gait",
+          "next": "CRYPTOGENIC"
+        },
+        {
+          "label": "None or uncertain",
+          "next": "FALL_EVAL"
+        }
+      ],
+      "source_pages": [
+        11,
+        12,
+        13,
+        14
+      ]
+    },
+    {
+      "id": "GAIT_FALL",
+      "type": "decision",
+      "question": "What pattern is present on examination?",
+      "options": [
+        {
+          "label": "Rigidity, bradykinesia, freezing or dyskinesia",
+          "next": "PARKINSON"
+        },
+        {
+          "label": "Early backward falls, axial rigidity or gaze impairment",
+          "next": "PSP"
+        },
+        {
+          "label": "Weakness, sensory loss, impaired proprioception or spasticity",
+          "next": "NEUROMUSCULAR"
+        },
+        {
+          "label": "Cerebellar ataxia, stroke deficits or cognitive/visual impairment",
+          "next": "CENTRAL_GAIT"
+        },
+        {
+          "label": "Older person with multifactorial impairments or environmental hazard",
+          "next": "GERIATRIC"
+        },
+        {
+          "label": "No clear abnormalities",
+          "next": "FALL_EVAL"
+        }
+      ],
+      "source_pages": [
+        11,
+        13,
+        14,
+        15
+      ]
+    },
+    {
+      "id": "OTHER_LOC",
+      "type": "decision",
+      "question": "Which additional clue is present?",
+      "options": [
+        {
+          "label": "Hunger/fasting/diabetes or glucose-related symptoms",
+          "next": "METABOLIC"
+        },
+        {
+          "label": "Panic, paresthesias, rapid breathing",
+          "next": "HYPERVENTILATION"
+        },
+        {
+          "label": "Possible seizure",
+          "next": "SEIZURE_EVAL"
+        },
+        {
+          "label": "Unclear",
+          "next": "UNCERTAIN"
+        }
+      ],
+      "source_pages": [
+        1,
+        6
+      ]
+    },
+    {
+      "id": "VASOVAGAL",
+      "type": "diagnostic_endpoint",
+      "diagnosis_or_category": "Reflex vasovagal (vasodepressor) syncope",
+      "supporting_clues": [
+        "Emotional stress, pain, heat, prolonged standing",
+        "Nausea, pallor, diaphoresis, blurred vision",
+        "Usually rapid return without prolonged confusion"
+      ],
+      "suggested_evaluation": [
+        "History and physical examination",
+        "Supine and standing BP, ECG",
+        "Consider tilt-table testing in selected recurrent unexplained cases"
+      ],
+      "source_pages": [
+        2,
+        5,
+        6
+      ]
+    },
+    {
+      "id": "ORTHOSTATIC",
+      "type": "diagnostic_endpoint",
+      "diagnosis_or_category": "Orthostatic hypotension or volume-related syncope",
+      "supporting_clues": [
+        "Symptoms after assuming upright posture",
+        "Dehydration, blood loss, medication effects or autonomic dysfunction",
+        "Autonomic neuropathy and primary autonomic failure considered"
+      ],
+      "suggested_evaluation": [
+        "Supine/standing BP and pulse",
+        "Medication review, hydration/bleeding assessment",
+        "Targeted autonomic testing"
+      ],
+      "source_pages": [
+        3,
+        5
+      ]
+    },
+    {
+      "id": "SITUATIONAL",
+      "type": "diagnostic_endpoint",
+      "diagnosis_or_category": "Situational reflex syncope",
+      "supporting_clues": [
+        "Cough, micturition, defecation, swallowing, Valsalva, diving or postprandial trigger"
+      ],
+      "suggested_evaluation": [
+        "ECG and clinical assessment",
+        "Targeted cardiac/autonomic workup according to history"
+      ],
+      "source_pages": [
+        2,
+        6
+      ]
+    },
+    {
+      "id": "ARRHYTHMIA",
+      "type": "diagnostic_endpoint",
+      "diagnosis_or_category": "Arrhythmic cardiac syncope",
+      "supporting_clues": [
+        "Abrupt LOC, palpitations, any posture",
+        "AV/SA block, supraventricular or ventricular tachyarrhythmias, long/short QT, Brugada pattern"
+      ],
+      "suggested_evaluation": [
+        "12-lead ECG",
+        "Ambulatory ECG or implantable loop monitoring when indicated",
+        "Cardiology evaluation"
+      ],
+      "source_pages": [
+        3,
+        4,
+        6
+      ]
+    },
+    {
+      "id": "STRUCTURAL_CARDIAC",
+      "type": "diagnostic_endpoint",
+      "diagnosis_or_category": "Structural cardiopulmonary syncope",
+      "supporting_clues": [
+        "Exertional syncope, murmur, cardiomyopathy, outflow obstruction",
+        "Aortic stenosis, atrial myxoma, pulmonary hypertension, tamponade or embolism"
+      ],
+      "suggested_evaluation": [
+        "ECG and echocardiography",
+        "Further cardiac/pulmonary evaluation guided by findings"
+      ],
+      "source_pages": [
+        3,
+        4,
+        6
+      ]
+    },
+    {
+      "id": "REFLEX_CARDIAC",
+      "type": "diagnostic_endpoint",
+      "diagnosis_or_category": "Reflex cardioinhibitory syncope",
+      "supporting_clues": [
+        "Tight collar/neck pressure or swallowing-associated neuralgic pain",
+        "Possible carotid sinus syndrome or glossopharyngeal neuralgia"
+      ],
+      "suggested_evaluation": [
+        "Cardiac rhythm and BP assessment",
+        "Specialist evaluation; do not perform unsupervised carotid sinus massage"
+      ],
+      "source_pages": [
+        4
+      ]
+    },
+    {
+      "id": "CARDIAC_EVAL",
+      "type": "diagnostic_endpoint",
+      "diagnosis_or_category": "Possible cardiac syncope",
+      "supporting_clues": [
+        "Exertional or unexplained abrupt episodes",
+        "Cardiac disease or family history of sudden death"
+      ],
+      "suggested_evaluation": [
+        "ECG, echocardiography when indicated",
+        "Ambulatory rhythm monitoring and specialist assessment"
+      ],
+      "source_pages": [
+        3,
+        6
+      ]
+    },
+    {
+      "id": "VASCULAR",
+      "type": "diagnostic_endpoint",
+      "diagnosis_or_category": "Possible cerebrovascular hypoperfusion",
+      "supporting_clues": [
+        "Associated brainstem or focal symptoms, head movement, arm exercise",
+        "Consider extensive occlusive disease, subclavian steal or vertebral compression"
+      ],
+      "suggested_evaluation": [
+        "Neurological and vascular examination",
+        "Targeted vascular imaging and brain MRI/MRA"
+      ],
+      "source_pages": [
+        5,
+        6
+      ]
+    },
+    {
+      "id": "METABOLIC",
+      "type": "diagnostic_endpoint",
+      "diagnosis_or_category": "Metabolic or systemic impairment of consciousness",
+      "supporting_clues": [
+        "Hypoglycemia, hypoxia, anemia, electrolyte disturbance or adrenal-related hypotension"
+      ],
+      "suggested_evaluation": [
+        "Glucose, hematocrit/CBC, electrolytes and targeted investigations",
+        "Evaluate oxygenation and underlying systemic disease"
+      ],
+      "source_pages": [
+        1,
+        6
+      ]
+    },
+    {
+      "id": "HYPERVENTILATION",
+      "type": "diagnostic_endpoint",
+      "diagnosis_or_category": "Hyperventilation-associated symptoms",
+      "supporting_clues": [
+        "Paresthesias, panic, chest tightness, rapid breathing, gradual symptoms"
+      ],
+      "suggested_evaluation": [
+        "Exclude important cardiopulmonary/metabolic causes first",
+        "Clinical evaluation of breathing pattern and context"
+      ],
+      "source_pages": [
+        6
+      ]
+    },
+    {
+      "id": "UNEXPLAINED_SYNCOPE",
+      "type": "diagnostic_endpoint",
+      "diagnosis_or_category": "Unexplained suspected syncope",
+      "supporting_clues": [
+        "Insufficient distinguishing clues"
+      ],
+      "suggested_evaluation": [
+        "History, examination, orthostatic vitals and ECG",
+        "Directed rhythm monitoring, echocardiography or tilt test as indicated",
+        "EEG only when seizure is suspected"
+      ],
+      "source_pages": [
+        6,
+        7
+      ]
+    },
+    {
+      "id": "ABSENCE",
+      "type": "diagnostic_endpoint",
+      "diagnosis_or_category": "Absence seizure (historical classification)",
+      "supporting_clues": [
+        "Childhood onset, seconds-long staring, abrupt return, no postictal confusion",
+        "May be provoked by hyperventilation"
+      ],
+      "suggested_evaluation": [
+        "EEG for generalized spike-and-wave",
+        "Neurology assessment"
+      ],
+      "source_pages": [
+        7,
+        8
+      ]
+    },
+    {
+      "id": "TONIC_CLONIC",
+      "type": "diagnostic_endpoint",
+      "diagnosis_or_category": "Generalized tonic-clonic seizure",
+      "supporting_clues": [
+        "Tonic and clonic motor phases, cyanosis, tongue injury possible",
+        "Postictal lethargy and confusion"
+      ],
+      "suggested_evaluation": [
+        "Glucose, electrolytes, calcium, CBC and targeted testing",
+        "EEG and MRI as clinically indicated"
+      ],
+      "source_pages": [
+        7,
+        8
+      ]
+    },
+    {
+      "id": "FOCAL_IMPAIRED",
+      "type": "diagnostic_endpoint",
+      "diagnosis_or_category": "Focal impaired-awareness seizure (source: complex partial)",
+      "supporting_clues": [
+        "Aura, psychic/sensory/visceral phenomena, lip smacking or manual automatisms",
+        "Usually 1–3 minutes, gradual postictal recovery"
+      ],
+      "suggested_evaluation": [
+        "EEG, brain MRI",
+        "Video-EEG when events are unclear"
+      ],
+      "source_pages": [
+        8
+      ]
+    },
+    {
+      "id": "EPILEPTIC_DROP",
+      "type": "diagnostic_endpoint",
+      "diagnosis_or_category": "Epileptic drop attack",
+      "supporting_clues": [
+        "Tonic axial contraction, atonia or seizure-associated arrhythmia"
+      ],
+      "suggested_evaluation": [
+        "Video-EEG with event correlation",
+        "Cardiac assessment when arrhythmia suspected"
+      ],
+      "source_pages": [
+        12
+      ]
+    },
+    {
+      "id": "SEIZURE_EVAL",
+      "type": "diagnostic_endpoint",
+      "diagnosis_or_category": "Unclassified possible epileptic seizure",
+      "supporting_clues": [
+        "Stereotyped paroxysmal episode or impaired awareness"
+      ],
+      "suggested_evaluation": [
+        "Witness history and neurological examination",
+        "EEG, MRI, selected laboratory investigations",
+        "Video-EEG for diagnostic uncertainty"
+      ],
+      "source_pages": [
+        7,
+        8
+      ]
+    },
+    {
+      "id": "PNES",
+      "type": "diagnostic_endpoint",
+      "diagnosis_or_category": "Possible psychogenic nonepileptic seizures (functional seizures)",
+      "supporting_clues": [
+        "Variable or prolonged attacks, eye closure, uncoordinated movements, inconsistent semiology",
+        "Clinical clues alone are not definitive; epilepsy can coexist"
+      ],
+      "suggested_evaluation": [
+        "Capture habitual event with synchronized video-EEG when feasible",
+        "Appropriate psychological/psychiatric evaluation after careful diagnosis"
+      ],
+      "source_pages": [
+        8,
+        9
+      ]
+    },
+    {
+      "id": "BREATH_HOLD",
+      "type": "diagnostic_endpoint",
+      "diagnosis_or_category": "Pediatric breath-holding spell",
+      "supporting_clues": [
+        "Provoked crying, expiration apnea then cyanosis or pallor",
+        "Typically infancy/early childhood, rapid recovery"
+      ],
+      "suggested_evaluation": [
+        "History and examination",
+        "Exclude alternative causes if atypical"
+      ],
+      "source_pages": [
+        10
+      ]
+    },
+    {
+      "id": "DROP_VASCULAR",
+      "type": "diagnostic_endpoint",
+      "diagnosis_or_category": "Possible vascular drop attack",
+      "supporting_clues": [
+        "Sudden fall with rapid recovery, possible focal/posterior circulation features"
+      ],
+      "suggested_evaluation": [
+        "Detailed neurological examination",
+        "MRI and vascular imaging based on clinical suspicion"
+      ],
+      "source_pages": [
+        12
+      ]
+    },
+    {
+      "id": "OTOLITHIC",
+      "type": "diagnostic_endpoint",
+      "diagnosis_or_category": "Vestibular drop attack / Tumarkin otolithic crisis",
+      "supporting_clues": [
+        "Sudden feeling of being pushed to ground, preserved awareness",
+        "May occur with Ménière disease or vestibulopathy"
+      ],
+      "suggested_evaluation": [
+        "Vestibular and otologic assessment"
+      ],
+      "source_pages": [
+        13
+      ]
+    },
+    {
+      "id": "CATAPLEXY",
+      "type": "diagnostic_endpoint",
+      "diagnosis_or_category": "Cataplexy",
+      "supporting_clues": [
+        "Emotion-triggered abrupt loss of tone with preserved consciousness",
+        "Consider narcolepsy symptoms including daytime sleepiness"
+      ],
+      "suggested_evaluation": [
+        "Sleep history, sleep specialist evaluation and targeted sleep testing"
+      ],
+      "source_pages": [
+        14
+      ]
+    },
+    {
+      "id": "HYPEREKPLEXIA",
+      "type": "diagnostic_endpoint",
+      "diagnosis_or_category": "Hyperekplexia or startle-associated fall",
+      "supporting_clues": [
+        "Exaggerated startle, generalized stiffness and falls"
+      ],
+      "suggested_evaluation": [
+        "Neurological assessment and targeted evaluation"
+      ],
+      "source_pages": [
+        14
+      ]
+    },
+    {
+      "id": "STRUCTURAL_DROP",
+      "type": "diagnostic_endpoint",
+      "diagnosis_or_category": "Structural intracranial cause of drop attacks",
+      "supporting_clues": [
+        "Third ventricular/posterior fossa tumor, Chiari malformation, foramen magnum lesion"
+      ],
+      "suggested_evaluation": [
+        "Brain MRI with relevant craniocervical coverage"
+      ],
+      "source_pages": [
+        11,
+        13
+      ]
+    },
+    {
+      "id": "CRYPTOGENIC",
+      "type": "diagnostic_endpoint",
+      "diagnosis_or_category": "Cryptogenic middle-aged falls (source description)",
+      "supporting_clues": [
+        "Sudden unexplained forward fall, preserved consciousness, normal gait between events"
+      ],
+      "suggested_evaluation": [
+        "Exclude neurologic, vestibular, cardiac and environmental causes"
+      ],
+      "source_pages": [
+        14
+      ]
+    },
+    {
+      "id": "PARKINSON",
+      "type": "diagnostic_endpoint",
+      "diagnosis_or_category": "Parkinson disease-related falls",
+      "supporting_clues": [
+        "Bradykinesia, rigidity, postural instability, freezing or motor fluctuations"
+      ],
+      "suggested_evaluation": [
+        "Movement disorder assessment, medication review and gait/balance assessment"
+      ],
+      "source_pages": [
+        13
+      ]
+    },
+    {
+      "id": "PSP",
+      "type": "diagnostic_endpoint",
+      "diagnosis_or_category": "Progressive supranuclear palsy or atypical parkinsonism",
+      "supporting_clues": [
+        "Early backward falls, axial rigidity, impaired ocular movements"
+      ],
+      "suggested_evaluation": [
+        "Movement disorder examination and appropriate brain imaging"
+      ],
+      "source_pages": [
+        13
+      ]
+    },
+    {
+      "id": "NEUROMUSCULAR",
+      "type": "diagnostic_endpoint",
+      "diagnosis_or_category": "Neuromuscular or myelopathic falls",
+      "supporting_clues": [
+        "Weakness, proprioceptive impairment, spasticity, neuropathy, radiculopathy or myopathy"
+      ],
+      "suggested_evaluation": [
+        "Strength, reflex, sensation and gait examination",
+        "EMG/NCS or spinal imaging according to localization"
+      ],
+      "source_pages": [
+        13,
+        14
+      ]
+    },
+    {
+      "id": "CENTRAL_GAIT",
+      "type": "diagnostic_endpoint",
+      "diagnosis_or_category": "Central neurologic gait/balance disorder",
+      "supporting_clues": [
+        "Stroke deficits, cerebellar ataxia, cognitive/visual impairment, NPH or other cerebral disorder"
+      ],
+      "suggested_evaluation": [
+        "Neurological examination and directed brain imaging",
+        "Gait and balance evaluation"
+      ],
+      "source_pages": [
+        14
+      ]
+    },
+    {
+      "id": "GERIATRIC",
+      "type": "diagnostic_endpoint",
+      "diagnosis_or_category": "Multifactorial falls in older adults",
+      "supporting_clues": [
+        "Sensory, visual, vestibular, motor and cognitive impairments",
+        "Polypharmacy and environmental hazards"
+      ],
+      "suggested_evaluation": [
+        "Multifactorial fall-risk assessment",
+        "Medication review, orthostatic vitals, gait/balance and home hazards"
+      ],
+      "source_pages": [
+        15,
+        16
+      ]
+    },
+    {
+      "id": "FALL_EVAL",
+      "type": "diagnostic_endpoint",
+      "diagnosis_or_category": "Unexplained fall or drop attack",
+      "supporting_clues": [
+        "Cause not yet determined"
+      ],
+      "suggested_evaluation": [
+        "Witness history and neurologic/cardiac examination",
+        "MRI/vascular imaging when indicated",
+        "Cardiac/autonomic studies, sleep studies or targeted metabolic/genetic evaluation when indicated"
+      ],
+      "source_pages": [
+        11,
+        12
+      ]
+    },
+    {
+      "id": "UNCERTAIN",
+      "type": "diagnostic_endpoint",
+      "diagnosis_or_category": "Unclassified episodic event",
+      "supporting_clues": [
+        "Witness account or event characterization insufficient"
+      ],
+      "suggested_evaluation": [
+        "Collect detailed episode chronology and eyewitness/video evidence",
+        "Focused cardiovascular, neurologic and metabolic evaluation"
+      ],
+      "source_pages": [
+        1,
+        11
+      ]
+    }
+  ],
+  "comparative_features": {
+    "syncope_vs_seizure": {
+      "syncope": [
+        "posture relation",
+        "pallor",
+        "diaphoresis",
+        "often longer prodrome",
+        "brief jerks possible",
+        "usually rapid clear recovery"
+      ],
+      "seizure": [
+        "stereotypy",
+        "aura possible",
+        "rhythmic movements",
+        "cyanosis possible",
+        "postictal confusion more characteristic"
+      ]
+    },
+    "absence_vs_focal_impaired_awareness": {
+      "absence": [
+        "abrupt onset/offset",
+        "seconds",
+        "simple automatisms",
+        "no postictal phase"
+      ],
+      "focal_impaired_awareness": [
+        "aura common",
+        "minutes",
+        "complex automatisms",
+        "gradual recovery"
+      ]
+    },
+    "functional_vs_epileptic": {
+      "functional": [
+        "prolonged or variable semiology",
+        "ictal eye closure may occur",
+        "video-EEG confirmation important"
+      ],
+      "epileptic": [
+        "more stereotyped events",
+        "ictal epileptiform changes may be documented",
+        "normal interictal EEG does not exclude epilepsy"
+      ]
+    }
+  },
+  "clinical_cautions": [
+    "Historical text uses complex partial seizure and pseudoseizure; modern labels are focal impaired-awareness seizure and functional/psychogenic nonepileptic seizure.",
+    "Do not treat historical frequency comparisons or single clinical signs as validated likelihood ratios.",
+    "A normal routine EEG does not exclude epilepsy; event-correlated video-EEG is important for uncertain spells.",
+    "Convulsive movements and incontinence can occur in syncope.",
+    "Avoid unsupervised carotid sinus massage; source itself describes cerebrovascular risks.",
+    "The source uses an older orthostatic blood-pressure threshold and includes dated investigations/treatments; current standards must be checked before clinical deployment.",
+    "This is a diagnostic routing algorithm, not a definitive diagnosis or treatment protocol."
+  ]
+}

@@ -38,6 +38,7 @@ import DropAttacksSection from "@/components/questionnaire/DropAttacksSection";
 import SyncopeMedicationsSection from "@/components/questionnaire/SyncopeMedicationsSection";
 import EcgSyncopeAbcde from "@/components/questionnaire/EcgSyncopeAbcde";
 import SyncopeMiniApp from "@/components/questionnaire/SyncopeMiniApp";
+import EpisodicConsciousnessAlgorithm from "@/components/questionnaire/EpisodicConsciousnessAlgorithm";
 import HuttMiniApp from "@/components/questionnaire/HuttMiniApp";
 import EcgScoringChecklist from "@/components/questionnaire/EcgScoringChecklist";
 import McassMiniApp from "@/components/questionnaire/McassMiniApp";
@@ -367,6 +368,13 @@ const IndexContent = () => {
 
               <div id="syncope-mini-app" className={cn("mb-6 sm:mb-8 scroll-mt-20", isFocused && "hidden")}>
                 <SyncopeMiniApp />
+              </div>
+
+              <div
+                id="episodic-algorithm"
+                className={cn("mb-6 sm:mb-8 scroll-mt-20", sectionClass("episodic-algorithm"))}
+              >
+                <EpisodicConsciousnessAlgorithm />
               </div>
 
               <div id="hutt-mini-app" className={cn("mb-6 sm:mb-8 scroll-mt-20", sectionClass("hutt-mini-app"))}>

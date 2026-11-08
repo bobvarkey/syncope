@@ -16,6 +16,7 @@ type Entry = {
 const entries: Entry[] = [
   // Mini apps
   { id: "syncope-mini-app", title: "Syncope triage — 60s bedside tool", group: "Mini apps", keywords: ["triage", "true syncope", "reflex", "orthostatic", "cardiac"] },
+  { id: "episodic-algorithm", title: "Episodic LOC, falls & drop attacks algorithm", group: "Mini apps", keywords: ["bradley", "decision tree", "seizure", "pnes", "cataplexy", "parkinson", "gait", "drop attack", "syncope"] },
   { id: "hutt-mini-app", title: "HUTT — Head-Up Tilt Table Test", group: "Mini apps", keywords: ["hutt", "tilt", "italian", "westminster", "ntg", "gtn", "vasis", "isoproterenol", "atropine", "phenylephrine", "checklist"] },
   { id: "ecg-abcde", title: "ECG ABCDE screen (high-risk patterns)", group: "Mini apps", keywords: ["abcde", "brugada", "wpw", "delta", "epsilon", "long qt", "arvc", "ai", "upload"] },
   { id: "anti-arrhythmics", title: "Anti-arrhythmic drugs — Vaughan-Williams", group: "Pharmacology", keywords: ["vaughan williams", "class 0", "class i", "class ii", "class iii", "class iv", "class v", "ivabradine", "amiodarone", "flecainide", "sotalol", "verapamil", "diltiazem", "adenosine", "digoxin", "funny channel", "hcn", "mnemonic"] },
