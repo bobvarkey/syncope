@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { ArrowUp, Home } from "lucide-react";
+import { ArrowLeft, ArrowUp, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -32,6 +32,17 @@ export const NavigationFab = () => {
 
   return (
     <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-3 pointer-events-none">
+      <Button
+        variant="secondary"
+        size="icon"
+        className="pointer-events-auto rounded-full shadow-lg transition-all duration-300 bg-background/80 backdrop-blur-md border border-border/50 hover:bg-background"
+        onClick={() => navigate(-1)}
+        aria-label="Back to previous page"
+        title="Back to previous page"
+      >
+        <ArrowLeft className="h-5 w-5" />
+      </Button>
+
       <Button
         variant="secondary"
         size="icon"
