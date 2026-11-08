@@ -5,7 +5,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, ExternalLink, ArrowUpRight } from "lucide-react";
 
 interface DropAttacksSectionProps {
   data: any;
@@ -32,6 +32,29 @@ const DropAttacksSection = ({ data, onUpdate }: DropAttacksSectionProps) => {
           Drop attacks may occur WITH or WITHOUT loss of consciousness. Carefully document awareness during the event to guide differential diagnosis.
         </AlertDescription>
       </Alert>
+
+      {/* External gait & falls assessment tool */}
+      <a
+        href="https://gait-and-falls.lovable.app"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="group flex items-center justify-between gap-4 rounded-xl border border-primary/30 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-4 no-underline transition-colors hover:border-primary/60 hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        <span className="flex items-start gap-3">
+          <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-primary">
+            <ExternalLink className="h-4 w-4" />
+          </span>
+          <span>
+            <span className="block text-sm font-semibold text-foreground">
+              Gait &amp; Falls — dedicated assessment tool
+            </span>
+            <span className="block text-xs text-muted-foreground">
+              Open the interactive gait-and-falls app for balance, gait and fall-risk evaluation.
+            </span>
+          </span>
+        </span>
+        <ArrowUpRight className="h-4 w-4 shrink-0 text-primary transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+      </a>
 
       {/* Awareness during event */}
       <div>
