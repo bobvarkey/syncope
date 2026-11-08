@@ -12,6 +12,7 @@ import brugadaImage from "@/assets/brugada-types.jpeg.asset.json";
 import epsilonImage from "@/assets/epsilon-wave-arvd.png.asset.json";
 import wellensImage from "@/assets/wellens-syndrome-ecg.png.asset.json";
 import wobblerImage from "@/assets/wobbler-mnemonic.png.asset.json";
+import ecgAtlasImage from "@/assets/ecg-waveform-patterns.jpg";
 import {
   computeEcgRisk,
   ecgPatterns,
@@ -47,6 +48,19 @@ type RiskLevel = EcgRiskLevel;
 type EcgPattern = SharedEcgPattern;
 
 const patterns: EcgPattern[] = ecgPatterns;
+
+/** Classic associations for the advanced waveform atlas. */
+const waveformAssociations = [
+  { pattern: "Osborn wave", association: "hypothermia" },
+  { pattern: "Epsilon wave", association: "ARVC" },
+  { pattern: "De Winter pattern", association: "LAD occlusion" },
+  { pattern: "Electrical alternans", association: "tamponade" },
+  { pattern: "Wellens pattern", association: "LAD stenosis" },
+  { pattern: "Coved ST elevation", association: "Brugada" },
+  { pattern: "Delta wave", association: "WPW" },
+  { pattern: "Sawtooth pattern", association: "flutter" },
+  { pattern: "Prominent U wave", association: "hypokalemia" },
+];
 
 interface EcgSyncopeAbcdeProps {
   data: any;
@@ -548,6 +562,58 @@ const EcgSyncopeAbcde = ({ data, onUpdate }: EcgSyncopeAbcdeProps) => {
               (AV block, Brugada, long/short QT, WPW, ARVC, LVH/HOCM, RV strain). It does not replace
               guideline-based syncope assessment or formal ECG interpretation.
             </p>
+          </div>
+        </div>
+
+        {/* Advanced ECG waveform atlas */}
+        <div className="mt-6 border-t pt-5">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <Label className="text-base font-semibold">Advanced ECG waveform patterns</Label>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                A clinical diagnostic atlas — each pattern with its classic association.
+              </p>
+            </div>
+            <Badge variant="outline" className="text-[10px] uppercase tracking-wider">
+              Reference atlas
+            </Badge>
+          </div>
+
+          <div className="mt-3 grid gap-4 lg:grid-cols-[minmax(0,420px)_1fr]">
+            <figure className="overflow-hidden rounded-xl border bg-background">
+              <a
+                href={ecgAtlasImage}
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Open the full-size atlas"
+                className="block"
+              >
+                <img
+                  src={ecgAtlasImage}
+                  alt="Atlas of advanced ECG waveform patterns: Osborn wave, coved ST elevation, epsilon wave, delta wave, De Winter pattern, sawtooth pattern, electrical alternans, prominent U wave and Wellens pattern"
+                  loading="lazy"
+                  className="h-auto w-full"
+                />
+              </a>
+              <figcaption className="border-t bg-muted/30 px-3 py-2 text-[10px] text-muted-foreground">
+                Tap the image to open it full size.
+              </figcaption>
+            </figure>
+
+            <ul className="grid content-start gap-1.5 sm:grid-cols-2">
+              {waveformAssociations.map((item) => (
+                <li
+                  key={item.pattern}
+                  className="flex items-center justify-between gap-2 rounded-lg border bg-card px-3 py-2"
+                >
+                  <span className="text-xs font-semibold text-foreground">{item.pattern}</span>
+                  <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <span aria-hidden className="text-primary">→</span>
+                    <span>{item.association}</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       </CardContent>
