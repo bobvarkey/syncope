@@ -146,6 +146,7 @@ const sections = [
     ring: "hsl(0_85%_60%)",
     subsections: [
       { id: "drop-attacks", title: "Drop Attacks Workup", icon: AlertTriangle, color: "text-[hsl(0_85%_60%)]" },
+      { id: "medication-fall-risk", title: "Medication Fall Risk (MFRS)", icon: Pill, color: "text-[hsl(45_100%_55%)]" },
     ],
   },
   {

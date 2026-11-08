@@ -51,6 +51,7 @@ const entries: Entry[] = [
 
   // Drop attacks
   { id: "drop-attacks", title: "Drop attacks workup", group: "Drop attacks" },
+  { id: "medication-fall-risk", title: "Medication Fall Risk Score (MFRS)", group: "Drop attacks", keywords: ["mfrs", "falls", "ahrq", "tool 3i", "opioid", "benzodiazepine", "deprescribing", "medication review"] },
 ];
 
 function highlight(text: string, q: string) {

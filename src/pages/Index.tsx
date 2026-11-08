@@ -35,6 +35,7 @@ import LabTestsSection from "@/components/questionnaire/LabTestsSection";
 import AutonomicTestingSection from "@/components/questionnaire/AutonomicTestingSection";
 import InterventionsSection from "@/components/questionnaire/InterventionsSection";
 import DropAttacksSection from "@/components/questionnaire/DropAttacksSection";
+import MedicationFallRiskScore from "@/components/questionnaire/MedicationFallRiskScore";
 import SyncopeMedicationsSection from "@/components/questionnaire/SyncopeMedicationsSection";
 import EcgSyncopeAbcde from "@/components/questionnaire/EcgSyncopeAbcde";
 import SyncopeMiniApp from "@/components/questionnaire/SyncopeMiniApp";
@@ -83,6 +84,7 @@ const LEAF_GROUP_MAP: Record<string, string> = {
   'ai-diagnosis': 'differential-diagnosis',
   'interventions': 'management',
   'drop-attacks': 'drop-attacks-group',
+  'medication-fall-risk': 'drop-attacks-group',
   'anti-arrhythmics': 'pharmacology',
 };
 
@@ -781,11 +783,17 @@ const IndexContent = () => {
                       <AccordionContent className="px-6 pt-6 pb-4 space-y-8">
                         <div id="drop-attacks" className={sectionClass("drop-attacks")}>
                           <SectionWithProgress sectionId="drop-attacks" data={formData.dropAttacks}>
-                            <DropAttacksSection 
-                              data={formData.dropAttacks} 
-                              onUpdate={(data) => updateSection('dropAttacks', data)} 
+                            <DropAttacksSection
+                              data={formData.dropAttacks}
+                              onUpdate={(data) => updateSection('dropAttacks', data)}
                             />
                           </SectionWithProgress>
+                        </div>
+
+                        <Separator />
+
+                        <div id="medication-fall-risk" className={sectionClass("medication-fall-risk")}>
+                          <MedicationFallRiskScore />
                         </div>
                       </AccordionContent>
                     </AccordionItem>
