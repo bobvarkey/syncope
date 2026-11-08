@@ -1,0 +1,1043 @@
+
+{
+  "algorithm": {
+    "id": "GAIT_EVALUATION_V1",
+    "title": "Comprehensive Neurological Gait Evaluation",
+    "type": "Interactive Clinical Decision Algorithm",
+    "purpose": "Classify gait abnormalities, localize neurological dysfunction, generate differential diagnoses and guide investigations.",
+    "source": "Gait Disorders - Philip D. Thompson and John G. Nutt",
+    "workflow": [
+      "Safety screening",
+      "History",
+      "Functional assessment",
+      "Standing and posture",
+      "Walking examination",
+      "Special gait tests",
+      "Neurological examination",
+      "Pattern recognition",
+      "Anatomical localization",
+      "Differential diagnosis",
+      "Targeted investigations",
+      "Clinical report"
+    ],
+    "ui": {
+      "layout": "Branching decision tree",
+      "navigation": "Stepwise with back and next buttons",
+      "input_types": [
+        "Yes/No",
+        "Single select",
+        "Multi-select",
+        "Numeric",
+        "Free text"
+      ],
+      "features": [
+        "Conditional branching",
+        "Multiple coexisting gait patterns",
+        "Red flag alerts",
+        "Automatic phenotype classification",
+        "Anatomical localization",
+        "Ranked differential diagnosis",
+        "Suggested investigations",
+        "Printable clinical report",
+        "JSON export"
+      ]
+    },
+    "steps": [
+      {
+        "id": "STEP_1",
+        "title": "Safety and Urgency",
+        "type": "red_flag_screen",
+        "source_type": "clinical_extension",
+        "questions": [
+          {
+            "id": "RF1",
+            "text": "Sudden onset of gait disturbance?",
+            "options": ["Yes", "No"]
+          },
+          {
+            "id": "RF2",
+            "text": "New focal neurological deficit?",
+            "options": ["Yes", "No"]
+          },
+          {
+            "id": "RF3",
+            "text": "Acute severe ataxia or inability to stand?",
+            "options": ["Yes", "No"]
+          },
+          {
+            "id": "RF4",
+            "text": "New urinary retention, saddle anesthesia or rapidly progressive bilateral leg weakness?",
+            "options": ["Yes", "No"]
+          },
+          {
+            "id": "RF5",
+            "text": "Fever, severe back pain or suspected spinal infection?",
+            "options": ["Yes", "No"]
+          },
+          {
+            "id": "RF6",
+            "text": "Recent trauma with new neurological dysfunction?",
+            "options": ["Yes", "No"]
+          }
+        ],
+        "decision": {
+          "if_any_yes": {
+            "priority": "Emergency evaluation",
+            "actions": [
+              "Assess vital signs and neurological status",
+              "Consider acute stroke or intracranial pathology",
+              "Consider spinal cord or cauda equina compression",
+              "Arrange urgent imaging according to localization",
+              "Do not perform unsafe walking tests"
+            ]
+          },
+          "if_all_no": "STEP_2"
+        }
+      },
+      {
+        "id": "STEP_2",
+        "title": "History of Gait Disturbance",
+        "type": "questionnaire",
+        "fields": [
+          {
+            "id": "ONSET",
+            "question": "Onset",
+            "options": [
+              "Acute",
+              "Subacute",
+              "Chronic",
+              "Episodic",
+              "Since childhood"
+            ]
+          },
+          {
+            "id": "COURSE",
+            "question": "Clinical course",
+            "options": [
+              "Progressive",
+              "Static",
+              "Fluctuating",
+              "Relapsing",
+              "Improving"
+            ]
+          },
+          {
+            "id": "MAIN_COMPLAINT",
+            "question": "Predominant complaint",
+            "multiple": true,
+            "options": [
+              "Weakness",
+              "Stiffness",
+              "Slowness",
+              "Imbalance",
+              "Falls",
+              "Pain",
+              "Dizziness or vertigo",
+              "Foot dragging",
+              "Freezing",
+              "Difficulty initiating gait",
+              "Fatigability"
+            ]
+          },
+          {
+            "id": "TRIGGERS",
+            "question": "Situations worsening gait",
+            "multiple": true,
+            "options": [
+              "Darkness",
+              "Uneven ground",
+              "Turning",
+              "Doorways",
+              "Dual tasking",
+              "Prolonged standing",
+              "Walking distance",
+              "Running",
+              "Exercise",
+              "End of day",
+              "Standing after sitting"
+            ]
+          },
+          {
+            "id": "ASSOCIATED",
+            "question": "Associated symptoms",
+            "multiple": true,
+            "options": [
+              "Numbness",
+              "Paresthesia",
+              "Radicular pain",
+              "Back pain",
+              "Joint pain",
+              "Tremor",
+              "Dystonia",
+              "Cognitive decline",
+              "Urinary urgency or incontinence",
+              "Autonomic symptoms",
+              "Visual symptoms",
+              "Vertigo",
+              "Loss of consciousness"
+            ]
+          }
+        ],
+        "next": "STEP_3"
+      },
+      {
+        "id": "STEP_3",
+        "title": "Functional Mobility Assessment",
+        "tests": [
+          {
+            "name": "Chair Rise",
+            "instruction": "Rise from a chair without using the arms if safe.",
+            "findings": [
+              {
+                "observation": "Uses arms to push upward",
+                "suggests": ["Proximal weakness", "Pain", "Reduced functional strength"]
+              },
+              {
+                "observation": "Backward trunk displacement or poor movement sequencing",
+                "suggests": ["Frontal gait disorder", "Impaired postural control"]
+              },
+              {
+                "observation": "Slow rising with axial rigidity",
+                "suggests": ["Parkinsonian syndrome"]
+              }
+            ]
+          },
+          {
+            "name": "Functional Mobility",
+            "fields": [
+              "Independent walking",
+              "Requires walking aid",
+              "Requires human assistance",
+              "Wheelchair dependent",
+              "Unable to stand",
+              "Recent falls",
+              "Fear of falling"
+            ]
+          }
+        ],
+        "next": "STEP_4"
+      },
+      {
+        "id": "STEP_4",
+        "title": "Standing and Postural Assessment",
+        "fields": [
+          {
+            "id": "STANCE_BASE",
+            "question": "Stance base",
+            "options": ["Normal", "Narrow", "Wide", "Variable"]
+          },
+          {
+            "id": "TRUNK",
+            "question": "Trunk posture",
+            "options": [
+              "Upright",
+              "Stooped",
+              "Extended",
+              "Camptocormia",
+              "Pisa syndrome",
+              "Exaggerated lordosis",
+              "Asymmetric tilt",
+              "Fixed deformity"
+            ]
+          },
+          {
+            "id": "SWAY",
+            "question": "Postural sway",
+            "options": [
+              "Normal",
+              "Anteroposterior",
+              "Lateral",
+              "Multidirectional",
+              "Marked instability"
+            ]
+          },
+          {
+            "id": "ROMBERG",
+            "question": "Romberg test",
+            "options": [
+              "Negative",
+              "Positive",
+              "Unable to test"
+            ]
+          },
+          {
+            "id": "PULL_TEST",
+            "question": "Reactive postural responses",
+            "options": [
+              "Normal",
+              "Multiple corrective steps",
+              "Retropulsion",
+              "Propulsion",
+              "Would fall without support",
+              "Not tested"
+            ]
+          }
+        ],
+        "interpretation_rules": [
+          {
+            "if": "Wide base AND irregular truncal sway",
+            "suggest": "Cerebellar or sensory ataxia"
+          },
+          {
+            "if": "Positive Romberg AND proprioceptive loss",
+            "suggest": "Sensory ataxia"
+          },
+          {
+            "if": "Stooped posture AND reduced arm swing",
+            "suggest": "Parkinsonian syndrome"
+          },
+          {
+            "if": "Early retropulsion AND axial extension",
+            "suggest": "Progressive supranuclear palsy phenotype"
+          },
+          {
+            "if": "Exaggerated lordosis AND pelvic instability",
+            "suggest": "Proximal muscle weakness"
+          }
+        ],
+        "next": "STEP_5"
+      },
+      {
+        "id": "STEP_5",
+        "title": "Dynamic Gait Examination",
+        "observations": [
+          {
+            "id": "INITIATION",
+            "label": "Gait initiation",
+            "options": [
+              "Normal",
+              "Start hesitation",
+              "Freezing",
+              "Magnetic feet",
+              "Gait ignition failure"
+            ]
+          },
+          {
+            "id": "SPEED",
+            "label": "Walking speed",
+            "options": ["Normal", "Slow", "Very slow", "Variable"]
+          },
+          {
+            "id": "STEP_LENGTH",
+            "label": "Step length",
+            "options": ["Normal", "Short", "Long", "Asymmetric", "Variable"]
+          },
+          {
+            "id": "RHYTHM",
+            "label": "Stepping rhythm",
+            "options": ["Regular", "Irregular", "Festinating", "Interrupted"]
+          },
+          {
+            "id": "FOOT_TRAJECTORY",
+            "label": "Foot trajectory",
+            "multiple": true,
+            "options": [
+              "Normal",
+              "Shuffling",
+              "High stepping",
+              "Circumduction",
+              "Scissoring",
+              "Slapping",
+              "Reduced foot clearance",
+              "Dystonic posturing"
+            ]
+          },
+          {
+            "id": "ARM_SWING",
+            "label": "Arm swing",
+            "options": [
+              "Normal",
+              "Unilaterally reduced",
+              "Bilaterally reduced",
+              "Exaggerated",
+              "Asymmetric"
+            ]
+          },
+          {
+            "id": "TURNING",
+            "label": "Turning",
+            "multiple": true,
+            "options": [
+              "Normal",
+              "Multiple steps",
+              "En bloc",
+              "Freezing",
+              "Veering",
+              "Loss of balance"
+            ]
+          },
+          {
+            "id": "SYMMETRY",
+            "label": "Gait symmetry",
+            "options": ["Symmetric", "Right predominant", "Left predominant", "Variable"]
+          }
+        ],
+        "next": "STEP_6"
+      },
+      {
+        "id": "STEP_6",
+        "title": "Special Gait Maneuvers",
+        "tests": [
+          {
+            "id": "TANDEM",
+            "name": "Tandem walking",
+            "result": ["Normal", "Impaired", "Unable"]
+          },
+          {
+            "id": "HEEL_WALK",
+            "name": "Heel walking",
+            "purpose": "Assess ankle dorsiflexion"
+          },
+          {
+            "id": "TOE_WALK",
+            "name": "Toe walking",
+            "purpose": "Assess plantar flexion"
+          },
+          {
+            "id": "BACKWARD",
+            "name": "Backward walking",
+            "purpose": "Evaluate task-dependent gait abnormalities"
+          },
+          {
+            "id": "DUAL_TASK",
+            "name": "Walking with a cognitive task",
+            "purpose": "Assess interference with automatic gait control"
+          },
+          {
+            "id": "HEAD_TURN",
+            "name": "Walking with head turns",
+            "purpose": "Assess vestibular contribution"
+          },
+          {
+            "id": "RUNNING",
+            "name": "Running when safe",
+            "purpose": "Unmask action dystonia"
+          },
+          {
+            "id": "TUG",
+            "name": "Timed Up and Go",
+            "unit": "seconds",
+            "source_type": "clinical_extension"
+          },
+          {
+            "id": "GAIT_SPEED",
+            "name": "Timed gait speed",
+            "unit": "meters/second",
+            "source_type": "clinical_extension"
+          }
+        ],
+        "safety": "Perform only when clinically safe, with assistance where necessary.",
+        "next": "STEP_7"
+      },
+      {
+        "id": "STEP_7",
+        "title": "Neurological and Musculoskeletal Examination",
+        "sections": [
+          {
+            "name": "Motor",
+            "fields": [
+              "Muscle bulk",
+              "Proximal strength",
+              "Distal strength",
+              "Ankle dorsiflexion",
+              "Ankle plantar flexion",
+              "Knee extension",
+              "Hip abduction",
+              "Muscle tone",
+              "Deep tendon reflexes",
+              "Plantar responses"
+            ]
+          },
+          {
+            "name": "Sensory",
+            "fields": [
+              "Joint position sense",
+              "Vibration",
+              "Light touch",
+              "Pinprick",
+              "Sensory level"
+            ]
+          },
+          {
+            "name": "Coordination",
+            "fields": [
+              "Heel-to-shin",
+              "Finger-to-nose",
+              "Dysdiadochokinesia",
+              "Truncal ataxia",
+              "Nystagmus"
+            ]
+          },
+          {
+            "name": "Extrapyramidal",
+            "fields": [
+              "Bradykinesia",
+              "Rigidity",
+              "Rest tremor",
+              "Dystonia",
+              "Chorea",
+              "Myoclonus",
+              "Supranuclear gaze palsy"
+            ]
+          },
+          {
+            "name": "Musculoskeletal",
+            "fields": [
+              "Hip range of motion",
+              "Knee range of motion",
+              "Ankle range of motion",
+              "Pain with weight bearing",
+              "Leg length discrepancy",
+              "Spinal deformity"
+            ]
+          }
+        ],
+        "next": "STEP_8"
+      },
+      {
+        "id": "STEP_8",
+        "title": "Primary Gait Pattern Classification",
+        "type": "multi_branch_decision",
+        "branches": [
+          {
+            "id": "LOWER",
+            "condition": "Peripheral motor or sensory deficit",
+            "patterns": [
+              "Steppage",
+              "Waddling",
+              "Sensory ataxic",
+              "Vestibular imbalance"
+            ],
+            "next": "STEP_9_LOWER"
+          },
+          {
+            "id": "MIDDLE",
+            "condition": "Abnormal motor modulation, tone or coordination",
+            "patterns": [
+              "Spastic",
+              "Cerebellar ataxic",
+              "Parkinsonian",
+              "Dystonic",
+              "Choreic",
+              "Spastic-ataxic",
+              "Myoclonic"
+            ],
+            "next": "STEP_9_MIDDLE"
+          },
+          {
+            "id": "HIGHER",
+            "condition": "Disproportionate gait and postural dysfunction relative to routine limb examination",
+            "patterns": [
+              "Frontal",
+              "Magnetic",
+              "Gait ignition failure",
+              "Higher-level freezing",
+              "Postural instability"
+            ],
+            "next": "STEP_9_HIGHER"
+          },
+          {
+            "id": "OTHER",
+            "condition": "Pain-related, compensatory or inconsistent gait",
+            "patterns": [
+              "Antalgic",
+              "Cautious",
+              "Functional",
+              "Reckless",
+              "Mixed or multifactorial"
+            ],
+            "next": "STEP_9_OTHER"
+          }
+        ],
+        "allow_multiple": true
+      },
+      {
+        "id": "STEP_9_LOWER",
+        "title": "Lower-Level Gait Localization",
+        "patterns": [
+          {
+            "name": "Steppage gait",
+            "features": [
+              "Foot drop",
+              "Excessive hip and knee flexion",
+              "Toe catching",
+              "High stepping"
+            ],
+            "differentials": [
+              "Common fibular neuropathy",
+              "L5 radiculopathy",
+              "Sciatic neuropathy",
+              "Polyneuropathy",
+              "Motor neuron disease",
+              "Distal myopathy"
+            ],
+            "investigations": [
+              "NCS and EMG",
+              "MRI lumbar spine when indicated",
+              "Neuropathy laboratory evaluation"
+            ]
+          },
+          {
+            "name": "Waddling gait",
+            "features": [
+              "Pelvic instability",
+              "Exaggerated pelvic rotation",
+              "Lumbar lordosis",
+              "Difficulty rising"
+            ],
+            "differentials": [
+              "Proximal myopathy",
+              "Muscular dystrophy",
+              "Neuromuscular disease",
+              "Hip pathology"
+            ],
+            "investigations": [
+              "CK",
+              "EMG",
+              "Myopathy evaluation",
+              "Muscle MRI when indicated"
+            ]
+          },
+          {
+            "name": "Sensory ataxic gait",
+            "features": [
+              "Wide base",
+              "Visual dependence",
+              "Positive Romberg",
+              "Foot slapping",
+              "Impaired proprioception"
+            ],
+            "differentials": [
+              "Large-fiber polyneuropathy",
+              "Sensory neuronopathy",
+              "Posterior column disease",
+              "Myelopathy"
+            ],
+            "investigations": [
+              "NCS",
+              "Vitamin B12",
+              "MRI spinal cord when indicated",
+              "Etiology-directed sensory neuropathy tests"
+            ]
+          },
+          {
+            "name": "Vestibular gait",
+            "features": [
+              "Veering",
+              "Lateropulsion",
+              "Head-motion sensitivity",
+              "Vertigo or oscillopsia"
+            ],
+            "differentials": [
+              "Peripheral vestibulopathy",
+              "Bilateral vestibular dysfunction",
+              "Central vestibular lesion"
+            ],
+            "investigations": [
+              "Vestibular examination",
+              "Head impulse testing",
+              "Vestibular laboratory testing",
+              "Brain MRI when indicated"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "STEP_9_MIDDLE",
+        "title": "Middle-Level Gait Localization",
+        "patterns": [
+          {
+            "name": "Spastic gait",
+            "features": [
+              "Stiff extended legs",
+              "Circumduction",
+              "Scissoring",
+              "Hyperreflexia",
+              "Extensor plantar response"
+            ],
+            "differentials": [
+              "Cerebral corticospinal lesion",
+              "Cervical or thoracic myelopathy",
+              "Hereditary spastic paraplegia",
+              "Multiple sclerosis"
+            ],
+            "investigations": [
+              "MRI brain or spinal cord according to localization",
+              "Etiology-directed myelopathy evaluation"
+            ]
+          },
+          {
+            "name": "Cerebellar gait",
+            "features": [
+              "Wide base",
+              "Irregular steps",
+              "Lurching",
+              "Impaired tandem gait",
+              "Truncal sway"
+            ],
+            "differentials": [
+              "Cerebellar stroke",
+              "Cerebellar degeneration",
+              "Drug or alcohol toxicity",
+              "Cerebellar mass",
+              "Inflammatory or hereditary ataxia"
+            ],
+            "investigations": [
+              "MRI brain",
+              "Medication and toxin review",
+              "Etiology-directed ataxia workup"
+            ]
+          },
+          {
+            "name": "Parkinsonian gait",
+            "features": [
+              "Short shuffling steps",
+              "Reduced arm swing",
+              "Stooped posture",
+              "Start hesitation",
+              "Freezing",
+              "Festination"
+            ],
+            "differentials": [
+              "Parkinson disease",
+              "Progressive supranuclear palsy",
+              "Multiple system atrophy",
+              "Vascular parkinsonism",
+              "Drug-induced parkinsonism",
+              "Corticobasal syndrome"
+            ],
+            "discriminators": [
+              {
+                "finding": "Asymmetric onset, rest tremor, later falls",
+                "suggests": "Parkinson disease"
+              },
+              {
+                "finding": "Early backward falls, axial extension, vertical gaze abnormalities",
+                "suggests": "Progressive supranuclear palsy"
+              },
+              {
+                "finding": "Prominent early autonomic dysfunction",
+                "suggests": "Multiple system atrophy"
+              },
+              {
+                "finding": "Lower-body predominance, wide base, vascular signs",
+                "suggests": "Vascular parkinsonism"
+              }
+            ]
+          },
+          {
+            "name": "Dystonic gait",
+            "features": [
+              "Task-dependent abnormal postures",
+              "Foot inversion",
+              "Plantar flexion",
+              "Striatal toe",
+              "Improvement with altered task"
+            ],
+            "differentials": [
+              "Primary dystonia",
+              "Dopa-responsive dystonia",
+              "Tardive dystonia",
+              "Secondary dystonia"
+            ],
+            "special_clue": "Childhood onset with diurnal fluctuation suggests dopa-responsive dystonia."
+          },
+          {
+            "name": "Choreic gait",
+            "features": [
+              "Irregular unpredictable movements",
+              "Variable step timing",
+              "Dancing or lurching quality"
+            ],
+            "differentials": [
+              "Huntington disease",
+              "Sydenham chorea",
+              "Drug-induced chorea",
+              "Other choreic syndromes"
+            ]
+          },
+          {
+            "name": "Spastic-ataxic gait",
+            "features": [
+              "Spasticity",
+              "Ataxia",
+              "Bouncing or springing steps",
+              "Clonus"
+            ],
+            "differentials": [
+              "Multiple sclerosis",
+              "Craniocervical junction abnormalities",
+              "Combined spinal and cerebellar disorders"
+            ]
+          },
+          {
+            "name": "Myoclonic or orthostatic movement gait",
+            "features": [
+              "Jerking",
+              "Knee buckling",
+              "Bouncing",
+              "Standing-induced unsteadiness"
+            ],
+            "differentials": [
+              "Orthostatic tremor",
+              "Orthostatic myoclonus",
+              "Action myoclonus",
+              "Negative myoclonus"
+            ],
+            "investigations": [
+              "Surface EMG during standing",
+              "Etiology-directed neurological evaluation"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "STEP_9_HIGHER",
+        "title": "Higher-Level Gait Disorders",
+        "patterns": [
+          {
+            "name": "Frontal gait disorder",
+            "features": [
+              "Wide base",
+              "Short shuffling steps",
+              "Gait initiation difficulty",
+              "Freezing",
+              "Poor postural responses",
+              "Disproportionate walking impairment"
+            ],
+            "differentials": [
+              "Frontal lobe lesion",
+              "Subcortical vascular disease",
+              "Normal pressure hydrocephalus",
+              "Neurodegenerative frontal-subcortical disease"
+            ],
+            "investigations": [
+              "MRI brain",
+              "Cognitive assessment",
+              "Urinary symptom assessment"
+            ]
+          },
+          {
+            "name": "Magnetic gait",
+            "features": [
+              "Feet appear glued to floor",
+              "Difficulty initiating steps",
+              "Short ineffective steps",
+              "Turning difficulty"
+            ],
+            "differentials": [
+              "Normal pressure hydrocephalus",
+              "Frontal-subcortical disease",
+              "Diffuse cerebrovascular disease"
+            ]
+          },
+          {
+            "name": "Gait ignition failure",
+            "features": [
+              "Profound start hesitation",
+              "Freezing at initiation",
+              "Relatively normal stepping after initiation",
+              "Possible benefit from external cues"
+            ],
+            "differentials": [
+              "Isolated gait ignition failure syndrome",
+              "Frontal-subcortical disorders",
+              "Parkinsonian syndromes"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "STEP_9_OTHER",
+        "title": "Other and Multifactorial Gait Disorders",
+        "patterns": [
+          {
+            "name": "Antalgic gait",
+            "features": [
+              "Painful weight bearing",
+              "Shortened stance phase",
+              "Compensatory limping"
+            ],
+            "differentials": [
+              "Hip disease",
+              "Knee disease",
+              "Ankle disease",
+              "Musculoskeletal injury"
+            ]
+          },
+          {
+            "name": "Cautious gait",
+            "features": [
+              "Slow short steps",
+              "Wider base",
+              "Fear of falling",
+              "Improvement with support"
+            ],
+            "differentials": [
+              "Multifactorial gait disorder",
+              "Sensory impairment",
+              "Vestibular dysfunction",
+              "Post-fall fear"
+            ]
+          },
+          {
+            "name": "Functional gait disorder",
+            "features": [
+              "Inconsistency",
+              "Variability",
+              "Improvement with distraction",
+              "Positive functional motor signs",
+              "Task-dependent incongruity"
+            ],
+            "diagnostic_rule": "Require positive clinical signs of functional neurological disorder. Unusual appearance alone is insufficient."
+          },
+          {
+            "name": "Reckless gait",
+            "features": [
+              "Poor awareness of instability",
+              "Unsafe walking behavior",
+              "Impulsivity",
+              "Falls"
+            ],
+            "differentials": [
+              "Frontal executive dysfunction",
+              "Frontotemporal dementia",
+              "Progressive supranuclear palsy",
+              "Other neurocognitive disorders"
+            ]
+          },
+          {
+            "name": "Multifactorial gait",
+            "features": [
+              "Combination of neurological and musculoskeletal deficits",
+              "Sensory impairment",
+              "Reduced strength",
+              "Impaired balance"
+            ],
+            "approach": "Identify and document each contributing impairment."
+          }
+        ]
+      },
+      {
+        "id": "STEP_10",
+        "title": "Symptom-Triggered Diagnostic Pathways",
+        "branches": [
+          {
+            "trigger": "Walking-induced leg pain",
+            "question": "Does pain improve with sitting or spinal flexion?",
+            "if_yes": {
+              "consider": "Neurogenic claudication",
+              "evaluation": [
+                "Lumbar spinal stenosis assessment",
+                "Neurological examination",
+                "Lumbar MRI when indicated"
+              ]
+            },
+            "if_no": {
+              "consider": [
+                "Vascular claudication",
+                "Musculoskeletal pain"
+              ],
+              "evaluation": [
+                "Peripheral pulses",
+                "Ankle-brachial index when indicated",
+                "Joint examination"
+              ]
+            }
+          },
+          {
+            "trigger": "Falls with collapse",
+            "evaluate": [
+              "Syncope",
+              "Orthostatic hypotension",
+              "Seizures",
+              "Sudden loss of postural tone"
+            ]
+          },
+          {
+            "trigger": "Unsteadiness only during standing",
+            "evaluate": [
+              "Orthostatic tremor",
+              "Orthostatic myoclonus",
+              "Orthostatic hypotension"
+            ]
+          },
+          {
+            "trigger": "Gait disturbance with cognitive decline and urinary symptoms",
+            "evaluate": [
+              "Normal pressure hydrocephalus",
+              "Frontal-subcortical vascular disease",
+              "Other neurocognitive disorders"
+            ]
+          },
+          {
+            "trigger": "Gait impairment worse in darkness",
+            "evaluate": [
+              "Proprioceptive sensory loss",
+              "Large-fiber neuropathy",
+              "Posterior column disease",
+              "Vestibular dysfunction"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "STEP_11",
+        "title": "Final Clinical Synthesis",
+        "outputs": {
+          "primary_gait_phenotype": null,
+          "secondary_gait_phenotypes": [],
+          "neurological_level": [
+            "Lower",
+            "Middle",
+            "Higher",
+            "Mixed",
+            "Non-neurological"
+          ],
+          "anatomical_localization": [],
+          "supporting_positive_findings": [],
+          "important_negative_findings": [],
+          "ranked_differential_diagnoses": [],
+          "red_flags": [],
+          "recommended_investigations": [],
+          "fall_risk": "Not assessed",
+          "diagnostic_confidence": [
+            "High",
+            "Moderate",
+            "Low"
+          ],
+          "management_priorities": [],
+          "follow_up_plan": null
+        },
+        "report_template": {
+          "heading": "Neurological Gait Assessment",
+          "sections": [
+            "Presenting complaint and evolution",
+            "Functional mobility",
+            "Standing posture and balance",
+            "Dynamic gait characteristics",
+            "Special gait maneuvers",
+            "Motor and sensory examination",
+            "Gait phenotype",
+            "Anatomical localization",
+            "Differential diagnosis",
+            "Recommended investigations",
+            "Clinical impression"
+          ]
+        }
+      }
+    ],
+    "decision_engine": {
+      "classification_method": "Rule-based phenotype matching",
+      "allow_mixed_patterns": true,
+      "prioritize_red_flags": true,
+      "require_supporting_findings": true,
+      "avoid_diagnosis_from_single_sign": true,
+      "do_not_use_unvalidated_probability_scores": true,
+      "output_ranked_differentials": true,
+      "output_anatomical_localization": true,
+      "output_clinical_report": true
+    },
+    "clinical_disclaimer": "This algorithm supports structured clinical evaluation and does not replace neurological examination, emergency assessment or clinical judgement."
+  }
+}

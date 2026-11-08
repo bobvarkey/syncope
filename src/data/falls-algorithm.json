@@ -1,0 +1,989 @@
+
+{
+  "algorithm_id": "FALLS_DROP_ATTACKS_V1",
+  "title": "Falls and Drop Attacks: Neurological Evaluation",
+  "source": {
+    "chapter": "Falls and Drop Attacks",
+    "authors": [
+      "Bernd F. Remler",
+      "Robert B. Daroff"
+    ]
+  },
+  "type": "Interactive Clinical Decision Algorithm",
+  "purpose": "Identify the mechanism, anatomical localization and likely cause of recurrent falls or sudden drop attacks.",
+  "workflow": [
+    "Emergency triage",
+    "Event characterization",
+    "Loss of consciousness assessment",
+    "Syncope and seizure differentiation",
+    "Preserved-consciousness drop attacks",
+    "Neurological and mechanical falls",
+    "Examination and localization",
+    "Targeted investigations",
+    "Fall risk assessment",
+    "Management and prevention",
+    "Clinical report"
+  ],
+  "ui_configuration": {
+    "layout": "Branching clinical decision tree",
+    "question_format": "One clinical decision per screen",
+    "input_types": [
+      "Yes/No",
+      "Single select",
+      "Multi-select",
+      "Numeric",
+      "Free text"
+    ],
+    "features": [
+      "Conditional branching",
+      "Red flag alerts",
+      "Multiple concurrent mechanisms",
+      "Differential diagnosis generation",
+      "Anatomical localization",
+      "Targeted investigations",
+      "Fall prevention recommendations",
+      "Printable clinical report",
+      "JSON export"
+    ]
+  },
+  "nodes": [
+    {
+      "id": "START",
+      "title": "Patient Presentation",
+      "type": "data_entry",
+      "fields": [
+        "Age",
+        "Sex",
+        "Presenting complaint",
+        "Number of falls",
+        "First episode date",
+        "Most recent episode",
+        "Injuries sustained",
+        "Witness available",
+        "Baseline mobility",
+        "Walking aid use",
+        "Current medications",
+        "Cardiovascular history",
+        "Neurological history"
+      ],
+      "next": "SAFETY"
+    },
+    {
+      "id": "SAFETY",
+      "title": "Emergency Triage",
+      "source_type": "clinical_extension",
+      "questions": [
+        {
+          "id": "RF1",
+          "question": "Persistent altered consciousness?"
+        },
+        {
+          "id": "RF2",
+          "question": "New focal neurological deficit?"
+        },
+        {
+          "id": "RF3",
+          "question": "Severe headache, neck pain or acute ataxia?"
+        },
+        {
+          "id": "RF4",
+          "question": "Chest pain, palpitations or exertional syncope?"
+        },
+        {
+          "id": "RF5",
+          "question": "Significant head injury, particularly with anticoagulation?"
+        },
+        {
+          "id": "RF6",
+          "question": "New inability to stand or walk?"
+        },
+        {
+          "id": "RF7",
+          "question": "Suspected major fracture or spinal injury?"
+        }
+      ],
+      "decision": {
+        "if_any_yes": {
+          "priority": "Urgent or emergency assessment",
+          "actions": [
+            "Assess ABCs and vital signs",
+            "Check glucose",
+            "Perform ECG and neurological examination",
+            "Evaluate for stroke, arrhythmia, injury or other acute disease",
+            "Arrange emergency imaging or monitoring when indicated"
+          ]
+        },
+        "if_all_no": "EVENT_CLASSIFICATION"
+      }
+    },
+    {
+      "id": "EVENT_CLASSIFICATION",
+      "title": "Characterize the Event",
+      "question": "What best describes the fall?",
+      "options": [
+        {
+          "value": "Sudden unexpected collapse",
+          "next": "CONSCIOUSNESS"
+        },
+        {
+          "value": "Fall during walking or postural challenge",
+          "next": "MECHANICAL_NEUROLOGICAL"
+        },
+        {
+          "value": "Uncertain or unwitnessed",
+          "next": "UNCERTAIN_EVENT"
+        }
+      ]
+    },
+    {
+      "id": "UNCERTAIN_EVENT",
+      "title": "Unwitnessed or Uncertain Fall",
+      "questions": [
+        "Was there amnesia for the event?",
+        "Was the patient found on the floor?",
+        "Was there preceding dizziness or weakness?",
+        "Was there confusion afterward?",
+        "Was the event associated with injury?",
+        "Are episodes stereotyped?"
+      ],
+      "consider": [
+        "Unrecognized syncope",
+        "Seizure",
+        "Mechanical fall",
+        "Neurological drop attack"
+      ],
+      "next": "CONSCIOUSNESS"
+    },
+    {
+      "id": "CONSCIOUSNESS",
+      "title": "Was Consciousness Lost?",
+      "type": "decision",
+      "options": [
+        {
+          "value": "Yes",
+          "next": "LOC_PATHWAY"
+        },
+        {
+          "value": "No",
+          "next": "PRESERVED_CONSCIOUSNESS"
+        },
+        {
+          "value": "Uncertain",
+          "next": "LOC_AND_NO_LOC_PARALLEL"
+        }
+      ],
+      "note": "Amnesia may conceal loss of consciousness, particularly in older adults."
+    },
+    {
+      "id": "LOC_PATHWAY",
+      "title": "Loss of Consciousness",
+      "question": "Which clinical features predominate?",
+      "options": [
+        {
+          "value": "Lightheadedness, visual dimming or postural trigger",
+          "next": "SYNCOPE"
+        },
+        {
+          "value": "Palpitations, exertion or sudden collapse without warning",
+          "next": "CARDIAC_SYNCOPE"
+        },
+        {
+          "value": "Stereotyped event, tonic movements or prolonged confusion",
+          "next": "SEIZURE"
+        },
+        {
+          "value": "Unclear",
+          "next": "LOC_UNDETERMINED"
+        }
+      ]
+    },
+    {
+      "id": "SYNCOPE",
+      "title": "Suspected Syncope",
+      "features": [
+        "Transient loss of consciousness",
+        "Loss of postural tone",
+        "Rapid spontaneous recovery",
+        "Possible presyncopal symptoms"
+      ],
+      "branches": [
+        {
+          "trigger": "Standing or rising",
+          "consider": [
+            "Orthostatic hypotension",
+            "Medication-related hypotension",
+            "Autonomic dysfunction"
+          ]
+        },
+        {
+          "trigger": "Pain, emotion, prolonged standing or situational trigger",
+          "consider": [
+            "Reflex syncope",
+            "Vasovagal syncope",
+            "Situational syncope"
+          ]
+        },
+        {
+          "trigger": "Exertion, supine occurrence, palpitations or no warning",
+          "consider": [
+            "Arrhythmia",
+            "Structural cardiac disease",
+            "Cardiac outflow obstruction"
+          ],
+          "priority": "Urgent cardiac evaluation"
+        }
+      ],
+      "investigations": [
+        "Orthostatic blood pressure and heart rate",
+        "12-lead ECG",
+        "Medication review",
+        "Cardiac rhythm monitoring when indicated",
+        "Echocardiography when indicated",
+        "Tilt-table testing in selected cases"
+      ]
+    },
+    {
+      "id": "CARDIAC_SYNCOPE",
+      "title": "Suspected Cardiac Syncope",
+      "features": [
+        "Sudden collapse",
+        "Minimal or absent prodrome",
+        "Palpitations",
+        "Exertional episodes",
+        "Possible cardiac history"
+      ],
+      "differentials": [
+        "Bradyarrhythmia",
+        "High-grade atrioventricular block",
+        "Tachyarrhythmia",
+        "Structural cardiac disease",
+        "Other cardiac causes of transient cerebral hypoperfusion"
+      ],
+      "investigations": [
+        "ECG",
+        "Cardiac monitoring",
+        "Echocardiography",
+        "Cardiology evaluation",
+        "Additional testing according to suspected cause"
+      ],
+      "priority": "Urgent when high-risk features are present"
+    },
+    {
+      "id": "SEIZURE",
+      "title": "Epileptic Drop Attacks",
+      "mechanisms": [
+        "Atonic seizure",
+        "Tonic seizure",
+        "Focal seizure with impaired awareness",
+        "Seizure-related arrhythmia"
+      ],
+      "questions": [
+        "Was the event stereotyped?",
+        "Was there tonic stiffening?",
+        "Was there sudden loss of tone?",
+        "Was there post-event confusion?",
+        "Was there tongue biting?",
+        "Was there a preceding aura?",
+        "Was the event triggered by startle?"
+      ],
+      "investigations": [
+        "Detailed witness history",
+        "Routine EEG when indicated",
+        "Video EEG for recurrent unexplained stereotyped events",
+        "Brain MRI when indicated",
+        "Concurrent ECG monitoring if ictal arrhythmia is suspected"
+      ],
+      "caution": "Brief myoclonic movements may also occur during syncope and do not independently establish epilepsy."
+    },
+    {
+      "id": "LOC_UNDETERMINED",
+      "title": "Undifferentiated Transient Loss of Consciousness",
+      "actions": [
+        "Obtain witness description",
+        "Review recovery time",
+        "Check orthostatic vital signs",
+        "Perform ECG",
+        "Assess cardiac risk factors",
+        "Consider rhythm monitoring",
+        "Consider seizure evaluation if clinically supported"
+      ],
+      "rule": "Do not diagnose epilepsy solely from a fall with brief involuntary movements."
+    },
+    {
+      "id": "LOC_AND_NO_LOC_PARALLEL",
+      "title": "Uncertain Consciousness",
+      "action": "Evaluate both transient loss of consciousness and preserved-consciousness mechanisms.",
+      "next": [
+        "LOC_PATHWAY",
+        "PRESERVED_CONSCIOUSNESS"
+      ]
+    },
+    {
+      "id": "PRESERVED_CONSCIOUSNESS",
+      "title": "Sudden Fall with Preserved Consciousness",
+      "question": "Which associated features are present?",
+      "branches": [
+        {
+          "id": "VASCULAR",
+          "trigger": "Transient focal neurological symptoms",
+          "next": "TIA"
+        },
+        {
+          "id": "STRUCTURAL",
+          "trigger": "Headache, positional symptoms or head movement trigger",
+          "next": "STRUCTURAL_CAUSES"
+        },
+        {
+          "id": "VESTIBULAR",
+          "trigger": "Sudden sensation of being pushed or thrown",
+          "next": "OTOLITHIC"
+        },
+        {
+          "id": "CATAPLEXY_BRANCH",
+          "trigger": "Emotion-triggered sudden weakness",
+          "next": "CATAPLEXY"
+        },
+        {
+          "id": "MOTOR_BRANCH",
+          "trigger": "Knee buckling, weakness or abnormal muscle activity",
+          "next": "MOTOR_DROP"
+        },
+        {
+          "id": "UNKNOWN",
+          "trigger": "No clear associated features",
+          "next": "UNEXPLAINED_DROP"
+        }
+      ]
+    },
+    {
+      "id": "TIA",
+      "title": "Transient Ischemic Mechanisms",
+      "branches": [
+        {
+          "name": "Posterior circulation ischemia",
+          "supporting_features": [
+            "Diplopia",
+            "Dysarthria",
+            "Vertigo with central neurological signs",
+            "Ataxia",
+            "Weakness",
+            "Hemisensory symptoms"
+          ],
+          "investigations": [
+            "Urgent stroke or TIA assessment",
+            "MRI brain with diffusion imaging when appropriate",
+            "CTA or MRA head and neck",
+            "Vascular risk evaluation"
+          ]
+        },
+        {
+          "name": "Anterior cerebral artery ischemia",
+          "supporting_features": [
+            "Transient leg weakness",
+            "Bilateral leg involvement",
+            "Other frontal or parasagittal neurological signs"
+          ],
+          "investigations": [
+            "MRI brain",
+            "Intracranial vascular imaging",
+            "Stroke mechanism evaluation"
+          ]
+        }
+      ],
+      "caution": "An isolated fall without focal neurological features is not sufficient to diagnose a TIA."
+    },
+    {
+      "id": "STRUCTURAL_CAUSES",
+      "title": "Structural Intracranial Causes",
+      "differentials": [
+        {
+          "name": "Third ventricular colloid cyst",
+          "clues": [
+            "Position-dependent headache",
+            "Sudden unexplained falls",
+            "Possible intermittent obstructive hydrocephalus"
+          ]
+        },
+        {
+          "name": "Posterior fossa lesion",
+          "clues": [
+            "Head or neck movement trigger",
+            "Ataxia",
+            "Cranial nerve or brainstem signs"
+          ]
+        },
+        {
+          "name": "Chiari malformation",
+          "clues": [
+            "Valsalva-related or occipital headache",
+            "Craniocervical symptoms",
+            "Associated brainstem or spinal cord signs"
+          ]
+        },
+        {
+          "name": "Other intracranial lesions",
+          "clues": [
+            "Progressive neurological signs",
+            "Headache",
+            "Abnormal gait or cognition"
+          ]
+        }
+      ],
+      "investigations": [
+        "MRI brain",
+        "Craniocervical junction imaging when indicated",
+        "Neurosurgical evaluation if significant structural disease is identified"
+      ]
+    },
+    {
+      "id": "OTOLITHIC",
+      "title": "Vestibular Drop Attack",
+      "syndrome": "Tumarkin otolithic crisis",
+      "features": [
+        "Sudden fall without warning",
+        "Consciousness preserved",
+        "Sensation of being pushed or thrown",
+        "No obligatory vertigo during the event"
+      ],
+      "associated_conditions": [
+        "Meniere disease",
+        "Other vestibular disorders"
+      ],
+      "evaluation": [
+        "Audiometry",
+        "Vestibular examination",
+        "History of episodic vertigo",
+        "Fluctuating hearing loss",
+        "Tinnitus",
+        "Aural fullness"
+      ],
+      "note": "Exclude syncope, seizure and central neurological causes before attributing recurrent falls to otolithic crises."
+    },
+    {
+      "id": "CATAPLEXY",
+      "title": "Cataplexy",
+      "features": [
+        "Emotion-triggered weakness",
+        "Laughter, surprise or anger as triggers",
+        "Consciousness preserved",
+        "Sudden reduction in muscle tone",
+        "Brief duration"
+      ],
+      "associated_symptoms": [
+        "Excessive daytime sleepiness",
+        "Sleep paralysis",
+        "Hypnagogic or hypnopompic hallucinations"
+      ],
+      "differentials": [
+        "Narcolepsy type 1",
+        "Symptomatic cataplexy",
+        "Other episodic weakness syndromes"
+      ],
+      "investigations": [
+        "Sleep specialist assessment",
+        "Overnight polysomnography when indicated",
+        "Multiple Sleep Latency Test when indicated"
+      ]
+    },
+    {
+      "id": "MOTOR_DROP",
+      "title": "Sudden Motor Failure",
+      "branches": [
+        {
+          "name": "Knee buckling",
+          "consider": [
+            "Quadriceps weakness",
+            "Femoral neuropathy",
+            "L3-L4 radiculopathy",
+            "Inclusion body myositis",
+            "Knee joint instability"
+          ]
+        },
+        {
+          "name": "Sudden loss of postural muscle activity",
+          "consider": [
+            "Negative myoclonus",
+            "Asterixis",
+            "Orthostatic myoclonus"
+          ]
+        },
+        {
+          "name": "Sudden stiffening",
+          "consider": [
+            "Spastic extensor spasms",
+            "Dystonia",
+            "Hyperekplexia",
+            "Tonic seizures"
+          ]
+        }
+      ],
+      "investigations": [
+        "Detailed motor examination",
+        "NCS and EMG when indicated",
+        "Surface EMG during standing when indicated",
+        "Metabolic investigations for asterixis",
+        "EEG if epileptic events remain possible"
+      ]
+    },
+    {
+      "id": "MECHANICAL_NEUROLOGICAL",
+      "title": "Falls Associated with Walking or Postural Challenge",
+      "question": "What is the predominant mechanism?",
+      "options": [
+        {
+          "value": "Tripping or foot dragging",
+          "next": "PERIPHERAL_WEAKNESS"
+        },
+        {
+          "value": "Stiffness or spasticity",
+          "next": "MYELOPATHY"
+        },
+        {
+          "value": "Imbalance or staggering",
+          "next": "ATAXIA"
+        },
+        {
+          "value": "Shuffling, freezing or retropulsion",
+          "next": "PARKINSONISM"
+        },
+        {
+          "value": "Visual or environmental difficulty",
+          "next": "MULTIFACTORIAL"
+        },
+        {
+          "value": "Sudden loss of balance without clear cause",
+          "next": "UNEXPLAINED_DROP"
+        }
+      ]
+    },
+    {
+      "id": "PERIPHERAL_WEAKNESS",
+      "title": "Peripheral Neuromuscular Causes",
+      "patterns": [
+        {
+          "name": "Distal weakness",
+          "findings": [
+            "Foot drop",
+            "Steppage gait",
+            "Toe catching"
+          ],
+          "consider": [
+            "Peripheral neuropathy",
+            "Fibular neuropathy",
+            "L5 radiculopathy",
+            "Motor neuron disease"
+          ]
+        },
+        {
+          "name": "Proximal weakness",
+          "findings": [
+            "Difficulty rising",
+            "Waddling gait",
+            "Knee buckling"
+          ],
+          "consider": [
+            "Myopathy",
+            "Inclusion body myositis",
+            "Proximal neuropathic weakness"
+          ]
+        },
+        {
+          "name": "Sensory impairment",
+          "findings": [
+            "Positive Romberg",
+            "Impaired joint position sense",
+            "Worse balance in darkness"
+          ],
+          "consider": [
+            "Large-fiber neuropathy",
+            "Sensory neuronopathy",
+            "Posterior column dysfunction"
+          ]
+        }
+      ],
+      "investigations": [
+        "NCS and EMG",
+        "CK if myopathy suspected",
+        "Neuropathy laboratory assessment",
+        "Spinal imaging when indicated"
+      ]
+    },
+    {
+      "id": "MYELOPATHY",
+      "title": "Spinal Cord and Upper Motor Neuron Causes",
+      "features": [
+        "Spastic gait",
+        "Hyperreflexia",
+        "Clonus",
+        "Extensor plantar responses",
+        "Sensory level",
+        "Possible sphincter dysfunction"
+      ],
+      "differentials": [
+        "Degenerative cervical myelopathy",
+        "Thoracic myelopathy",
+        "Inflammatory myelopathy",
+        "Multiple sclerosis",
+        "Hereditary spastic paraplegia",
+        "Other spinal cord lesions"
+      ],
+      "investigations": [
+        "MRI spinal cord according to localization",
+        "Etiology-directed laboratory testing"
+      ],
+      "priority": "Urgent imaging for new or progressive cord dysfunction"
+    },
+    {
+      "id": "ATAXIA",
+      "title": "Ataxia-Related Falls",
+      "branches": [
+        {
+          "name": "Cerebellar",
+          "features": [
+            "Wide-based gait",
+            "Irregular steps",
+            "Truncal instability",
+            "Dysmetria",
+            "Impaired tandem walking"
+          ],
+          "investigations": [
+            "MRI brain",
+            "Medication and toxin review",
+            "Ataxia workup"
+          ]
+        },
+        {
+          "name": "Sensory",
+          "features": [
+            "Proprioceptive loss",
+            "Positive Romberg",
+            "Visual dependence"
+          ],
+          "investigations": [
+            "NCS",
+            "Sensory neuropathy evaluation",
+            "Spinal MRI when indicated"
+          ]
+        },
+        {
+          "name": "Vestibular",
+          "features": [
+            "Vertigo or oscillopsia",
+            "Veering",
+            "Head-motion sensitivity"
+          ],
+          "investigations": [
+            "Vestibular examination",
+            "Audiovestibular testing",
+            "MRI when central features are present"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "PARKINSONISM",
+      "title": "Basal Ganglia and Parkinsonian Falls",
+      "branches": [
+        {
+          "name": "Parkinson disease",
+          "features": [
+            "Bradykinesia",
+            "Rigidity",
+            "Reduced arm swing",
+            "Shuffling",
+            "Freezing",
+            "Festination",
+            "Falls more commonly later in the disease"
+          ]
+        },
+        {
+          "name": "Progressive supranuclear palsy",
+          "features": [
+            "Early unexplained falls",
+            "Backward falls",
+            "Axial rigidity",
+            "Vertical gaze abnormalities",
+            "Impaired postural responses"
+          ]
+        },
+        {
+          "name": "Multiple system atrophy",
+          "features": [
+            "Parkinsonism",
+            "Prominent autonomic dysfunction",
+            "Orthostatic hypotension",
+            "Possible cerebellar features"
+          ]
+        },
+        {
+          "name": "Other atypical parkinsonian syndromes",
+          "consider": [
+            "Corticobasal syndrome",
+            "Dementia with Lewy bodies",
+            "Vascular parkinsonism"
+          ]
+        }
+      ],
+      "evaluation": [
+        "Movement disorder examination",
+        "Postural reflex assessment when safe",
+        "Orthostatic vital signs",
+        "Medication and dopaminergic response history",
+        "Cognitive and ocular motor examination",
+        "Brain MRI when indicated"
+      ]
+    },
+    {
+      "id": "MULTIFACTORIAL",
+      "title": "Multifactorial and Age-Associated Falls",
+      "risk_factors": [
+        "Muscle weakness",
+        "Peripheral sensory loss",
+        "Poor vision",
+        "Vestibular dysfunction",
+        "Arthritis",
+        "Cognitive impairment",
+        "Orthostatic hypotension",
+        "Polypharmacy",
+        "Sedatives and hypnotics",
+        "Environmental hazards",
+        "Fear of falling",
+        "Reduced balance and endurance"
+      ],
+      "assessment": [
+        "Medication review",
+        "Vision assessment",
+        "Hearing and vestibular assessment",
+        "Orthostatic blood pressure",
+        "Gait and balance examination",
+        "Lower-limb strength",
+        "Cognitive assessment",
+        "Home safety evaluation"
+      ],
+      "functional_tests": [
+        {
+          "name": "Timed Up and Go",
+          "unit": "seconds",
+          "source_type": "clinical_extension"
+        },
+        {
+          "name": "Five Times Sit to Stand",
+          "unit": "seconds",
+          "source_type": "clinical_extension"
+        },
+        {
+          "name": "Gait speed",
+          "unit": "meters/second",
+          "source_type": "clinical_extension"
+        },
+        {
+          "name": "Dual-task walking",
+          "result": [
+            "Normal",
+            "Slowing",
+            "Stops walking",
+            "Loss of balance"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "UNEXPLAINED_DROP",
+      "title": "Unexplained or Cryptogenic Falls",
+      "questions": [
+        "Are episodes recurrent and stereotyped?",
+        "Is consciousness definitely preserved?",
+        "Is there amnesia?",
+        "Is baseline gait normal?",
+        "Are there subtle vestibular symptoms?",
+        "Are there cardiac risk factors?",
+        "Are there positive signs of functional gait disorder?"
+      ],
+      "differentials": [
+        "Unrecognized syncope",
+        "Vestibular drop attacks",
+        "Epileptic drop attacks",
+        "Structural intracranial disease",
+        "Motor failure",
+        "Functional neurological disorder",
+        "Cryptogenic falls"
+      ],
+      "investigations": [
+        "ECG and rhythm monitoring when indicated",
+        "Orthostatic blood pressure",
+        "Neurological examination",
+        "MRI brain when clinically indicated",
+        "Vestibular assessment",
+        "EEG only when seizure is suspected"
+      ],
+      "rule": "Cryptogenic falls are a diagnosis of exclusion."
+    },
+    {
+      "id": "FALL_RISK",
+      "title": "Fall Risk Assessment",
+      "source_type": "clinical_extension",
+      "fields": [
+        {
+          "name": "Falls in previous 12 months",
+          "type": "number"
+        },
+        {
+          "name": "Injurious falls",
+          "type": "number"
+        },
+        {
+          "name": "Fear of falling",
+          "type": "boolean"
+        },
+        {
+          "name": "Gait impairment",
+          "type": "boolean"
+        },
+        {
+          "name": "Balance impairment",
+          "type": "boolean"
+        },
+        {
+          "name": "Cognitive impairment",
+          "type": "boolean"
+        },
+        {
+          "name": "Orthostatic hypotension",
+          "type": "boolean"
+        },
+        {
+          "name": "High-risk medications",
+          "type": "boolean"
+        },
+        {
+          "name": "Requires walking assistance",
+          "type": "boolean"
+        }
+      ],
+      "output": {
+        "risk_level": [
+          "Lower",
+          "Intermediate",
+          "Higher"
+        ],
+        "method": "Clinical synthesis",
+        "validated_score": false,
+        "note": "No numerical cutoff is assigned to this custom checklist."
+      }
+    },
+    {
+      "id": "PREVENTION",
+      "title": "Management and Fall Prevention",
+      "interventions": [
+        {
+          "category": "Treat underlying disease",
+          "actions": [
+            "Manage cardiac arrhythmia or syncope",
+            "Treat neurological disease where possible",
+            "Manage orthostatic hypotension",
+            "Address vestibular disorders",
+            "Treat reversible neuromuscular causes"
+          ]
+        },
+        {
+          "category": "Rehabilitation",
+          "actions": [
+            "Strength training",
+            "Balance exercises",
+            "Gait rehabilitation",
+            "Appropriate walking aid",
+            "Task-specific physiotherapy"
+          ]
+        },
+        {
+          "category": "Medication review",
+          "actions": [
+            "Review sedatives and hypnotics",
+            "Review benzodiazepines",
+            "Review medications causing hypotension",
+            "Reduce unnecessary fall-risk-increasing medications"
+          ]
+        },
+        {
+          "category": "Environmental safety",
+          "actions": [
+            "Improve lighting",
+            "Remove trip hazards",
+            "Install grab rails when indicated",
+            "Use appropriate footwear",
+            "Assess home safety"
+          ]
+        },
+        {
+          "category": "Additional prevention",
+          "actions": [
+            "Correct visual impairment",
+            "Assess osteoporosis and fracture risk",
+            "Address fear of falling",
+            "Assess nutrition and vitamin D when clinically indicated"
+          ]
+        }
+      ],
+      "note": "Preventive interventions should be individualized. Historical treatment claims in the source are not treated as current guideline recommendations."
+    },
+    {
+      "id": "FINAL_REPORT",
+      "title": "Clinical Synthesis",
+      "outputs": {
+        "event_classification": null,
+        "consciousness_status": null,
+        "primary_mechanism": null,
+        "secondary_mechanisms": [],
+        "supporting_findings": [],
+        "important_negative_findings": [],
+        "anatomical_localization": [],
+        "ranked_differential_diagnoses": [],
+        "red_flags": [],
+        "recommended_investigations": [],
+        "fall_risk": null,
+        "management_plan": [],
+        "follow_up": null
+      },
+      "report_sections": [
+        "Clinical history",
+        "Description of fall or drop attack",
+        "Consciousness and recovery",
+        "Cardiovascular assessment",
+        "Neurological examination",
+        "Gait and balance examination",
+        "Event classification",
+        "Differential diagnosis",
+        "Investigations",
+        "Fall risk",
+        "Management and prevention",
+        "Final clinical impression"
+      ]
+    }
+  ],
+  "decision_engine": {
+    "priority_order": [
+      "Emergency red flags",
+      "Cardiac syncope",
+      "Seizures",
+      "Acute cerebrovascular disease",
+      "Structural intracranial disease",
+      "Vestibular and cataplectic attacks",
+      "Neurological gait disorders",
+      "Mechanical and multifactorial falls"
+    ],
+    "allow_multiple_diagnoses": true,
+    "require_positive_supporting_findings": true,
+    "avoid_single_symptom_diagnosis": true,
+    "do_not_assign_unvalidated_probabilities": true,
+    "preserve_uncertainty": true,
+    "output": [
+      "Most likely mechanism",
+      "Differential diagnoses",
+      "Urgency",
+      "Targeted investigations",
+      "Fall prevention plan",
+      "Clinical report"
+    ]
+  },
+  "disclaimer": "Clinical decision-support framework based primarily on the supplied chapter, with explicitly labeled modern clinical workflow extensions. Not a validated diagnostic instrument."
+}

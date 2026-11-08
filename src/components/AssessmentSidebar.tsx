@@ -24,6 +24,7 @@ import {
   X,
   ArrowUpFromLine,
   GitBranch,
+  Footprints,
 } from "lucide-react";
 
 import {
@@ -124,6 +125,7 @@ const sections = [
     ring: "hsl(200_85%_55%)",
     subsections: [
       { id: "episodic-algorithm", title: "Bradley LOC & Falls Algorithm", icon: GitBranch, color: "text-[hsl(200_85%_55%)]" },
+      { id: "falls-gait-evaluation", title: "Falls & Gait Evaluation", icon: Footprints, color: "text-[hsl(160_70%_45%)]" },
     ],
   },
   {
