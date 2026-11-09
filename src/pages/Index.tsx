@@ -41,7 +41,6 @@ import EcgSyncopeAbcde from "@/components/questionnaire/EcgSyncopeAbcde";
 import SyncopeMiniApp from "@/components/questionnaire/SyncopeMiniApp";
 import EpisodicConsciousnessAlgorithm from "@/components/questionnaire/EpisodicConsciousnessAlgorithm";
 import FallsGaitSection from "@/components/questionnaire/falls-gait/FallsGaitSection";
-import ApraxiaSection from "@/components/questionnaire/apraxia/ApraxiaSection";
 import HuttMiniApp from "@/components/questionnaire/HuttMiniApp";
 import EcgScoringChecklist from "@/components/questionnaire/EcgScoringChecklist";
 import McassMiniApp from "@/components/questionnaire/McassMiniApp";
@@ -388,13 +387,6 @@ const IndexContent = () => {
                 className={cn("mb-6 sm:mb-8 scroll-mt-20", sectionClass("falls-gait-evaluation"))}
               >
                 <FallsGaitSection />
-              </div>
-
-              <div
-                id="apraxia-evaluation"
-                className={cn("mb-6 sm:mb-8 scroll-mt-20", sectionClass("apraxia-evaluation"))}
-              >
-                <ApraxiaSection />
               </div>
 
               <div

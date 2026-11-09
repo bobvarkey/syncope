@@ -25,7 +25,6 @@ import {
   ArrowUpFromLine,
   GitBranch,
   Footprints,
-  Hand,
 } from "lucide-react";
 
 import {
@@ -138,17 +137,6 @@ const sections = [
     subsections: [
       { id: "falls-gait-evaluation", title: "Falls & Gait Evaluation", icon: Footprints, color: "text-[hsl(160_70%_45%)]" },
       { id: "medication-fall-risk", title: "Medication Fall Risk (MFRS)", icon: Pill, color: "text-[hsl(45_100%_55%)]" },
-    ],
-  },
-  {
-    id: "apraxia",
-    title: "Apraxia",
-    icon: Hand,
-    color: "text-[hsl(45_100%_55%)]",
-    gradient: "from-[hsl(45_100%_55%/0.22)] via-[hsl(28_100%_58%/0.18)] to-transparent",
-    ring: "hsl(45_100%_55%)",
-    subsections: [
-      { id: "apraxia-evaluation", title: "Limb Apraxia Evaluation", icon: Hand, color: "text-[hsl(45_100%_55%)]" },
     ],
   },
   {
