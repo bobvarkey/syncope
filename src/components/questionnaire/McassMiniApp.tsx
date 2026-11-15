@@ -295,6 +295,9 @@ const SYMPTOMS = [
 
 const TIMEPOINTS = [0, 1, 3, 5, 10];
 
+const reportRange = (range: { LLN: number; ULN: number } | null, unit = "") =>
+  range ? `${range.LLN}–${range.ULN}${unit ? ` ${unit}` : ""}` : "Enter age and sex";
+
 const STORAGE_KEY = "syncdx-mcass-analyzer";
 
 const initialState = (): State => ({
@@ -479,6 +482,36 @@ const McassMiniApp = () => {
   const canStage = computeCanStage(hrdbStatus, vrStatus, r3015Status, ortho.classical);
   const pots = computePots(ortho);
   const pattern = computePattern(cardiovagal.score, adrenergic.score, sudomotor.score);
+  const qsartReferenceSummary = QSART_SITES.map(({ key, label }) => {
+    const range = applyOverride(getQsartRange(s.age, sex, key), s.labOverrides.qsart?.[key]);
+    return `${label} ${reportRange(range, "µL")}`;
+  }).join("; ");
+  const cassComparisonRows = [
+    {
+      domain: "Cardiovagal (0–3)",
+      cass: "Standard CASS cardiovagal domain; scored using its validated protocol and reference limits.",
+      mcass: `${cardiovagal.score}/3; HRDB ${reportRange(hrdbRange, "bpm")}, E:I ${reportRange(eiRange)}, Valsalva ${reportRange(vrRange)}.`,
+      difference: "mCASS uses the Indian age/sex intervals shown; a validated local lab override takes precedence.",
+    },
+    {
+      domain: "Adrenergic (0–4)",
+      cass: "Standard CASS adrenergic domain; scored from the validated Valsalva and orthostatic protocol.",
+      mcass: `${adrenergic.score}/4; PRT100 ${reportRange(prt100Range, "s")}, PRT50 ${reportRange(prt50Range, "s")} plus BP response.`,
+      difference: "mCASS applies Indian age/sex PRT intervals and its shared orthostatic scoring rules.",
+    },
+    {
+      domain: "Sudomotor (0–3)",
+      cass: "Standard CASS uses QSART/TST-based assessment and validated reference limits.",
+      mcass: `${sudomotor.score}/3; QSART Indian intervals: ${qsartReferenceSummary}${s.sudoMode === "sudoscan" ? "; Sudoscan uses device/lab LLN, not an Indian age/sex interval" : ""}.`,
+      difference: "Indian age/sex/site ranges are available for QSART; Sudoscan scoring is not interchangeable with CASS QSART/TST.",
+    },
+    {
+      domain: "Total score",
+      cass: "Validated CASS total, maximum 10; not calculated by this tool.",
+      mcass: `${total}/10 — ${severity}.`,
+      difference: "Same maximum scale does not make the modified score equivalent to standard CASS.",
+    },
+  ];
 
   const activeConfounders = CONFOUNDERS.filter((c) => s.confounders[c.key]).map((c) => c.label);
 
@@ -514,6 +547,11 @@ const McassMiniApp = () => {
       `Sudomotor score: ${sudomotor.score} / 3`,
       `mCASS total: ${total} / 10`,
       `Severity: ${severity}`,
+      "",
+      "CASS vs mCASS comparison (standard CASS score is not calculated here):",
+      ...cassComparisonRows.map(
+        (row) => `${row.domain} | Standard CASS: ${row.cass} | mCASS: ${row.mcass} | Indian norm difference: ${row.difference}`
+      ),
       "",
       `HRDB: ${s.hrdb || "—"} bpm (${hrdbStatus})`,
       `E:I ratio: ${s.ei || "—"} (${eiStatus})`,
@@ -568,13 +606,18 @@ const McassMiniApp = () => {
     doc.text(reportLines[0], 14, 16);
     doc.setFontSize(10);
     let y = 26;
+    const maxWidth = doc.internal.pageSize.getWidth() - 28;
+    const pageBottom = doc.internal.pageSize.getHeight() - 14;
     reportLines.slice(1).forEach((line) => {
-      if (y > 280) {
-        doc.addPage();
-        y = 16;
-      }
-      doc.text(line, 14, y);
-      y += 6;
+      const wrapped = doc.splitTextToSize(line, maxWidth) as string[];
+      wrapped.forEach((wrappedLine) => {
+        if (y > pageBottom) {
+          doc.addPage();
+          y = 16;
+        }
+        doc.text(wrappedLine, 14, y);
+        y += 5;
+      });
     });
     doc.save(`mCASS-report-${s.name || "patient"}.pdf`);
     toast.success("mCASS report exported");
@@ -1214,6 +1257,42 @@ const McassMiniApp = () => {
                 </div>
               ))}
             </div>
+
+            <section aria-labelledby="cass-comparison-title" className="space-y-2">
+              <div>
+                <h3 id="cass-comparison-title" className="text-base font-semibold">
+                  Standard CASS vs modified CASS (mCASS)
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  Differences are highlighted; standard CASS is not calculated by this tool.
+                </p>
+              </div>
+              <div className="overflow-x-auto rounded-md border">
+                <table className="w-full min-w-[720px] border-collapse text-xs leading-relaxed">
+                  <thead className="bg-muted/60 text-left">
+                    <tr>
+                      {["Domain", "Standard CASS", "This mCASS", "Key difference"].map((heading) => (
+                        <th key={heading} scope="col" className="border-b px-3 py-2 font-semibold">
+                          {heading}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {cassComparisonRows.map((row) => (
+                      <tr key={row.domain} className="even:bg-muted/30">
+                        <th scope="row" className="border-b px-3 py-2 text-left font-semibold">
+                          {row.domain}
+                        </th>
+                        <td className="border-b px-3 py-2">{row.cass}</td>
+                        <td className="border-b bg-primary/5 px-3 py-2 font-medium">{row.mcass}</td>
+                        <td className="border-b bg-primary/5 px-3 py-2">{row.difference}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </section>
 
             <div className="grid gap-3 md:grid-cols-3">
               <div className="rounded-lg border p-4">

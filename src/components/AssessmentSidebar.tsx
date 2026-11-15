@@ -50,6 +50,7 @@ import { Button } from "@/components/ui/button";
 import { useAssessmentProgress } from "@/contexts/AssessmentProgressContext";
 import { useActiveSection } from "@/contexts/ActiveSectionContext";
 import { cn } from "@/lib/utils";
+import { IndianAutonomicNormsReference } from "@/components/IndianAutonomicNormsReference";
 
 // Sunset Blaze accent classes per icon + group gradients
 const sections = [
@@ -482,6 +483,7 @@ export function AssessmentSidebar() {
             </SidebarGroup>
           );
         })}
+        <IndianAutonomicNormsReference />
       </SidebarContent>
     </Sidebar>
     </>
