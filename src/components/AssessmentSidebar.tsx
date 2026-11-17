@@ -25,6 +25,7 @@ import {
   ArrowUpFromLine,
   GitBranch,
   Footprints,
+  ExternalLink,
 } from "lucide-react";
 
 import {
@@ -363,6 +364,32 @@ export function AssessmentSidebar() {
       </div>
 
       <SidebarContent>
+        <SidebarGroup className="mb-1">
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  tooltip="ECG Rapid Assessment"
+                  className={cn(
+                    "h-auto py-2.5 rounded-md font-semibold bg-gradient-to-r from-[hsl(190_80%_50%/0.18)] to-transparent",
+                    "hover:bg-muted/70 dark:hover:bg-muted/40"
+                  )}
+                >
+                  <a
+                    href="/Syncope_ECG_App_Diagnostic_Criteria.html"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Activity className="h-4 w-4 shrink-0 text-[hsl(190_80%_50%)]" strokeWidth={2.5} />
+                    {!collapsed && <span className="flex-1 leading-snug">ECG Rapid Assessment</span>}
+                    {!collapsed && <ExternalLink className="h-3.5 w-3.5 opacity-60" />}
+                  </a>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
         {filteredSections.length === 0 && !collapsed && (
           <div className="px-3 py-6 text-sm text-muted-foreground text-center">
             No sections match "{query}"

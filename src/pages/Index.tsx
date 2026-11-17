@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
-import { FileText, Printer, Download, FileDown, History, TestTube, Brain, Shield, AlertTriangle, Pill, Footprints } from "lucide-react";
+import { FileText, Printer, Download, FileDown, History, TestTube, Brain, Shield, AlertTriangle, Pill, Footprints, Activity } from "lucide-react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AssessmentSidebar } from "@/components/AssessmentSidebar";
 import { AssessmentProgressProvider, useAssessmentProgress } from "@/contexts/AssessmentProgressContext";
@@ -334,6 +334,21 @@ const IndexContent = () => {
               >
                 <Footprints className="h-4 w-4" />
                 Falls &amp; gait
+              </Button>
+              <Button
+                asChild
+                variant="outline"
+                size="sm"
+                className="hidden md:inline-flex gap-1.5"
+              >
+                <a
+                  href="/Syncope_ECG_App_Diagnostic_Criteria.html"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Activity className="h-4 w-4" />
+                  ECG Rapid Assessment
+                </a>
               </Button>
             </div>
             <div className="md:hidden px-3 pb-2">
