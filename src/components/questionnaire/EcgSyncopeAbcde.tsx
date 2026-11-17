@@ -13,6 +13,8 @@ import epsilonImage from "@/assets/epsilon-wave-arvd.png.asset.json";
 import wellensImage from "@/assets/wellens-syndrome-ecg.png.asset.json";
 import wobblerImage from "@/assets/wobbler-mnemonic.png.asset.json";
 import ecgAtlasImage from "@/assets/ecg-waveform-patterns.jpg";
+import syncopeSyndromesImage from "@/assets/syncope-ecg-syndromes.jpeg.asset.json";
+import electrolyteEcgImage from "@/assets/electrolyte-ecg-changes.jpeg.asset.json";
 import {
   computeEcgRisk,
   ecgPatterns,
@@ -62,12 +64,34 @@ const waveformAssociations = [
   { pattern: "Prominent U wave", association: "hypokalemia" },
 ];
 
+const ecgReferenceImages = [
+  {
+    title: "Syncope syndromes",
+    src: syncopeSyndromesImage.url,
+    alt: "ECG reference infographic showing syncope-associated syndromes including Brugada, WPW, HOCM, ARVD, long and short QT, electrolyte patterns, and fascicular block",
+    caption: "Quick reference to ECG syndromes associated with syncope and inherited or structural cardiac disease.",
+  },
+  {
+    title: "Electrolyte changes",
+    src: electrolyteEcgImage.url,
+    alt: "ECG reference infographic showing ECG changes associated with hypo- and hyperkalemia, hypo- and hypercalcemia, and hypo- and hypermagnesemia",
+    caption: "Electrolyte-associated ECG changes. Interpret alongside laboratory results and the clinical presentation.",
+  },
+  {
+    title: "Waveform atlas",
+    src: ecgAtlasImage,
+    alt: "Atlas of advanced ECG waveform patterns: Osborn wave, coved ST elevation, epsilon wave, delta wave, De Winter pattern, sawtooth pattern, electrical alternans, prominent U wave and Wellens pattern",
+    caption: "Selected ECG waveform patterns and their classic clinical associations.",
+  },
+];
+
 interface EcgSyncopeAbcdeProps {
   data: any;
   onUpdate: (data: any) => void;
 }
 
 const EcgSyncopeAbcde = ({ data, onUpdate }: EcgSyncopeAbcdeProps) => {
+  const [selectedReferenceImage, setSelectedReferenceImage] = useState(0);
   const selected = data.selectedPatterns || {};
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadedImage, setUploadedImage] = useState<string | null>(data.uploadedImage || null);
@@ -565,56 +589,82 @@ const EcgSyncopeAbcde = ({ data, onUpdate }: EcgSyncopeAbcdeProps) => {
           </div>
         </div>
 
-        {/* Advanced ECG waveform atlas */}
+        {/* ECG reference gallery */}
         <div className="mt-6 border-t pt-5">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
-              <Label className="text-base font-semibold">Advanced ECG waveform patterns</Label>
+              <Label className="text-base font-semibold">Syncope ECG image gallery</Label>
               <p className="text-xs text-muted-foreground mt-0.5">
-                A clinical diagnostic atlas — each pattern with its classic association.
+                Select an image for a larger view.
               </p>
             </div>
             <Badge variant="outline" className="text-[10px] uppercase tracking-wider">
-              Reference atlas
+              ECG references
             </Badge>
           </div>
 
-          <div className="mt-3 grid gap-4 lg:grid-cols-[minmax(0,420px)_1fr]">
-            <figure className="overflow-hidden rounded-xl border bg-background">
+          <div className="mt-3 grid gap-4 lg:grid-cols-[minmax(0,1.5fr)_minmax(240px,1fr)]">
+            <figure className="overflow-hidden rounded-lg border bg-background">
               <a
-                href={ecgAtlasImage}
+                href={ecgReferenceImages[selectedReferenceImage].src}
                 target="_blank"
                 rel="noopener noreferrer"
-                title="Open the full-size atlas"
+                title="Open the full-size ECG reference"
                 className="block"
               >
                 <img
-                  src={ecgAtlasImage}
-                  alt="Atlas of advanced ECG waveform patterns: Osborn wave, coved ST elevation, epsilon wave, delta wave, De Winter pattern, sawtooth pattern, electrical alternans, prominent U wave and Wellens pattern"
+                  src={ecgReferenceImages[selectedReferenceImage].src}
+                  alt={ecgReferenceImages[selectedReferenceImage].alt}
                   loading="lazy"
-                  className="h-auto w-full"
+                  className="mx-auto h-auto max-h-[640px] w-full object-contain"
                 />
               </a>
-              <figcaption className="border-t bg-muted/30 px-3 py-2 text-[10px] text-muted-foreground">
-                Tap the image to open it full size.
+              <figcaption className="space-y-1 border-t bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
+                <span className="font-semibold text-foreground">
+                  {ecgReferenceImages[selectedReferenceImage].title}
+                </span>
+                <p>{ecgReferenceImages[selectedReferenceImage].caption}</p>
+                <p className="text-[10px]">Select the image to open it full size.</p>
               </figcaption>
             </figure>
 
-            <ul className="grid content-start gap-1.5 sm:grid-cols-2">
-              {waveformAssociations.map((item) => (
-                <li
-                  key={item.pattern}
-                  className="flex items-center justify-between gap-2 rounded-lg border bg-card px-3 py-2"
+            <div className="grid content-start gap-2 sm:grid-cols-3 lg:grid-cols-1">
+              {ecgReferenceImages.map((image, index) => (
+                <Button
+                  key={image.title}
+                  type="button"
+                  variant={selectedReferenceImage === index ? "secondary" : "outline"}
+                  aria-pressed={selectedReferenceImage === index}
+                  onClick={() => setSelectedReferenceImage(index)}
+                  className="h-auto min-h-20 justify-start gap-3 whitespace-normal p-2 text-left"
                 >
-                  <span className="text-xs font-semibold text-foreground">{item.pattern}</span>
-                  <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                    <span aria-hidden className="text-primary">→</span>
-                    <span>{item.association}</span>
-                  </span>
-                </li>
+                  <img
+                    src={image.src}
+                    alt=""
+                    aria-hidden="true"
+                    loading="lazy"
+                    className="h-16 w-20 shrink-0 rounded border bg-background object-contain"
+                  />
+                  <span className="min-w-0 text-sm font-semibold">{image.title}</span>
+                </Button>
               ))}
-            </ul>
+            </div>
           </div>
+
+          <ul className="mt-4 grid content-start gap-1.5 sm:grid-cols-2">
+            {waveformAssociations.map((item) => (
+              <li
+                key={item.pattern}
+                className="flex items-center justify-between gap-2 rounded-md border bg-card px-3 py-2"
+              >
+                <span className="text-xs font-semibold text-foreground">{item.pattern}</span>
+                <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <span aria-hidden className="text-primary">→</span>
+                  <span>{item.association}</span>
+                </span>
+              </li>
+            ))}
+          </ul>
         </div>
       </CardContent>
     </Card>
